@@ -10,7 +10,7 @@
 </div>
 
 
-![Piggyback Learning Logo](https://github.com/user-attachments/assets/1f43e32e-cfe6-4a77-99af-254984179571)
+![Piggyback Learning Logo](https://github.com/user-attachments/assets/b04788c9-e320-4424-a31e-f6a16f93d4e4)
 
 ## Project Overview
 **Piggyback Learning** is an educational platform designed to enhance children's learning experiences by integrating interactive quizzes and supplementary learning materials into YouTube videos. By engaging children with real-time quizzes and educational content, this project transforms passive video-watching into an active, fun learning experience.
@@ -24,7 +24,7 @@ The **Piggyback Learning** project aims to create an innovative educational plat
 ## High-Level Requirements
 - The platform will integrate interactive quizzes that appear during video playback, assessing the child's understanding of the content.
 - Supplementary learning materials such as flashcards, notes, and images will be shown alongside videos to reinforce learning.
-- Users will be able to track their progress and quiz results in real-time.
+- Users will be able to track their progress and quiz results in real time.
 - The platform will include easy user registration, login, and profile management for personalized experiences.
 - Immediate feedback will be provided after quiz responses, with explanations for incorrect answers.
 
