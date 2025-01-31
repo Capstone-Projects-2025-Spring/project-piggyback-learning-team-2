@@ -14,7 +14,7 @@
 ![Piggyback Learning Logo](c:\Users\ankur\Downloads\DALL·E 2025-01-31 12.58.37 - A vibrant and fun logo for a children's educational project named 'Piggyback Learning'. The logo should include playful elements like a friendly carto.webp)
 
 ## Project Overview
-**Piggyback Learning** is an educational platform designed to enhance children's learning experiences by integrating interactive quizzes and supplementary learning materials into YouTube videos. By engaging children with real-time quizzes and educational content, this project transforms passive video watching into an active, fun learning experience.
+**Piggyback Learning** is an educational platform designed to enhance children's learning experiences by integrating interactive quizzes and supplementary learning materials into YouTube videos. By engaging children with real-time quizzes and educational content, this project transforms passive video-watching into an active, fun learning experience.
 
 ## Keywords
 **Educational Technology**, **Interactive Learning**, **Children's Education**, **Quizzes**, **Learning Materials**, **JavaScript**, **React**, **Flask/FastAPI**, **Frontend Development**, **Backend Development**, **Learning Platform**.
