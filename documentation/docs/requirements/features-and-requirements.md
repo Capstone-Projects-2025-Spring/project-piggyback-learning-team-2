@@ -28,3 +28,27 @@ sidebar_position: 4
 ### Search and Navigation
 - Search for videos by title or keyword.
 - Categorized video lists for easy browsing.
+
+## Requirements
+
+### Functional
+
+#### Authentication
+- Users must log in and register with an email/password.
+
+#### Video Playback
+- Play, pause, and resume videos with questions at specific timestamps.
+
+#### Question Interaction
+- Display and allow answers to AI-generated questions.
+- Provide feedback and explanations for answers.
+
+#### Performance Tracking
+- Show results after completing a video, including a review of each question.
+
+#### Saved Videos
+- Users can save videos for later and track watch history.
+
+#### Search
+- Enable search by video title or topic.
+
