@@ -1,7 +1,7 @@
 [![Open in Codespaces](https://classroom.github.com/assets/launch-codespace-2972f46106e565e64193e422d61a12cf1da4916b45550586e14ef0a7c637dd04.svg)](https://classroom.github.com/open-in-codespaces?assignment_repo_id=17853442)
 <div align="center">
 
-# Project Name
+## Piggyback Learning
 [![Report Issue on Jira](https://img.shields.io/badge/Report%20Issues-Jira-0052CC?style=flat&logo=jira-software)](https://temple-cis-projects-in-cs.atlassian.net/jira/software/c/projects/DT/issues)
 [![Deploy Docs](https://github.com/ApplebaumIan/tu-cis-4398-docs-template/actions/workflows/deploy.yml/badge.svg)](https://github.com/ApplebaumIan/tu-cis-4398-docs-template/actions/workflows/deploy.yml)
 [![Documentation Website Link](https://img.shields.io/badge/-Documentation%20Website-brightgreen)](https://applebaumian.github.io/tu-cis-4398-docs-template/)
@@ -10,8 +10,7 @@
 </div>
 
 
-## Piggyback Learning
-![Piggyback Learning Logo](c:\Users\ankur\Downloads\DALL·E 2025-01-31 12.58.37 - A vibrant and fun logo for a children's educational project named 'Piggyback Learning'. The logo should include playful elements like a friendly carto.webp)
+![Piggyback Learning Logo](https://github.com/user-attachments/assets/1f43e32e-cfe6-4a77-99af-254984179571)
 
 ## Project Overview
 **Piggyback Learning** is an educational platform designed to enhance children's learning experiences by integrating interactive quizzes and supplementary learning materials into YouTube videos. By engaging children with real-time quizzes and educational content, this project transforms passive video-watching into an active, fun learning experience.
