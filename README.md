@@ -10,17 +10,55 @@
 </div>
 
 
-## Keywords
+## Piggyback Learning
+![Piggyback Learning Logo](c:\Users\ankur\Downloads\DALL·E 2025-01-31 12.58.37 - A vibrant and fun logo for a children's educational project named 'Piggyback Learning'. The logo should include playful elements like a friendly carto.webp)
 
-Section #, as well as any words that quickly give your peers insights into the application like programming language, development platform, type of application, etc.
+## Project Overview
+**Piggyback Learning** is an educational platform designed to enhance children's learning experiences by integrating interactive quizzes and supplementary learning materials into YouTube videos. By engaging children with real-time quizzes and educational content, this project transforms passive video watching into an active, fun learning experience.
+
+## Keywords
+**Educational Technology**, **Interactive Learning**, **Children's Education**, **Quizzes**, **Learning Materials**, **JavaScript**, **React**, **Flask/FastAPI**, **Frontend Development**, **Backend Development**, **Learning Platform**.
 
 ## Project Abstract
+The **Piggyback Learning** project aims to create an innovative educational platform that integrates interactive quizzes and learning materials into YouTube videos. This platform allows children to engage with the content by answering quizzes and accessing additional learning materials as the video plays. The goal is to provide a fun, engaging, and effective learning environment through a web-based or mobile platform.
 
-This document proposes a novel application of a text message (SMS or Email) read-out and hands-free call interacted between an Android Smartphone and an infotainment platform (headunit) in a car environment. When a phone receives an SMS or Email, the text message is transferred from the phone to the headunit through a Bluetooth connection. On the headunit, user can control which and when the received SMS or E-mail to be read out through the in-vehicle audio system. The user may press one button on the headunit to activate the hands-free feature to call back the SMS sender.
+## High-Level Requirements
+- The platform will integrate interactive quizzes that appear during video playback, assessing the child's understanding of the content.
+- Supplementary learning materials such as flashcards, notes, and images will be shown alongside videos to reinforce learning.
+- Users will be able to track their progress and quiz results in real-time.
+- The platform will include easy user registration, login, and profile management for personalized experiences.
+- Immediate feedback will be provided after quiz responses, with explanations for incorrect answers.
 
-## High Level Requirement
+## Conceptual Design
+### Hardware:
+- Devices: Web-accessible (PC, tablets, smartphones).
+- Platform: Web-based and/or mobile app.
 
-Describe the requirements – i.e., what the product does and how it does it from a user point of view – at a high level.
+### Software:
+- **Frontend**: Developed with **React.js**, **JavaScript**, and **CSS** for an interactive and responsive UI.
+- **Backend**: Built using **Flask** or **FastAPI** for handling user data, quizzes, and interactions.
+- **Video Integration**: Uses **YouTube Iframe API** to embed and control video playback.
+
+### Operating Systems:
+- Compatible with **Windows**, **macOS**, and **Android**.
+
+## Background
+The **Piggyback Learning** project integrates video-based education with real-time interaction by adding quizzes and learning materials directly into YouTube videos. While there are existing learning platforms like **Khan Academy Kids** and **ABCmouse**, they primarily provide standalone content. This project aims to leverage YouTube videos as an educational tool, offering interactive quizzes and related learning content.
+
+## Required Resources
+### Background Information:
+- Familiarity with **educational psychology** for children.
+- Understanding **video integration APIs** (like **YouTube Iframe API**).
+- Knowledge of **modern web development** practices (React, Flask/FastAPI).
+
+### Hardware:
+- Web-enabled devices such as PCs, tablets, and smartphones.
+
+### Software:
+- **Frontend**: **React.js** for UI development.
+- **Backend**: **Flask** or **FastAPI** for handling the server-side logic.
+- **Database**: **MongoDB** or **PostgreSQL** for user data and quiz results.
+- **YouTube API**: For video playback and integration.
 
 ## Conceptual Design
 
@@ -47,10 +85,10 @@ Discuss what you need to develop this project. This includes background informat
         </a>
     </td>
     <td align="center">
-        <a href="https://github.com/leighflagg">
+        <a href="https://github.com/Gunlords">
             <img src="https://avatars.githubusercontent.com/u/77810293?v=4" width="100;" alt="leighflagg"/>
             <br />
-            <sub><b>Null</b></sub>
+            <sub><b>Ankur</b></sub>
         </a>
     </td></tr>
 </table>
