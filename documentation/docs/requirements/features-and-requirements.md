@@ -52,3 +52,19 @@ sidebar_position: 4
 #### Search
 - Enable search by video title or topic.
 
+### Non-Functional
+
+#### Performance
+- Authentication and video loading must be fast (within 5 seconds).
+
+#### AI Integration
+- Video content must be analyzed to generate relevant questions.
+
+#### Database Storage
+- Store user data and video history securely.
+
+#### Usability
+- Simple, intuitive UI with easy navigation.
+
+#### Security
+- Implement secure password management and data protection.
