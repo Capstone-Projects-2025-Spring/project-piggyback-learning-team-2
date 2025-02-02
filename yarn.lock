@@ -2,3 +2,7 @@
 # yarn lockfile v1
 
 
+"18@^0.0.0":
+  "integrity" "sha512-2SPMA/ciHy16yY4uVXDrW8q7nLwb2F2Vrt8Qz5OiVo9cyC8Wo8/rwC2hDzbqlTXhIwzt2Y4yJRLem6XMNbT/3A=="
+  "resolved" "https://registry.npmjs.org/18/-/18-0.0.0.tgz"
+  "version" "0.0.0"
