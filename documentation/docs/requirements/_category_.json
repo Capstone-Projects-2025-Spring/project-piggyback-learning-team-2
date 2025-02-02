@@ -3,6 +3,6 @@
   "position": 4,
   "link": {
     "type": "generated-index",
-    "description": "Document Overview goes here."
+    "description": "This document goes over the different functional and non-functional requirements that are needed to satisfy user needs and problems for the piggback learning system."
   }
 }
