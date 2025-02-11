@@ -1,9 +1,11 @@
-/* Global Styles */
+/* Background setup for Sign In Page */
 body {
-    font-family: Arial, sans-serif;
+    background-image: url('https://cdn.pixabay.com/photo/2019/05/14/21/50/storytelling-4203628_1280.jpg');
+    background-size: cover;
+    background-position: center;
     margin: 0;
     padding: 0;
-    background: linear-gradient(135deg, #f0f8ff, #cce7ff); /* Gradient Background */
+    font-family: Arial, sans-serif;
 }
 
 /* Header */
@@ -39,12 +41,12 @@ header nav ul li a {
 /* Sign In Form */
 .form-container {
     max-width: 400px;
-    margin: 50px auto;
-    background: #ffffff; /* White background for form */
+    margin: 60px auto;
+    background: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
     padding: 30px;
     border-radius: 15px;
     box-shadow: 0px 10px 30px rgba(0, 0, 0, 0.1);
-    transform: translateY(-10px); /* Add slight upward shift for a 3D effect */
+    transform: translateY(-50px); /* Add slight upward shift for a 3D effect */
     transition: transform 0.3s ease;
 }
 
@@ -108,5 +110,5 @@ footer {
     color: white;
     text-align: center;
     padding: 20px;
-    margin-top: 40px;
+    margin-top: 200px;
 }
