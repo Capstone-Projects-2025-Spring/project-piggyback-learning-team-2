@@ -1,13 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/page.css';
 
 const Home = () => {
+  const [selectedGrade, setSelectedGrade] = useState("");
+
+  const handleGradeChange = (event) => {
+    setSelectedGrade(event.target.value);
+  };
+
   return (
     <div>
       <header>
         <div className="logo">
-          <img src="" alt="Piggyback Learning Logo" />
+          <img src="/logo.png" alt="Piggyback Learning Logo" />
         </div>
         <nav>
           <ul>
@@ -28,10 +34,17 @@ const Home = () => {
 
         <section className="grade-selection">
           <h2>Select Your Grade Level</h2>
-          <div className="grade-buttons">
-            {["Pre-K", "Kindergarten", "1st Grade", "2nd Grade", "3rd Grade", "4th Grade", "5th Grade"].map(grade => (
-              <button key={grade}>{grade}</button>
-            ))}
+          <div className="dropdown-container">
+            <select value={selectedGrade} onChange={handleGradeChange} className="grade-dropdown">
+              <option value="" disabled>Select Grade</option>
+              <option value="Pre-K">Pre-K</option>
+              <option value="Kindergarten">Kindergarten</option>
+              <option value="1st Grade">1st Grade</option>
+              <option value="2nd Grade">2nd Grade</option>
+              <option value="3rd Grade">3rd Grade</option>
+              <option value="4th Grade">4th Grade</option>
+              <option value="5th Grade">5th Grade</option>
+            </select>
           </div>
         </section>
 
