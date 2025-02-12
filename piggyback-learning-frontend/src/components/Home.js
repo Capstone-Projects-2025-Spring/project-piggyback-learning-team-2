@@ -28,7 +28,7 @@ const Home = () => {
       <main>
         <section className="intro">
           <h1>Welcome to Piggyback Learning!</h1>
-          <p>Fun, Interactive Learning Games for Kids!</p>
+          <p>Making learning videos more interactive for children!</p>
           <Link to="/signup" className="cta-button">Sign Up for Free</Link>
         </section>
 
