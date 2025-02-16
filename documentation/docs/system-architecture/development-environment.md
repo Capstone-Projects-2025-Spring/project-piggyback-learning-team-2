@@ -30,7 +30,5 @@ sidebar_position: 4
 
 * MongoDB: For tracking user activity such as time spent on each question, video playback interactions (play/pause/stop), and where they clicked within the application. Useful for logging high-volume, unstructured data.
 
-* Cloudinary: For hosting and serving user-uploaded videos and related media. This reduces the storage load on the server while providing fast access to video content.
-
 ## Hardware
 There is no hardware used for this project.
