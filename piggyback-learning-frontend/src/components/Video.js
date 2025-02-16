@@ -9,7 +9,7 @@ import {useRef} from "react";
 // npm install react-bootstrap bootstrap
 
 
-// used https://youtu.be/xNRJwmlRBNU as a tutorial for the 
+// used https://youtu.be/xNRJwmlRBNU as a tutorial for the embed
 
 
 const Video = () => {
@@ -20,12 +20,11 @@ const stopVideos = () => {
     if (videoRef.current) {
       videoRef.current.src = ""; // Clear the src
       setTimeout(() => {
-        videoRef.current.src = "https://www.youtube.com/embed/xNRJwmlRBNU";
-      }, 10); // last argument is a delay but don't remove it because it causes the embed to disapear 
+        videoRef.current.src = "https://www.youtube.com/embed/DR-cfDsHCGA";
+      }, 100); // last argument is a delay but don't remove it because it causes the embed to disapear 
     }
     
   };
-
 
 
   return (
@@ -44,7 +43,7 @@ const stopVideos = () => {
       <main>
         <Container>
             <div class="ratio ratio-16x9">
-                <iframe  ref={videoRef} src="https://www.youtube.com/embed/xNRJwmlRBNU" title="YouTube video" allowFullScreen></iframe>
+                <iframe  ref={videoRef} src="https://www.youtube.com/embed/DR-cfDsHCGA" title="YouTube video" allowFullScreen></iframe>
             </div>
             <button onClick={stopVideos}>Stop</button>;
         </Container>
