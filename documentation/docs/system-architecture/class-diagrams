@@ -12,7 +12,7 @@ sidebar_position: 3
 Figure 1.1 shows all the React components that make up the frontend of the Piggyback Learning.
 
 ### App
-The App component is the entire site broken into smaller components. It is the main point of entry and splits into four main classes, VideoPage, Authmanager, HomePage, and DashboardPage.
+The App component is the entire site broken into smaller components. It is the main point of entry and splits into four main classes, VideoPage, Authmanager, HomePage, and DashboardPage, which are are in charge of the main parts of the apps core functionality.
 
 #### HomePage
 The HomePage component is the landing page of the site, and owns SearchEngine which is used to search for videos on the site.
