@@ -1,16 +1,33 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import '../styles/video.css';
-import { Button } from 'react-bootstrap';
 import { Container } from 'react-bootstrap';
+import {useRef} from "react";
+
 
 // cd piggyback-learning-frontend
 // npm install react-bootstrap bootstrap
 
 
-// used https://youtu.be/xNRJwmlRBNU as a tutorial
+// used https://youtu.be/xNRJwmlRBNU as a tutorial for the 
+
 
 const Video = () => {
+
+const videoRef = useRef(null);
+
+const stopVideos = () => {
+    if (videoRef.current) {
+      videoRef.current.src = ""; // Clear the src
+      setTimeout(() => {
+        videoRef.current.src = "https://www.youtube.com/embed/xNRJwmlRBNU";
+      }, 10); // last argument is a delay but don't remove it because it causes the embed to disapear 
+    }
+    
+  };
+
+
+
   return (
     <div>
       <header>
@@ -27,9 +44,9 @@ const Video = () => {
       <main>
         <Container>
             <div class="ratio ratio-16x9">
-                <iframe src="https://www.youtube.com/embed/xNRJwmlRBNU" title="YouTube video" allowFullScreen></iframe>
+                <iframe  ref={videoRef} src="https://www.youtube.com/embed/xNRJwmlRBNU" title="YouTube video" allowFullScreen></iframe>
             </div>
-            <Button variant="primary">Click Me</Button>;
+            <button onClick={stopVideos}>Stop</button>;
         </Container>
        
       </main>
@@ -42,3 +59,4 @@ const Video = () => {
 };
 
 export default Video;
+
