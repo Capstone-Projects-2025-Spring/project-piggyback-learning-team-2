@@ -93,8 +93,6 @@ button:hover {
 }
 Button {
     margin: 0;
-    
-    
     position: relative;
     transform: translate(50%, 0%);
 }
@@ -119,4 +117,13 @@ footer {
     margin-top: 10px;
 
     
+}
+
+
+
+.yvid {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50vh;
 }
