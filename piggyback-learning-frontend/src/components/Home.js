@@ -1,12 +1,21 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+//import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import '../styles/page.css';
 
 const Home = () => {
   const [selectedGrade, setSelectedGrade] = useState("");
+  const navigate = useNavigate();
 
   const handleGradeChange = (event) => {
-    setSelectedGrade(event.target.value);
+    const selected = event.target.value;
+    setSelectedGrade(selected);
+
+    if (selected === "Pre-K") {
+      navigate("/prek"); // Navigate to Pre-K page
+    } else {
+      // Handle other grades if needed
+    }
   };
 
   return (
