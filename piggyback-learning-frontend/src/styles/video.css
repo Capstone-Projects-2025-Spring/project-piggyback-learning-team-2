@@ -90,6 +90,7 @@ button {
 
 button:hover {
     background-color: #45a049;
+    position: absolute;
 }
 Button {
     margin: 0;
@@ -119,9 +120,15 @@ footer {
     
 }
 
+header .logo img {
+    width: auto;
+    height: auto;
+  }
+
 
 
 .yvid {
+    position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
