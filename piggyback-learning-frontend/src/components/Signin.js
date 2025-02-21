@@ -1,20 +1,25 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import logo from '../images/Mob_Iron_Hog.png'; 
 import '../styles/signin.css';
 
 const Signin = () => {
   return (
     <div>
       <header>
-        <h1>Piggyback Learning</h1>
-        <nav>
-          <ul>
-            <li><Link to="/">Home</Link></li>
-            <li><Link to="/how-to-join">How to Join</Link></li>
-            <li><Link to="/store">Store</Link></li>
-          </ul>
-        </nav>
-      </header>
+              <div className="logo">
+                <img src={logo} alt="Piggyback Learning Logo" />
+              </div>
+              <nav>
+                <ul>
+                  <li><Link to="/">Home</Link></li>
+                  <li><Link to="/how-to-join">How to Join</Link></li>
+                  <li><Link to="/signin">Sign In</Link></li>
+                  <li><Link to="/video">Video (placeholder)</Link></li>
+                  <li><Link to="/store">Store</Link></li>
+                </ul>
+              </nav>
+            </header>
 
       <main>
         <div className="form-container">
