@@ -1,6 +1,5 @@
 import re
 from fastapi import FastAPI
-# from fastapi.params import Body
 from pydantic import BaseModel, HttpUrl, field_validator
 
 
@@ -8,6 +7,33 @@ app = FastAPI()
 
 
 class YouTubeVideo(BaseModel):
+    """
+    Class: Pydantic model for validating user
+    supplied YouTube urls with common formats
+
+    Data fields: url, The data type is HttpUrl
+    and the purpose is to store the YouTube URL
+
+    Methods: check_YouTubeVideoURL(cls, v: HttpUrl) -> HttpUrl:
+    Checks url field matches with regex pattern
+
+        Pre-conditions:
+            - v must be a string representing a URL
+
+        Post-conditions:
+            - If URL matched with regex pattern, return URL
+            - If URL doesn't match with pattern, raise ValueError
+
+        Parameters and datatypes:
+            - v is the URL to validate and the date type is String
+
+        Return Value and output variables:
+            - String of the validate YouTube video URL
+
+        Exceptions:
+            - Raises ValueError when URL doesn't match regex pattern
+    """
+
     url: HttpUrl
 
     @field_validator("url")
