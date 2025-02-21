@@ -6,9 +6,34 @@
 
 // used npm install react-youtube
 
+import React from 'react';
 import { useState, useEffect, useRef } from "react";
 import YouTube from "react-youtube";
 import '../styles/video.css';
+
+
+// const useMousePosition = () => {
+//   const [
+//     mousePosition,
+//     setMousePosition
+//   ] = React.useState({ x: null, y: null });
+
+//   React.useEffect(() => {
+//     const updateMousePosition = ev => {
+//       setMousePosition({ x: ev.clientX, y: ev.clientY });
+//     };
+
+//     window.addEventListener('mousemove', updateMousePosition);
+
+//     return () => {
+//       window.removeEventListener('mousemove', updateMousePosition);
+//     };
+//   }, []);
+
+//   console.log(mousePosition)
+//   return mousePosition;
+// };
+
 
 
 export default function App() {
@@ -17,6 +42,28 @@ export default function App() {
 
   const togglePause = () => {
     setIsPaused((prev) => !prev);
+  };
+
+  const useMousePosition = () => {
+    const [
+      mousePosition,
+      setMousePosition
+    ] = React.useState({ x: null, y: null });
+  
+    React.useEffect(() => {
+      const updateMousePosition = ev => {
+        setMousePosition({ x: ev.clientX, y: ev.clientY });
+      };
+  
+      window.addEventListener('mousemove', updateMousePosition);
+  
+      return () => {
+        window.removeEventListener('mousemove', updateMousePosition);
+      };
+    }, []);
+  
+    console.log(mousePosition)
+    //return mousePosition;
   };
 
   useEffect(() => {
@@ -61,6 +108,7 @@ export default function App() {
         />
       </div>
       <button onClick={togglePause}>{isPaused ? "Play" : "Pause"}</button>
+      <h2>MousePosition: {useMousePosition}</h2>
     </div>
   );
 }
