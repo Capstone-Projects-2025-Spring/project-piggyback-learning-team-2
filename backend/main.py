@@ -1,9 +1,23 @@
 import re
 from fastapi import FastAPI
 from pydantic import BaseModel, HttpUrl, field_validator
+import psycopg2
+from psycopg2.extras import RealDictCursor
+from dotenv import load_dotenv
+import os
 
 
 app = FastAPI()
+
+# Load environment variables from .env
+load_dotenv()
+
+# Fetch variables
+USER = os.getenv("user")
+PASSWORD = os.getenv("password")
+HOST = os.getenv("host")
+PORT = os.getenv("port")
+DBNAME = os.getenv("dbname")
 
 
 class YouTubeVideo(BaseModel):
@@ -52,6 +66,23 @@ class YouTubeVideo(BaseModel):
                 "The URL provided by the user is not a valid YouTube video URL"
             )
         return v
+
+
+# Connect to the database
+try:
+    conn = psycopg2.connect(
+        user=USER,
+        password=PASSWORD,
+        host=HOST,
+        port=PORT,
+        dbname=DBNAME,
+        cursor_factory=RealDictCursor
+    )
+    cursor = conn.cursor()
+    print("Database connection was successful!")
+except Exception as error:
+    print("Connecting to database failed")
+    print("Error:", error)
 
 
 @app.post("/validateYT_URL")
