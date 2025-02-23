@@ -56,4 +56,17 @@ class YouTubeVideo(BaseModel):
 
 @app.post("/validateYT_URL")
 def valid_YTvideo(video: YouTubeVideo):
+    """
+    API endpoint for validating YouTube video URL
+    It accepts a JSON payload containing YouTube  video URL
+
+    Parameters and datatypes:
+        - video (YouTubeVideo): A Pydantic model instance
+
+    Return Value and output variables:
+        - dictionary with message and url
+
+    Exceptions:
+        - Raises HTTPException (422) when data is not valid URL
+    """
     return {"message": "Valid URL", "url": video.url}
