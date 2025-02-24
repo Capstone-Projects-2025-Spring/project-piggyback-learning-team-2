@@ -12,58 +12,34 @@ import YouTube from "react-youtube";
 import '../styles/video.css';
 
 
-// const useMousePosition = () => {
-//   const [
-//     mousePosition,
-//     setMousePosition
-//   ] = React.useState({ x: null, y: null });
+const useMousePosition = () => {
+  const [mousePosition, setMousePosition] = useState({ x: null, y: null });
 
-//   React.useEffect(() => {
-//     const updateMousePosition = ev => {
-//       setMousePosition({ x: ev.clientX, y: ev.clientY });
-//     };
+  useEffect(() => {
+    const updateMousePosition = (ev) => {
+      setMousePosition({ x: ev.clientX, y: ev.clientY });
+    };
 
-//     window.addEventListener('mousemove', updateMousePosition);
+    window.addEventListener("mousemove", updateMousePosition);
 
-//     return () => {
-//       window.removeEventListener('mousemove', updateMousePosition);
-//     };
-//   }, []);
+    return () => {
+      window.removeEventListener("mousemove", updateMousePosition);
+    };
+  }, []);
 
-//   console.log(mousePosition)
-//   return mousePosition;
-// };
+  return mousePosition;
+};
 
 
 
 export default function App() {
   const [isPaused, setIsPaused] = useState(false);
+  const someMousePosition = useMousePosition(); // Call the hook here
+  const [currentTime, setCurrentTime] = useState(0); // State for current time
   const videoRef = useRef(null);
 
   const togglePause = () => {
     setIsPaused((prev) => !prev);
-  };
-
-  const useMousePosition = () => {
-    const [
-      mousePosition,
-      setMousePosition
-    ] = React.useState({ x: null, y: null });
-  
-    React.useEffect(() => {
-      const updateMousePosition = ev => {
-        setMousePosition({ x: ev.clientX, y: ev.clientY });
-      };
-  
-      window.addEventListener('mousemove', updateMousePosition);
-  
-      return () => {
-        window.removeEventListener('mousemove', updateMousePosition);
-      };
-    }, []);
-  
-    console.log(mousePosition)
-    //return mousePosition;
   };
 
   useEffect(() => {
@@ -108,7 +84,9 @@ export default function App() {
         />
       </div>
       <button onClick={togglePause}>{isPaused ? "Play" : "Pause"}</button>
-      <h2>MousePosition: {useMousePosition}</h2>
+      <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
+      <h2>Current Time: {JSON.stringify(currentTime)}</h2>
+      
     </div>
   );
 }
