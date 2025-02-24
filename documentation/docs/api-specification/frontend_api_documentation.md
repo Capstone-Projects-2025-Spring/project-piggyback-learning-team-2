@@ -5,788 +5,668 @@ description: Frontend API documentation
 
 # Frontend Class Documentation
 
-
 ## App
 The root component managing application initialization and routing.
+
 ### Data Fields:
 
-* __currentRoute: String__
+- **currentRoute: String**
+  - Current application route/path
 
-    * Current application route/path
+- **appConfig: Object**
+  - Application configuration settings including API endpoints, feature flags, etc.
 
-* __appConfig: Object__
-
-    * Application configuration settings including API endpoints, feature flags, etc.
-
-
-* __userSession: Object__
-
-    * Current session information including tokens and expiration
-
-
+- **userSession: Object**
+  - Current session information including tokens and expiration
 
 ### Methods:
 
-__initializeApp()__
+**initializeApp()**
 
 Initializes application state and configurations
 
-__Arguments:__ Non
+**Arguments:** None
 
-__Returns:__ Promise<void>
+**Returns:** Promise&lt;void&gt;
 
-__Exceptions:__
+**Exceptions:**
 
-ConfigurationError: When configuration loading fails
-NetworkError: When initial API connection fails
+- ConfigurationError: When configuration loading fails
+- NetworkError: When initial API connection fails
 
-__handleRouting(route)__
+**handleRouting(route)**
 
 Manages application routing between different pages
 
-__Arguments:__
+**Arguments:**
 
-* route: String - Target route path
+- route: String - Target route path
 
-__Returns:__  void
+**Returns:** void
 
-__Exceptions:__
+**Exceptions:**
 
-RouteNotFoundError: When requested route doesn't exist
-AuthenticationError: When route requires authentication
+- RouteNotFoundError: When requested route doesn't exist
+- AuthenticationError: When route requires authentication
 
 ## HomePage
 Main landing page component for content discovery.
+
 ### Data Fields:
 
-* __featuredVideos: Array__
+- **featuredVideos: Array**
+  - List of featured video objects
 
-    * List of featured video objects
+- **searchResults: Array**
+  - Current search results
 
-* __searchResults: Array__
-
-    * Current search results
-
-
-* __activeFilters: Object__
-
-    * Currently applied search/topic filters
-
+- **activeFilters: Object**
+  - Currently applied search/topic filters
 
 ### Methods:
 
-* __displayFeaturedVideos()__
+**displayFeaturedVideos()**
 
 Shows curated video content
 
-__Arguments:__ None
-__Returns:__ void
-__Exceptions:__
+**Arguments:** None
 
-ContentLoadError: When featured content fails to load
+**Returns:** void
 
-__showSearchResults(query)__
+**Exceptions:**
+
+- ContentLoadError: When featured content fails to load
+
+**showSearchResults(query)**
 
 Displays search query results
 
-__Arguments:__
+**Arguments:**
 
-* query: String - Search query text
+- query: String - Search query text
 
-__Returns:__ Promise<Array>
+**Returns:** Promise&lt;Array&gt;
 
-__Exceptions:__
+**Exceptions:**
 
-SearchError: When search operation fails
+- SearchError: When search operation fails
 
-__showTopicFilters(categories)__
+**showTopicFilters(categories)**
 
 Renders topic filtering options
 
-__Arguments:__
+**Arguments:**
 
-* categories: Array - Available filter categories
+- categories: Array - Available filter categories
 
-__Returns:__ void
+**Returns:** void
 
-__Exceptions:__
+**Exceptions:**
 
-FilterError: When filter options can't be loaded
+- FilterError: When filter options can't be loaded
 
 ## VideoPage
 Page component for video playback and learning.
 
 ### Data Fields:
 
-* __currentVideo: Object__
+- **currentVideo: Object**
+  - Current video metadata and content
 
-    * Current video metadata and content
+- **questionList: Array**
+  - List of interactive questions
 
+- **progressData: Object**
+  - User's progress for current video
 
-* __questionList: Array__
-
-    * List of interactive questions
-
-
-* __progressData: Object__
-
-    * User's progress for current video
-
-
-* __learningState: String__
-
-    * Current state (playing, paused, questioning)
-
-
+- **learningState: String**
+  - Current state (playing, paused, questioning)
 
 ### Methods:
 
-__displayVideo(videoContent)__
+**displayVideo(videoContent)**
 
 Renders video content
 
-__Arguments:__
+**Arguments:**
 
-* videoContent: Object - Video data and metadata
+- videoContent: Object - Video data and metadata
 
+**Returns:** Promise&lt;void&gt;
 
-__Returns:__ Promise<void>
+**Exceptions:**
 
-__Exceptions:__
+- VideoLoadError: When video content fails to load
+- PlaybackError: When video playback fails
 
-VideoLoadError: When video content fails to load
-PlaybackError: When video playback fails
-
-__showQuestions(questionList)__
+**showQuestions(questionList)**
 
 Displays interactive questions
 
-__Arguments:__
+**Arguments:**
 
-* questionList: Array - List of question objects
+- questionList: Array - List of question objects
 
-__Returns:__  void
+**Returns:** void
 
-__Exceptions:__
+**Exceptions:**
 
-QuestionFormatError: When question data is invalid
+- QuestionFormatError: When question data is invalid
 
-__displayProgress(progressData)__
+**displayProgress(progressData)**
 
 Shows learning progress
 
-__Arguments:__
+**Arguments:**
 
-* progressData: Object - Progress metrics
+- progressData: Object - Progress metrics
 
+**Returns:** void
 
-__Returns:__ void
+**Exceptions:**
 
-__Exceptions:__
-
-ProgressTrackingError: When progress can't be displayed
+- ProgressTrackingError: When progress can't be displayed
 
 ## AuthManager
 Handles user authentication and session management.
 
 ### Data Fields:
 
-* __currentUser: Object__
+- **currentUser: Object**
+  - Current user information
 
-    * Current user information
+- **sessionToken: String**
+  - Active session token
 
-
-* __sessionToken: String__
-
-    * Active session token
-
-
-* __authState: String__
-
-    * Current authentication state
+- **authState: String**
+  - Current authentication state
 
 ### Methods:
 
-__login(email, password)__
+**login(email, password)**
 
 Authenticates user credentials
 
-__Arguments:__
+**Arguments:**
 
-* email: String - User email
-* password: String - User password
+- email: String - User email
+- password: String - User password
 
+**Returns:** Promise&lt;UserObject&gt;
 
-__Returns:__ Promise<UserObject>
+**Exceptions:**
 
-__Exceptions:__
+- AuthenticationError: When credentials are invalid
+- NetworkError: When auth service is unavailable
 
-AuthenticationError: When credentials are invalid
-NetworkError: When auth service is unavailable
-
-__register(email, password)__
+**register(email, password)**
 
 Creates new user account
 
-__Arguments:__
+**Arguments:**
 
-* email: String - New user email
-* password: String - New user password
+- email: String - New user email
+- password: String - New user password
 
-__Returns:__ Promise<UserObject>
+**Returns:** Promise&lt;UserObject&gt;
 
-__Exceptions:__
+**Exceptions:**
 
-ValidationError: When input is invalid
-DuplicateAccountError: When email already exists
-
+- ValidationError: When input is invalid
+- DuplicateAccountError: When email already exists
 
 ## APIHandler
 Central API management component.
 
 ### Data Fields:
 
-* __baseUrl: String__
+- **baseUrl: String**
+  - API base URL
 
-    * API base URL
+- **headers: Object**
+  - Common request headers
 
-
-* __headers: Object__
-
-    * Common request headers
-
-
-* __requestQueue: Array__
-
-    * Pending API requests
-
-
+- **requestQueue: Array**
+  - Pending API requests
 
 ### Methods:
 
-__handleAuth(credentials)__
+**handleAuth(credentials)**
 
 Processes authentication requests
 
-__Arguments:__
+**Arguments:**
 
-* credentials: Object - User credentials
+- credentials: Object - User credentials
 
+**Returns:** Promise&lt;AuthResponse&gt;
 
-__Returns:__ Promise<AuthResponse>
+**Exceptions:**
 
-__Exceptions:__
-
-AuthenticationError: When auth fails
-NetworkError: When service is unavailable
-
+- AuthenticationError: When auth fails
+- NetworkError: When service is unavailable
 
 ## AIEngine
 Manages AI-powered video analysis.
 
 ### Data Fields:
 
-* __videoContent: Object__
+- **videoContent: Object**
+  - Current video being analyzed
 
-    * Current video being analyzed
+- **timestamps: Array**
+  - Important video moments
 
+- **analysisState: String**
+  - Current analysis status
 
-* __timestamps: Array__
-
-    * Important video moments
-
-
-* __analysisState: String__
-
-    * Current analysis status
-
-
-* __questionBank: Array__
-
-    * Generated questions
+- **questionBank: Array**
+  - Generated questions
 
 ### Methods:
 
-__analyzeVideo(videoContent)__
+**analyzeVideo(videoContent)**
 
 Processes video content
 
-__Arguments:__
+**Arguments:**
 
-* videoContent: Object - Video data
+- videoContent: Object - Video data
 
-__Returns:__ Promise<AnalysisResult>
+**Returns:** Promise&lt;AnalysisResult&gt;
 
-__Exceptions:__
+**Exceptions:**
 
-AnalysisError: When video analysis fails
-ContentFormatError: When video format is invalid
+- AnalysisError: When video analysis fails
+- ContentFormatError: When video format is invalid
 
-
-__generateQuestions(videoContent)__
+**generateQuestions(videoContent)**
 
 Creates interactive questions
 
-__Arguments:__
+**Arguments:**
 
-* videoContent: Object - Video content
+- videoContent: Object - Video content
 
+**Returns:** Promise&lt;Array&lt;Question&gt;&gt;
 
-__Returns:__ Promise<Array<Question>>
+**Exceptions:**
 
-__Exceptions:__
-
-GenerationError: When question creation fails
-ContentProcessingError: When content can't be processed
+- GenerationError: When question creation fails
+- ContentProcessingError: When content can't be processed
 
 ## VideoPlayer
 Controls video playback functionality.
 
 ### Data Fields:
 
-* __currentVideo: Object__
+- **currentVideo: Object**
+  - Current video being played
+  - Contains metadata, URL, duration, and playback position
 
-    * Current video being played
-    * Contains metadata, URL, duration, and playback position
+- **playbackState: String**
+  - Current state of video (playing, paused, stopped)
 
+- **volume: Number**
+  - Current volume level
 
-* __playbackState: String__
-
-    * Current state of video (playing, paused, stopped)
-
-
-* __volume: Number__
-
-    * Current volume level
-
-
-* __playbackRate: Number__
-
-    * Current playback speed multiplier
-
-
+- **playbackRate: Number**
+  - Current playback speed multiplier
 
 ### Methods:
 
-__play()__
+**play()**
 
 Starts video playback
 
-__Arguments:__ None
+**Arguments:** None
 
-__Returns:__ Promise<void>
+**Returns:** Promise&lt;void&gt;
 
-__Exceptions:__
+**Exceptions:**
 
-PlaybackError: When video fails to play
-StreamError: When video stream is unavailable
+- PlaybackError: When video fails to play
+- StreamError: When video stream is unavailable
 
-
-
-
-__pause()__
+**pause()**
 
 Pauses video playback
 
-__Arguments:__ None
+**Arguments:** None
 
-__Returns:__ void
+**Returns:** void
 
-__Exceptions:__
+**Exceptions:**
 
-PlaybackStateError: When pause operation fails
+- PlaybackStateError: When pause operation fails
 
-__stop()__
+**stop()**
 
 Stops video playback and resets position
 
-__Arguments:__ None
+**Arguments:** None
 
-__Returns:__ void
+**Returns:** void
 
-__Exceptions:__
+**Exceptions:**
 
-PlaybackStateError: When stop operation fails
+- PlaybackStateError: When stop operation fails
 
-__seek(time)__
+**seek(time)**
 
 Jumps to specific timestamp
 
-__Arguments:__
+**Arguments:**
 
-* time: Number - Target timestamp in seconds
+- time: Number - Target timestamp in seconds
 
+**Returns:** Promise&lt;void&gt;
 
-__Returns:__ Promise<void>
+**Exceptions:**
 
-__Exceptions:__
+- SeekError: When seeking to invalid position
+- BufferError: When video buffer is unavailable
 
-SeekError: When seeking to invalid position
-BufferError: When video buffer is unavailable
-
-
-
-
-__handleQuestionBreak()__
+**handleQuestionBreak()**
 
 Manages video interruption for questions
 
-__Arguments:__ None
+**Arguments:** None
 
+**Returns:** Promise&lt;void&gt;
 
-__Returns:__ Promise<void>
+**Exceptions:**
 
-__Exceptions:__
+- QuestionBreakError: When interruption fails
 
-QuestionBreakError: When interruption fails
-
-
-__resumeAfterQuestion()__
+**resumeAfterQuestion()**
 
 Continues playback after question
 
-__Arguments:__ None
+**Arguments:** None
 
-__Returns:__ Promise<void>
+**Returns:** Promise&lt;void&gt;
 
-__Exceptions:__
+**Exceptions:**
 
-ResumeError: When playback resume fails
-
-
-
-
+- ResumeError: When playback resume fails
 
 ## SearchEngine
 Handles video search and filtering.
 
 ### Data Fields:
 
-* __searchQuery: String__
+- **searchQuery: String**
+  - Current search query string
 
-    * Current search query string
+- **filterTopics: Array**
+  - List of active topic filters
 
+- **searchResults: Array**
+  - Current search results
 
-* __filterTopics: Array__
-
-    * List of active topic filters
-
-
-* __searchResults: Array__
-
-    * Current search results
-
-
-* __searchHistory: Array__
-
-    * Recent search queries
-
-
+- **searchHistory: Array**
+  - Recent search queries
 
 ### Methods:
 
-__searchVideos(query)__
+**searchVideos(query)**
 
 Performs video search
 
-__Arguments:__
+**Arguments:**
 
-* query: String - Search terms
+- query: String - Search terms
 
+**Returns:** Promise&lt;Array&lt;VideoResult&gt;&gt;
 
-__Returns:__ Promise<Array<VideoResult>>
+**Exceptions:**
 
-__Exceptions:__
+- SearchError: When search operation fails
+- NetworkError: When search service is unavailable
 
-SearchError: When search operation fails
-NetworkError: When search service is unavailable
-
-
-__filterByTopic(topic)__
+**filterByTopic(topic)**
 
 Filters results by topic
-__Arguments:__
 
-* topic: String - Topic to filter by
+**Arguments:**
 
+- topic: String - Topic to filter by
 
-__Returns:__ Array<VideoResult>
+**Returns:** Array&lt;VideoResult>&gt;
 
-__Exceptions:__
+**Exceptions:**
 
-FilterError: When filter operation fails
+- FilterError: When filter operation fails
 
-
-
-
-__getSuggestedVideos()__
+**getSuggestedVideos()**
 
 Retrieves recommended videos
 
-__Arguments:__  None
+**Arguments:** None
 
-__Returns:__ Promise<Array<VideoResult>>
+**Returns:** Promise&lt;Array&lt;VideoResult&gt;&gt;
 
-__Exceptions:__
+**Exceptions:**
 
-RecommendationError: When suggestions can't be loaded
+- RecommendationError: When suggestions can't be loaded
 
 ## QuestionHandler
 Manages interactive learning questions.
 
 ### Data Fields:
 
-* __currentQuestion: Object__ 
+- **currentQuestion: Object**
+  - Currently active question
+  - Contains question text, options, correct answer
 
-    * Currently active question
-    * Contains question text, options, correct answer
+- **userAnswer: String**
+  - User's submitted answer
 
+- **questionQueue: Array**
+  - Upcoming questions
 
-* __userAnswer: String__
-
-    * User's submitted answer
-
-
-* __questionQueue: Array__
-
-    * Upcoming questions
-
-
-* __questionHistory: Array__
-
-    * Previous questions and answers
-
-
+- **questionHistory: Array**
+  - Previous questions and answers
 
 ### Methods:
 
-__displayQuestion()__
+**displayQuestion()**
 
 Shows current question
 
-__Arguments:__ None
+**Arguments:** None
 
-__Returns:__ void
+**Returns:** void
 
-__Exceptions:__
+**Exceptions:**
 
-QuestionRenderError: When question can't be displayed
+- QuestionRenderError: When question can't be displayed
 
-__validateAnswer(answer)__
+**validateAnswer(answer)**
 
 Checks answer correctness
 
-__Arguments:__
+**Arguments:**
 
-* answer: String - User's answer
+- answer: String - User's answer
 
+**Returns:** Boolean
 
-__Returns:__ Boolean
+**Exceptions:**
 
-__Exceptions:__
+- ValidationError: When answer validation fails
 
-ValidationError: When answer validation fails
-
-
-__provideFeedback()__
+**provideFeedback()**
 
 Gives response feedback
 
-__Arguments:__ None
+**Arguments:** None
 
-__Returns:__ FeedbackObject
+**Returns:** FeedbackObject
 
-__Exceptions:__
+**Exceptions:**
 
-FeedbackError: When feedback generation fails
+- FeedbackError: When feedback generation fails
 
-
-__playQuestionAudio()__
+**playQuestionAudio()**
 
 Plays question audio
 
-__Arguments:__ None
+**Arguments:** None
 
-__Returns:__ Promise<void>
+**Returns:** Promise&lt;void&gt;
 
-__Exceptions:__
+**Exceptions:**
 
-AudioPlaybackError: When audio fails to play
+- AudioPlaybackError: When audio fails to play
 
-__getNextQuestion()__
+**getNextQuestion()**
 
 Retrieves next question
 
-__Arguments:__ None
+**Arguments:** None
 
-__Returns:__ Promise<QuestionObject>
+**Returns:** Promise&lt;QuestionObject&gt;
 
-__Exceptions:__
+**Exceptions:**
 
-QuestionLoadError: When next question can't be loaded
-
+- QuestionLoadError: When next question can't be loaded
 
 ## DashboardPage
 User dashboard for progress tracking.
 
 ### Data Fields:
 
-* __savedVideos: Array__
+- **savedVideos: Array**
+  - List of saved video content
 
-    * List of saved video content
+- **watchHistory: Array**
+  - User's viewing history
 
+- **userPerformance: Object**
+  - Learning metrics and statistics
 
-* __watchHistory: Array__
-
-    * User's viewing history
-
-
-* __userPerformance: Object__
-
-    * Learning metrics and statistics
-
-
-* __dashboardSettings: Object__
-
-    * User's dashboard preferences
+- **dashboardSettings: Object**
+  - User's dashboard preferences
 
 ### Methods:
 
-__showSavedVideos(savedVideos)__
+**showSavedVideos(savedVideos)**
 
 Displays saved content
 
-__Arguments:__
+**Arguments:**
 
-* savedVideos: Array - List of saved videos
+- savedVideos: Array - List of saved videos
 
+**Returns:** void
 
-__Returns:__ void
+**Exceptions:**
 
-__Exceptions:__
+- DisplayError: When content can't be shown
 
-DisplayError: When content can't be shown
-
-
-__showWatchHistory(watchHistory)__
+**showWatchHistory(watchHistory)**
 
 Shows viewing history
 
-__Arguments:__
+**Arguments:**
 
-* watchHistory: Array - User's history
+- watchHistory: Array - User's history
 
+**Returns:** void
 
-__Returns:__ void
+**Exceptions:**
 
-__Exceptions:__
+- HistoryLoadError: When history can't be loaded
 
-HistoryLoadError: When history can't be loaded
-
-
-__displayPerformance(userPerformance)__
+**displayPerformance(userPerformance)**
 
 Renders learning metrics
 
-__Arguments:__
+**Arguments:**
 
-* userPerformance: Object - Performance data
+- userPerformance: Object - Performance data
 
-__Returns:__ void
+**Returns:** void
 
-__Exceptions:__
+**Exceptions:**
 
-MetricsError: When performance data can't be displayed
-
+- MetricsError: When performance data can't be displayed
 
 ## ProgressManager
 Tracks user learning progress.
 
 ### Data Fields:
 
-* __userId: String__
+- **userId: String**
+  - Current user identifier
 
-    * Current user identifier
+- **videoProgress: Map**
+  - Progress tracking for each video
 
+- **learningMetrics: Object**
+  - Aggregated learning statistics
 
-* __videoProgress: Map__
-
-    * Progress tracking for each video
-
-
-* __learningMetrics: Object__
-
-    * Aggregated learning statistics
-
-
-* __progressHistory: Array__
-
-    * Historical progress data
-
+- **progressHistory: Array**
+  - Historical progress data
 
 ### Methods:
 
-__trackAnswer(videoId, questionId, userAnswer)__
+**trackAnswer(videoId, questionId, userAnswer)**
 
 Records question responses
 
-__Arguments:__
+**Arguments:**
 
-* videoId: String - Video identifier
-* questionId: String - Question identifier
-* userAnswer: String - User's response
+- videoId: String - Video identifier
+- questionId: String - Question identifier
+- userAnswer: String - User's response
 
+**Returns:** Promise&lt;void&gt;
 
-__Returns:__ Promise<void>
+**Exceptions:**
 
-__Exceptions:__
+- TrackingError: When answer can't be recorded
 
-TrackingError: When answer can't be recorded
-
-
-__generateSummary(userId)__
+**generateSummary(userId)**
 
 Creates progress summary
 
-__Arguments:__
+**Arguments:**
 
-* userId: String - User identifier
+- userId: String - User identifier
 
+**Returns:** Promise&lt;SummaryObject&gt;
 
-__Returns:__ Promise<SummaryObject>
+**Exceptions:**
 
-__Exceptions:__
+- SummaryGenerationError: When summary can't be created
 
-SummaryGenerationError: When summary can't be created
-
-
-__updateHistory(userId)__
+**updateHistory(userId)**
 
 Updates viewing history
 
-__Arguments:__
+**Arguments:**
 
-* userId: String - User identifier
+- userId: String - User identifier
 
-__Returns:__ Promise<void>
+**Returns:** Promise&lt;void&gt;
 
-__Exceptions:__
+**Exceptions:**
 
-HistoryUpdateError: When history update fails
+- HistoryUpdateError: When history update fails
 
-
-__saveVideoProgress(videoId)__
+**saveVideoProgress(videoId)**
 
 Stores video progress
 
-__Arguments:__
+**Arguments:**
 
-* videoId: String - Video identifier
+- videoId: String - Video identifier
 
+**Returns:** Promise&lt;void&gt;
 
-__Returns:__ Promise<void>
+**Exceptions:**
 
-__Exceptions:__
-
-ProgressSaveError: When progress can't be saved
-
+- ProgressSaveError: When progress can't be saved

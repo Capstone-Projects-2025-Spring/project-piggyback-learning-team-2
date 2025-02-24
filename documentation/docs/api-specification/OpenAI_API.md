@@ -1,73 +1,84 @@
 ---
+title: OpenAI API Specs
 sidebar_position: 8
-description: OpenAI API documentation
+description: "OpenAI API documentation"
 ---
 
 # OpenAI API Specs
 
-## Notes:
+## Base URL
 
-### Base URL: 
-https://api.openai.com/v1
+`https://api.openai.com/v1`
 
-### Authentication: 
+## Authentication
+
 Requires an API key.
 
 ## Endpoints for Question Generation
-Generate Text Completions
 
-### POST /completions: Generate text based on a prompt.
+### Generate Text Completions
 
-#### Parameters:
+`POST /completions`
 
-* string model: The model to use (e.g., gpt-3.5-turbo).
+Generate text based on a prompt.
 
-* string prompt: The input prompt for the model.
+#### Parameters
 
-* integer max_tokens: Maximum number of tokens to generate.
+- **model** (string): The model to use (e.g., gpt-3.5-turbo)
+- **prompt** (string): The input prompt for the model
+- **max_tokens** (integer): Maximum number of tokens to generate
 
-#### Example Request:
+#### Example Request
 
-    POST https://api.openai.com/v1/completions
-    Headers: {
-        "Authorization": "Bearer YOUR_API_KEY",
-        "Content-Type": "application/json"
-    }
+```http
+POST https://api.openai.com/v1/completions
+Headers: {
+    "Authorization": "Bearer YOUR_API_KEY",
+    "Content-Type": "application/json"
+}
 
-    Body: {
-        "model": "gpt-3.5-turbo",
-        "prompt": "What is happening in this image?",
-        "max_tokens": 50
-    }
+{
+    "model": "gpt-3.5-turbo",
+    "prompt": "What is happening in this image?",
+    "max_tokens": 50
+}
+```
 
-#### Returns:
+#### Response
 
-* string text: Generated text based on the prompt.
+Returns an object containing:
+
+- **text** (string): Generated text based on the prompt
 
 ### Generate Image Descriptions
 
-#### POST /images/generations: Generate descriptions or questions based on an image.
+`POST /images/generations`
 
-#### Parameters:
+Generate descriptions or questions based on an image.
 
-* string prompt: The input prompt describing the image.
+#### Parameters
 
-* integer n: Number of descriptions to generate.
+- **prompt** (string): The input prompt describing the image
+- **n** (integer): Number of descriptions to generate
 
-### Sample Request:
+#### Example Request
 
-    POST https://api.openai.com/v1/images/generations
-    
-    Headers: {
-        "Authorization": "Bearer YOUR_API_KEY",
-        "Content-Type": "application/json"
-    }
+```http
+POST https://api.openai.com/v1/images/generations
+Headers: {
+    "Authorization": "Bearer YOUR_API_KEY",
+    "Content-Type": "application/json"
+}
 
-    Body: {
-        "prompt": "Describe the objects in this image.",
-        "n": 1
-    }
+{
+    "prompt": "Describe the objects in this image.",
+    "n": 1
+}
+```
 
-#### Returns:
+#### Response
 
-* list descriptions: List of generated descriptions or questions.
+Returns an object containing:
+
+- **descriptions** (list): List of generated descriptions or questions
+Last edited j
