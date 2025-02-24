@@ -57,7 +57,9 @@ export default function App() {
   useEffect(() => {
     const interval = setInterval(() => {
       if (videoRef.current && videoRef.current.getCurrentTime() > 0) {
+        setCurrentTime(videoRef.current.getCurrentTime())
         console.log(`Current time: ${videoRef.current.getCurrentTime()}s`);
+
         const playerState = videoRef.current.getPlayerState();
         console.log(playerState === 1 ? "Video is playing" : "Video is paused");
       }
