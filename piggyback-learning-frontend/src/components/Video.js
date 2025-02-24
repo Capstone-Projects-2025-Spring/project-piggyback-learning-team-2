@@ -1,7 +1,3 @@
-// previous code was bad (it would stop the video, not pause)
-// basically ripped https://codesandbox.io/p/sandbox/react-youtube-play-pause-video-using-an-external-button-c77o1v?file=%2Fsrc%2FApp.tsx%3A19%2C18
-// but removed the typescript annotations (I fought with chatgpt for like 30 min)
-// i'm familiar with Effect Hooks but this is more complicated than anything I'd used before
 
 
 // used npm install react-youtube
@@ -11,7 +7,7 @@ import { useState, useEffect, useRef } from "react";
 import YouTube from "react-youtube";
 import '../styles/video.css';
 
-
+// got this code from https://www.joshwcomeau.com/snippets/react-hooks/use-mouse-position/
 const useMousePosition = () => {
   const [mousePosition, setMousePosition] = useState({ x: null, y: null });
 
@@ -31,6 +27,8 @@ const useMousePosition = () => {
 };
 
 
+// refactored https://codesandbox.io/p/sandbox/react-youtube-play-pause-video-using-an-external-button-c77o1v?file=%2Fsrc%2FApp.tsx%3A19%2C18 for the mouse cursor position code
+// but removed the typescript annotations using online resources as an aid
 
 export default function App() {
   const [isPaused, setIsPaused] = useState(false);
@@ -38,10 +36,11 @@ export default function App() {
   const [currentTime, setCurrentTime] = useState(0); // State for current time
   const videoRef = useRef(null);
 
+
   const togglePause = () => {
     setIsPaused((prev) => !prev);
   };
-
+  
   useEffect(() => {
     if (videoRef.current) {
       const elapsed_seconds = videoRef.current.getCurrentTime();
@@ -85,7 +84,7 @@ export default function App() {
       </div>
       <button onClick={togglePause}>{isPaused ? "Play" : "Pause"}</button>
       <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
-      <h2>Current Time: {JSON.stringify(currentTime)}</h2>
+      <h2>Current Time: {currentTime.toFixed(2)}</h2>
       
     </div>
   );
