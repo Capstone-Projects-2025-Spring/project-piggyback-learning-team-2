@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="en" dir="ltr" class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-api-specification/frontend_api_documentation" data-has-hydrated="false">
+<head>
+<meta charset="UTF-8">
+<meta name="generator" content="Docusaurus v3.3.2">
+<title data-rh="true">Frontend Class Documentation | Project Piggyback Learning Team 2</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:url" content="https://Capstone-Projects-2025-Spring.github.io/project-piggyback-learning-team-2/docs/api-specification/frontend_api_documentation"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Frontend Class Documentation | Project Piggyback Learning Team 2"><meta data-rh="true" name="description" content="Frontend API documentation"><meta data-rh="true" property="og:description" content="Frontend API documentation"><link data-rh="true" rel="icon" href="/project-piggyback-learning-team-2/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://Capstone-Projects-2025-Spring.github.io/project-piggyback-learning-team-2/docs/api-specification/frontend_api_documentation"><link data-rh="true" rel="alternate" href="https://Capstone-Projects-2025-Spring.github.io/project-piggyback-learning-team-2/docs/api-specification/frontend_api_documentation" hreflang="en"><link data-rh="true" rel="alternate" href="https://Capstone-Projects-2025-Spring.github.io/project-piggyback-learning-team-2/docs/api-specification/frontend_api_documentation" hreflang="x-default"><script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script><link rel="stylesheet" href="/project-piggyback-learning-team-2/assets/css/styles.e4cc120d.css">
+<script src="/project-piggyback-learning-team-2/assets/js/runtime~main.c884a0f0.js" defer="defer"></script>
+<script src="/project-piggyback-learning-team-2/assets/js/main.47fea1ce.js" defer="defer"></script>
+</head>
+<body class="navigation-with-keyboard">
+<script>!function(){function t(t){document.documentElement.setAttribute("data-theme",t)}var e=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return localStorage.getItem("theme")}catch(t){}}();t(null!==e?e:"light")}(),function(){try{const c=new URLSearchParams(window.location.search).entries();for(var[t,e]of c)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><div role="region" aria-label="Skip to main content"><a class="skipToContent_fXgn" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><nav aria-label="Main" class="navbar navbar--fixed-top"><div class="navbar__inner"><div class="navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/project-piggyback-learning-team-2/"><div class="navbar__logo"><img src="https://upload.wikimedia.org/wikipedia/commons/1/17/Temple_T_logo.svg" alt="My Site Logo" class="themedComponent_mlkZ themedComponent--light_NVdE"><img src="https://upload.wikimedia.org/wikipedia/commons/1/17/Temple_T_logo.svg" alt="My Site Logo" class="themedComponent_mlkZ themedComponent--dark_xIcU"></div><b class="navbar__title text--truncate">Project Piggyback Learning Team 2</b></a><a aria-current="page" class="navbar__item navbar__link navbar__link--active" href="/project-piggyback-learning-team-2/docs/intro">Documentation</a><a class="navbar__item navbar__link" href="/project-piggyback-learning-team-2/tutorial/Intro">Docusaurus Tutorial</a></div><div class="navbar__items navbar__items--right"><a href="https://github.com/Capstone-Projects-2025-Spring/project-piggyback-learning-team-2" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link">GitHub<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_nPIU"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a><div class="toggle_vylO colorModeToggle_DEke"><button class="clean-btn toggleButton_gllP toggleButtonDisabled_aARS" type="button" disabled="" title="Switch between dark and light mode (currently light mode)" aria-label="Switch between dark and light mode (currently light mode)" aria-live="polite"><svg viewBox="0 0 24 24" width="24" height="24" class="lightToggleIcon_pyhR"><path fill="currentColor" d="M12,9c1.65,0,3,1.35,3,3s-1.35,3-3,3s-3-1.35-3-3S10.35,9,12,9 M12,7c-2.76,0-5,2.24-5,5s2.24,5,5,5s5-2.24,5-5 S14.76,7,12,7L12,7z M2,13l2,0c0.55,0,1-0.45,1-1s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S1.45,13,2,13z M20,13l2,0c0.55,0,1-0.45,1-1 s-0.45-1-1-1l-2,0c-0.55,0-1,0.45-1,1S19.45,13,20,13z M11,2v2c0,0.55,0.45,1,1,1s1-0.45,1-1V2c0-0.55-0.45-1-1-1S11,1.45,11,2z M11,20v2c0,0.55,0.45,1,1,1s1-0.45,1-1v-2c0-0.55-0.45-1-1-1C11.45,19,11,19.45,11,20z M5.99,4.58c-0.39-0.39-1.03-0.39-1.41,0 c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0s0.39-1.03,0-1.41L5.99,4.58z M18.36,16.95 c-0.39-0.39-1.03-0.39-1.41,0c-0.39,0.39-0.39,1.03,0,1.41l1.06,1.06c0.39,0.39,1.03,0.39,1.41,0c0.39-0.39,0.39-1.03,0-1.41 L18.36,16.95z M19.42,5.99c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06c-0.39,0.39-0.39,1.03,0,1.41 s1.03,0.39,1.41,0L19.42,5.99z M7.05,18.36c0.39-0.39,0.39-1.03,0-1.41c-0.39-0.39-1.03-0.39-1.41,0l-1.06,1.06 c-0.39,0.39-0.39,1.03,0,1.41s1.03,0.39,1.41,0L7.05,18.36z"></path></svg><svg viewBox="0 0 24 24" width="24" height="24" class="darkToggleIcon_wfgR"><path fill="currentColor" d="M9.37,5.51C9.19,6.15,9.1,6.82,9.1,7.5c0,4.08,3.32,7.4,7.4,7.4c0.68,0,1.35-0.09,1.99-0.27C17.45,17.19,14.93,19,12,19 c-3.86,0-7-3.14-7-7C5,9.07,6.81,6.55,9.37,5.51z M12,3c-4.97,0-9,4.03-9,9s4.03,9,9,9s9-4.03,9-9c0-0.46-0.04-0.92-0.1-1.36 c-0.98,1.37-2.58,2.26-4.4,2.26c-2.98,0-5.4-2.42-5.4-5.4c0-1.81,0.89-3.42,2.26-4.4C12.92,3.04,12.46,3,12,3L12,3z"></path></svg></button></div><div class="navbarSearchContainer_Bca1"></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="main-wrapper mainWrapper_z2l0"><div class="docsWrapper_hBAB"><button aria-label="Scroll back to top" class="clean-btn theme-back-to-top-button backToTopButton_sjWU" type="button"></button><div class="docRoot_UBD9"><aside class="theme-doc-sidebar-container docSidebarContainer_YfHR"><div class="sidebarViewport_aRkj"><div class="sidebar_njMd"><nav aria-label="Docs sidebar" class="menu thin-scrollbar menu_SIkG"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/project-piggyback-learning-team-2/docs/intro">Introduction</a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist" href="/project-piggyback-learning-team-2/docs/category/requirements-specification">Requirements Specification</a><button aria-label="Expand sidebar category &#x27;Requirements Specification&#x27;" aria-expanded="false" type="button" class="clean-btn menu__caret"></button></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist" href="/project-piggyback-learning-team-2/docs/category/system-architecture">System Architecture</a><button aria-label="Expand sidebar category &#x27;System Architecture&#x27;" aria-expanded="false" type="button" class="clean-btn menu__caret"></button></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--active" href="/project-piggyback-learning-team-2/docs/category/api-specification">API Specification</a><button aria-label="Collapse sidebar category &#x27;API Specification&#x27;" aria-expanded="true" type="button" class="clean-btn menu__caret"></button></div><ul style="display:block;overflow:visible;height:auto" class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" tabindex="0" href="/project-piggyback-learning-team-2/docs/api-specification/frontend_api_documentation">Frontend Class Documentation</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/project-piggyback-learning-team-2/docs/api-specification/backend_api_documentation">Backend Class Documentation</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/project-piggyback-learning-team-2/docs/api-specification/calculator-model-generated">CalculatorModel.java</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/project-piggyback-learning-team-2/docs/api-specification/video-URL-validation">Yideo URL Validation</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/project-piggyback-learning-team-2/docs/api-specification/openapi-spec">API 1 - Swagger Petstore</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/project-piggyback-learning-team-2/docs/api-specification/Youtube_API">YouTube API Specs</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/project-piggyback-learning-team-2/docs/api-specification/Yolov7">YOLOv7 Specs</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/project-piggyback-learning-team-2/docs/api-specification/OpenAI_API">OpenAI API Specs</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/project-piggyback-learning-team-2/docs/api-specification/Google_TTS">Google TTS API Specs</a></li></ul></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist" href="/project-piggyback-learning-team-2/docs/category/test-procedures">Test Procedures</a><button aria-label="Expand sidebar category &#x27;Test Procedures&#x27;" aria-expanded="false" type="button" class="clean-btn menu__caret"></button></div></li></ul></nav></div></div></aside><main class="docMainContainer_TBSr"><div class="container padding-top--md padding-bottom--lg"><div class="row"><div class="col docItemCol_VOVn"><div class="docItemContainer_Djhp"><article><nav class="theme-doc-breadcrumbs breadcrumbsContainer_Z_bl" aria-label="Breadcrumbs"><ul class="breadcrumbs" itemscope="" itemtype="https://schema.org/BreadcrumbList"><li class="breadcrumbs__item"><a aria-label="Home page" class="breadcrumbs__link" href="/project-piggyback-learning-team-2/"><svg viewBox="0 0 24 24" class="breadcrumbHomeIcon_YNFT"><path d="M10 19v-5h4v5c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-7h1.7c.46 0 .68-.57.33-.87L12.67 3.6c-.38-.34-.96-.34-1.34 0l-8.36 7.53c-.34.3-.13.87.33.87H5v7c0 .55.45 1 1 1h3c.55 0 1-.45 1-1z" fill="currentColor"></path></svg></a></li><li itemscope="" itemprop="itemListElement" itemtype="https://schema.org/ListItem" class="breadcrumbs__item"><a class="breadcrumbs__link" itemprop="item" href="/project-piggyback-learning-team-2/docs/category/api-specification"><span itemprop="name">API Specification</span></a><meta itemprop="position" content="1"></li><li itemscope="" itemprop="itemListElement" itemtype="https://schema.org/ListItem" class="breadcrumbs__item breadcrumbs__item--active"><span class="breadcrumbs__link" itemprop="name">Frontend Class Documentation</span><meta itemprop="position" content="2"></li></ul></nav><div class="tocCollapsible_ETCw theme-doc-toc-mobile tocMobile_ITEo"><button type="button" class="clean-btn tocCollapsibleButton_TO0P">On this page</button></div><div class="theme-doc-markdown markdown"><h1>Frontend Class Documentation</h1>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="app">App<a href="#app" class="hash-link" aria-label="Direct link to App" title="Direct link to App">​</a></h2>
+<p>The root component managing application initialization and routing.</p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="data-fields">Data Fields:<a href="#data-fields" class="hash-link" aria-label="Direct link to Data Fields:" title="Direct link to Data Fields:">​</a></h3>
+<ul>
+<li>
+<p><strong>currentRoute: String</strong></p>
+<ul>
+<li>Current application route/path</li>
+</ul>
+</li>
+<li>
+<p><strong>appConfig: Object</strong></p>
+<ul>
+<li>Application configuration settings including API endpoints, feature flags, etc.</li>
+</ul>
+</li>
+<li>
+<p><strong>userSession: Object</strong></p>
+<ul>
+<li>Current session information including tokens and expiration</li>
+</ul>
+</li>
+</ul>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="methods">Methods:<a href="#methods" class="hash-link" aria-label="Direct link to Methods:" title="Direct link to Methods:">​</a></h3>
+<p><strong>initializeApp()</strong></p>
+<p>Initializes application state and configurations</p>
+<p><strong>Arguments:</strong> None</p>
+<p><strong>Returns:</strong> Promise&lt;void&gt;</p>
+<p><strong>Exceptions:</strong></p>
+<ul>
+<li>ConfigurationError: When configuration loading fails</li>
+<li>NetworkError: When initial API connection fails</li>
+</ul>
+<p><strong>handleRouting(route)</strong></p>
+<p>Manages application routing between different pages</p>
+<p><strong>Arguments:</strong></p>
+<ul>
+<li>route: String - Target route path</li>
+</ul>
+<p><strong>Returns:</strong> void</p>
+<p><strong>Exceptions:</strong></p>
+<ul>
+<li>RouteNotFoundError: When requested route doesn&#x27;t exist</li>
+<li>AuthenticationError: When route requires authentication</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="homepage">HomePage<a href="#homepage" class="hash-link" aria-label="Direct link to HomePage" title="Direct link to HomePage">​</a></h2>
+<p>Main landing page component for content discovery.</p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="data-fields-1">Data Fields:<a href="#data-fields-1" class="hash-link" aria-label="Direct link to Data Fields:" title="Direct link to Data Fields:">​</a></h3>
+<ul>
+<li>
+<p><strong>featuredVideos: Array</strong></p>
+<ul>
+<li>List of featured video objects</li>
+</ul>
+</li>
+<li>
+<p><strong>searchResults: Array</strong></p>
+<ul>
+<li>Current search results</li>
+</ul>
+</li>
+<li>
+<p><strong>activeFilters: Object</strong></p>
+<ul>
+<li>Currently applied search/topic filters</li>
+</ul>
+</li>
+</ul>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="methods-1">Methods:<a href="#methods-1" class="hash-link" aria-label="Direct link to Methods:" title="Direct link to Methods:">​</a></h3>
+<p><strong>displayFeaturedVideos()</strong></p>
+<p>Shows curated video content</p>
+<p><strong>Arguments:</strong> None</p>
+<p><strong>Returns:</strong> void</p>
+<p><strong>Exceptions:</strong></p>
+<ul>
+<li>ContentLoadError: When featured content fails to load</li>
+</ul>
+<p><strong>showSearchResults(query)</strong></p>
+<p>Displays search query results</p>
+<p><strong>Arguments:</strong></p>
+<ul>
+<li>query: String - Search query text</li>
+</ul>
+<p><strong>Returns:</strong> Promise&lt;Array&gt;</p>
+<p><strong>Exceptions:</strong></p>
+<ul>
+<li>SearchError: When search operation fails</li>
+</ul>
+<p><strong>showTopicFilters(categories)</strong></p>
+<p>Renders topic filtering options</p>
+<p><strong>Arguments:</strong></p>
+<ul>
+<li>categories: Array - Available filter categories</li>
+</ul>
+<p><strong>Returns:</strong> void</p>
+<p><strong>Exceptions:</strong></p>
+<ul>
+<li>FilterError: When filter options can&#x27;t be loaded</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="videopage">VideoPage<a href="#videopage" class="hash-link" aria-label="Direct link to VideoPage" title="Direct link to VideoPage">​</a></h2>
+<p>Page component for video playback and learning.</p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="data-fields-2">Data Fields:<a href="#data-fields-2" class="hash-link" aria-label="Direct link to Data Fields:" title="Direct link to Data Fields:">​</a></h3>
+<ul>
+<li>
+<p><strong>currentVideo: Object</strong></p>
+<ul>
+<li>Current video metadata and content</li>
+</ul>
+</li>
+<li>
+<p><strong>questionList: Array</strong></p>
+<ul>
+<li>List of interactive questions</li>
+</ul>
+</li>
+<li>
+<p><strong>progressData: Object</strong></p>
+<ul>
+<li>User&#x27;s progress for current video</li>
+</ul>
+</li>
+<li>
+<p><strong>learningState: String</strong></p>
+<ul>
+<li>Current state (playing, paused, questioning)</li>
+</ul>
+</li>
+</ul>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="methods-2">Methods:<a href="#methods-2" class="hash-link" aria-label="Direct link to Methods:" title="Direct link to Methods:">​</a></h3>
+<p><strong>displayVideo(videoContent)</strong></p>
+<p>Renders video content</p>
+<p><strong>Arguments:</strong></p>
+<ul>
+<li>videoContent: Object - Video data and metadata</li>
+</ul>
+<p><strong>Returns:</strong> Promise&lt;void&gt;</p>
+<p><strong>Exceptions:</strong></p>
+<ul>
+<li>VideoLoadError: When video content fails to load</li>
+<li>PlaybackError: When video playback fails</li>
+</ul>
+<p><strong>showQuestions(questionList)</strong></p>
+<p>Displays interactive questions</p>
+<p><strong>Arguments:</strong></p>
+<ul>
+<li>questionList: Array - List of question objects</li>
+</ul>
+<p><strong>Returns:</strong> void</p>
+<p><strong>Exceptions:</strong></p>
+<ul>
+<li>QuestionFormatError: When question data is invalid</li>
+</ul>
+<p><strong>displayProgress(progressData)</strong></p>
+<p>Shows learning progress</p>
+<p><strong>Arguments:</strong></p>
+<ul>
+<li>progressData: Object - Progress metrics</li>
+</ul>
+<p><strong>Returns:</strong> void</p>
+<p><strong>Exceptions:</strong></p>
+<ul>
+<li>ProgressTrackingError: When progress can&#x27;t be displayed</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="authmanager">AuthManager<a href="#authmanager" class="hash-link" aria-label="Direct link to AuthManager" title="Direct link to AuthManager">​</a></h2>
+<p>Handles user authentication and session management.</p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="data-fields-3">Data Fields:<a href="#data-fields-3" class="hash-link" aria-label="Direct link to Data Fields:" title="Direct link to Data Fields:">​</a></h3>
+<ul>
+<li>
+<p><strong>currentUser: Object</strong></p>
+<ul>
+<li>Current user information</li>
+</ul>
+</li>
+<li>
+<p><strong>sessionToken: String</strong></p>
+<ul>
+<li>Active session token</li>
+</ul>
+</li>
+<li>
+<p><strong>authState: String</strong></p>
+<ul>
+<li>Current authentication state</li>
+</ul>
+</li>
+</ul>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="methods-3">Methods:<a href="#methods-3" class="hash-link" aria-label="Direct link to Methods:" title="Direct link to Methods:">​</a></h3>
+<p><strong>login(email, password)</strong></p>
+<p>Authenticates user credentials</p>
+<p><strong>Arguments:</strong></p>
+<ul>
+<li>email: String - User email</li>
+<li>password: String - User password</li>
+</ul>
+<p><strong>Returns:</strong> Promise&lt;UserObject&gt;</p>
+<p><strong>Exceptions:</strong></p>
+<ul>
+<li>AuthenticationError: When credentials are invalid</li>
+<li>NetworkError: When auth service is unavailable</li>
+</ul>
+<p><strong>register(email, password)</strong></p>
+<p>Creates new user account</p>
+<p><strong>Arguments:</strong></p>
+<ul>
+<li>email: String - New user email</li>
+<li>password: String - New user password</li>
+</ul>
+<p><strong>Returns:</strong> Promise&lt;UserObject&gt;</p>
+<p><strong>Exceptions:</strong></p>
+<ul>
+<li>ValidationError: When input is invalid</li>
+<li>DuplicateAccountError: When email already exists</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="apihandler">APIHandler<a href="#apihandler" class="hash-link" aria-label="Direct link to APIHandler" title="Direct link to APIHandler">​</a></h2>
+<p>Central API management component.</p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="data-fields-4">Data Fields:<a href="#data-fields-4" class="hash-link" aria-label="Direct link to Data Fields:" title="Direct link to Data Fields:">​</a></h3>
+<ul>
+<li>
+<p><strong>baseUrl: String</strong></p>
+<ul>
+<li>API base URL</li>
+</ul>
+</li>
+<li>
+<p><strong>headers: Object</strong></p>
+<ul>
+<li>Common request headers</li>
+</ul>
+</li>
+<li>
+<p><strong>requestQueue: Array</strong></p>
+<ul>
+<li>Pending API requests</li>
+</ul>
+</li>
+</ul>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="methods-4">Methods:<a href="#methods-4" class="hash-link" aria-label="Direct link to Methods:" title="Direct link to Methods:">​</a></h3>
+<p><strong>handleAuth(credentials)</strong></p>
+<p>Processes authentication requests</p>
+<p><strong>Arguments:</strong></p>
+<ul>
+<li>credentials: Object - User credentials</li>
+</ul>
+<p><strong>Returns:</strong> Promise&lt;AuthResponse&gt;</p>
+<p><strong>Exceptions:</strong></p>
+<ul>
+<li>AuthenticationError: When auth fails</li>
+<li>NetworkError: When service is unavailable</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="aiengine">AIEngine<a href="#aiengine" class="hash-link" aria-label="Direct link to AIEngine" title="Direct link to AIEngine">​</a></h2>
+<p>Manages AI-powered video analysis.</p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="data-fields-5">Data Fields:<a href="#data-fields-5" class="hash-link" aria-label="Direct link to Data Fields:" title="Direct link to Data Fields:">​</a></h3>
+<ul>
+<li>
+<p><strong>videoContent: Object</strong></p>
+<ul>
+<li>Current video being analyzed</li>
+</ul>
+</li>
+<li>
+<p><strong>timestamps: Array</strong></p>
+<ul>
+<li>Important video moments</li>
+</ul>
+</li>
+<li>
+<p><strong>analysisState: String</strong></p>
+<ul>
+<li>Current analysis status</li>
+</ul>
+</li>
+<li>
+<p><strong>questionBank: Array</strong></p>
+<ul>
+<li>Generated questions</li>
+</ul>
+</li>
+</ul>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="methods-5">Methods:<a href="#methods-5" class="hash-link" aria-label="Direct link to Methods:" title="Direct link to Methods:">​</a></h3>
+<p><strong>analyzeVideo(videoContent)</strong></p>
+<p>Processes video content</p>
+<p><strong>Arguments:</strong></p>
+<ul>
+<li>videoContent: Object - Video data</li>
+</ul>
+<p><strong>Returns:</strong> Promise&lt;AnalysisResult&gt;</p>
+<p><strong>Exceptions:</strong></p>
+<ul>
+<li>AnalysisError: When video analysis fails</li>
+<li>ContentFormatError: When video format is invalid</li>
+</ul>
+<p><strong>generateQuestions(videoContent)</strong></p>
+<p>Creates interactive questions</p>
+<p><strong>Arguments:</strong></p>
+<ul>
+<li>videoContent: Object - Video content</li>
+</ul>
+<p><strong>Returns:</strong> Promise&lt;Array&lt;Question&gt;&gt;</p>
+<p><strong>Exceptions:</strong></p>
+<ul>
+<li>GenerationError: When question creation fails</li>
+<li>ContentProcessingError: When content can&#x27;t be processed</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="videoplayer">VideoPlayer<a href="#videoplayer" class="hash-link" aria-label="Direct link to VideoPlayer" title="Direct link to VideoPlayer">​</a></h2>
+<p>Controls video playback functionality.</p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="data-fields-6">Data Fields:<a href="#data-fields-6" class="hash-link" aria-label="Direct link to Data Fields:" title="Direct link to Data Fields:">​</a></h3>
+<ul>
+<li>
+<p><strong>currentVideo: Object</strong></p>
+<ul>
+<li>Current video being played</li>
+<li>Contains metadata, URL, duration, and playback position</li>
+</ul>
+</li>
+<li>
+<p><strong>playbackState: String</strong></p>
+<ul>
+<li>Current state of video (playing, paused, stopped)</li>
+</ul>
+</li>
+<li>
+<p><strong>volume: Number</strong></p>
+<ul>
+<li>Current volume level</li>
+</ul>
+</li>
+<li>
+<p><strong>playbackRate: Number</strong></p>
+<ul>
+<li>Current playback speed multiplier</li>
+</ul>
+</li>
+</ul>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="methods-6">Methods:<a href="#methods-6" class="hash-link" aria-label="Direct link to Methods:" title="Direct link to Methods:">​</a></h3>
+<p><strong>play()</strong></p>
+<p>Starts video playback</p>
+<p><strong>Arguments:</strong> None</p>
+<p><strong>Returns:</strong> Promise&lt;void&gt;</p>
+<p><strong>Exceptions:</strong></p>
+<ul>
+<li>PlaybackError: When video fails to play</li>
+<li>StreamError: When video stream is unavailable</li>
+</ul>
+<p><strong>pause()</strong></p>
+<p>Pauses video playback</p>
+<p><strong>Arguments:</strong> None</p>
+<p><strong>Returns:</strong> void</p>
+<p><strong>Exceptions:</strong></p>
+<ul>
+<li>PlaybackStateError: When pause operation fails</li>
+</ul>
+<p><strong>stop()</strong></p>
+<p>Stops video playback and resets position</p>
+<p><strong>Arguments:</strong> None</p>
+<p><strong>Returns:</strong> void</p>
+<p><strong>Exceptions:</strong></p>
+<ul>
+<li>PlaybackStateError: When stop operation fails</li>
+</ul>
+<p><strong>seek(time)</strong></p>
+<p>Jumps to specific timestamp</p>
+<p><strong>Arguments:</strong></p>
+<ul>
+<li>time: Number - Target timestamp in seconds</li>
+</ul>
+<p><strong>Returns:</strong> Promise&lt;void&gt;</p>
+<p><strong>Exceptions:</strong></p>
+<ul>
+<li>SeekError: When seeking to invalid position</li>
+<li>BufferError: When video buffer is unavailable</li>
+</ul>
+<p><strong>handleQuestionBreak()</strong></p>
+<p>Manages video interruption for questions</p>
+<p><strong>Arguments:</strong> None</p>
+<p><strong>Returns:</strong> Promise&lt;void&gt;</p>
+<p><strong>Exceptions:</strong></p>
+<ul>
+<li>QuestionBreakError: When interruption fails</li>
+</ul>
+<p><strong>resumeAfterQuestion()</strong></p>
+<p>Continues playback after question</p>
+<p><strong>Arguments:</strong> None</p>
+<p><strong>Returns:</strong> Promise&lt;void&gt;</p>
+<p><strong>Exceptions:</strong></p>
+<ul>
+<li>ResumeError: When playback resume fails</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="searchengine">SearchEngine<a href="#searchengine" class="hash-link" aria-label="Direct link to SearchEngine" title="Direct link to SearchEngine">​</a></h2>
+<p>Handles video search and filtering.</p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="data-fields-7">Data Fields:<a href="#data-fields-7" class="hash-link" aria-label="Direct link to Data Fields:" title="Direct link to Data Fields:">​</a></h3>
+<ul>
+<li>
+<p><strong>searchQuery: String</strong></p>
+<ul>
+<li>Current search query string</li>
+</ul>
+</li>
+<li>
+<p><strong>filterTopics: Array</strong></p>
+<ul>
+<li>List of active topic filters</li>
+</ul>
+</li>
+<li>
+<p><strong>searchResults: Array</strong></p>
+<ul>
+<li>Current search results</li>
+</ul>
+</li>
+<li>
+<p><strong>searchHistory: Array</strong></p>
+<ul>
+<li>Recent search queries</li>
+</ul>
+</li>
+</ul>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="methods-7">Methods:<a href="#methods-7" class="hash-link" aria-label="Direct link to Methods:" title="Direct link to Methods:">​</a></h3>
+<p><strong>searchVideos(query)</strong></p>
+<p>Performs video search</p>
+<p><strong>Arguments:</strong></p>
+<ul>
+<li>query: String - Search terms</li>
+</ul>
+<p><strong>Returns:</strong> Promise&lt;Array&lt;VideoResult&gt;&gt;</p>
+<p><strong>Exceptions:</strong></p>
+<ul>
+<li>SearchError: When search operation fails</li>
+<li>NetworkError: When search service is unavailable</li>
+</ul>
+<p><strong>filterByTopic(topic)</strong></p>
+<p>Filters results by topic</p>
+<p><strong>Arguments:</strong></p>
+<ul>
+<li>topic: String - Topic to filter by</li>
+</ul>
+<p><strong>Returns:</strong> Array&lt;VideoResult&gt;&gt;</p>
+<p><strong>Exceptions:</strong></p>
+<ul>
+<li>FilterError: When filter operation fails</li>
+</ul>
+<p><strong>getSuggestedVideos()</strong></p>
+<p>Retrieves recommended videos</p>
+<p><strong>Arguments:</strong> None</p>
+<p><strong>Returns:</strong> Promise&lt;Array&lt;VideoResult&gt;&gt;</p>
+<p><strong>Exceptions:</strong></p>
+<ul>
+<li>RecommendationError: When suggestions can&#x27;t be loaded</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="questionhandler">QuestionHandler<a href="#questionhandler" class="hash-link" aria-label="Direct link to QuestionHandler" title="Direct link to QuestionHandler">​</a></h2>
+<p>Manages interactive learning questions.</p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="data-fields-8">Data Fields:<a href="#data-fields-8" class="hash-link" aria-label="Direct link to Data Fields:" title="Direct link to Data Fields:">​</a></h3>
+<ul>
+<li>
+<p><strong>currentQuestion: Object</strong></p>
+<ul>
+<li>Currently active question</li>
+<li>Contains question text, options, correct answer</li>
+</ul>
+</li>
+<li>
+<p><strong>userAnswer: String</strong></p>
+<ul>
+<li>User&#x27;s submitted answer</li>
+</ul>
+</li>
+<li>
+<p><strong>questionQueue: Array</strong></p>
+<ul>
+<li>Upcoming questions</li>
+</ul>
+</li>
+<li>
+<p><strong>questionHistory: Array</strong></p>
+<ul>
+<li>Previous questions and answers</li>
+</ul>
+</li>
+</ul>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="methods-8">Methods:<a href="#methods-8" class="hash-link" aria-label="Direct link to Methods:" title="Direct link to Methods:">​</a></h3>
+<p><strong>displayQuestion()</strong></p>
+<p>Shows current question</p>
+<p><strong>Arguments:</strong> None</p>
+<p><strong>Returns:</strong> void</p>
+<p><strong>Exceptions:</strong></p>
+<ul>
+<li>QuestionRenderError: When question can&#x27;t be displayed</li>
+</ul>
+<p><strong>validateAnswer(answer)</strong></p>
+<p>Checks answer correctness</p>
+<p><strong>Arguments:</strong></p>
+<ul>
+<li>answer: String - User&#x27;s answer</li>
+</ul>
+<p><strong>Returns:</strong> Boolean</p>
+<p><strong>Exceptions:</strong></p>
+<ul>
+<li>ValidationError: When answer validation fails</li>
+</ul>
+<p><strong>provideFeedback()</strong></p>
+<p>Gives response feedback</p>
+<p><strong>Arguments:</strong> None</p>
+<p><strong>Returns:</strong> FeedbackObject</p>
+<p><strong>Exceptions:</strong></p>
+<ul>
+<li>FeedbackError: When feedback generation fails</li>
+</ul>
+<p><strong>playQuestionAudio()</strong></p>
+<p>Plays question audio</p>
+<p><strong>Arguments:</strong> None</p>
+<p><strong>Returns:</strong> Promise&lt;void&gt;</p>
+<p><strong>Exceptions:</strong></p>
+<ul>
+<li>AudioPlaybackError: When audio fails to play</li>
+</ul>
+<p><strong>getNextQuestion()</strong></p>
+<p>Retrieves next question</p>
+<p><strong>Arguments:</strong> None</p>
+<p><strong>Returns:</strong> Promise&lt;QuestionObject&gt;</p>
+<p><strong>Exceptions:</strong></p>
+<ul>
+<li>QuestionLoadError: When next question can&#x27;t be loaded</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="dashboardpage">DashboardPage<a href="#dashboardpage" class="hash-link" aria-label="Direct link to DashboardPage" title="Direct link to DashboardPage">​</a></h2>
+<p>User dashboard for progress tracking.</p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="data-fields-9">Data Fields:<a href="#data-fields-9" class="hash-link" aria-label="Direct link to Data Fields:" title="Direct link to Data Fields:">​</a></h3>
+<ul>
+<li>
+<p><strong>savedVideos: Array</strong></p>
+<ul>
+<li>List of saved video content</li>
+</ul>
+</li>
+<li>
+<p><strong>watchHistory: Array</strong></p>
+<ul>
+<li>User&#x27;s viewing history</li>
+</ul>
+</li>
+<li>
+<p><strong>userPerformance: Object</strong></p>
+<ul>
+<li>Learning metrics and statistics</li>
+</ul>
+</li>
+<li>
+<p><strong>dashboardSettings: Object</strong></p>
+<ul>
+<li>User&#x27;s dashboard preferences</li>
+</ul>
+</li>
+</ul>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="methods-9">Methods:<a href="#methods-9" class="hash-link" aria-label="Direct link to Methods:" title="Direct link to Methods:">​</a></h3>
+<p><strong>showSavedVideos(savedVideos)</strong></p>
+<p>Displays saved content</p>
+<p><strong>Arguments:</strong></p>
+<ul>
+<li>savedVideos: Array - List of saved videos</li>
+</ul>
+<p><strong>Returns:</strong> void</p>
+<p><strong>Exceptions:</strong></p>
+<ul>
+<li>DisplayError: When content can&#x27;t be shown</li>
+</ul>
+<p><strong>showWatchHistory(watchHistory)</strong></p>
+<p>Shows viewing history</p>
+<p><strong>Arguments:</strong></p>
+<ul>
+<li>watchHistory: Array - User&#x27;s history</li>
+</ul>
+<p><strong>Returns:</strong> void</p>
+<p><strong>Exceptions:</strong></p>
+<ul>
+<li>HistoryLoadError: When history can&#x27;t be loaded</li>
+</ul>
+<p><strong>displayPerformance(userPerformance)</strong></p>
+<p>Renders learning metrics</p>
+<p><strong>Arguments:</strong></p>
+<ul>
+<li>userPerformance: Object - Performance data</li>
+</ul>
+<p><strong>Returns:</strong> void</p>
+<p><strong>Exceptions:</strong></p>
+<ul>
+<li>MetricsError: When performance data can&#x27;t be displayed</li>
+</ul>
+<h2 class="anchor anchorWithStickyNavbar_LWe7" id="progressmanager">ProgressManager<a href="#progressmanager" class="hash-link" aria-label="Direct link to ProgressManager" title="Direct link to ProgressManager">​</a></h2>
+<p>Tracks user learning progress.</p>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="data-fields-10">Data Fields:<a href="#data-fields-10" class="hash-link" aria-label="Direct link to Data Fields:" title="Direct link to Data Fields:">​</a></h3>
+<ul>
+<li>
+<p><strong>userId: String</strong></p>
+<ul>
+<li>Current user identifier</li>
+</ul>
+</li>
+<li>
+<p><strong>videoProgress: Map</strong></p>
+<ul>
+<li>Progress tracking for each video</li>
+</ul>
+</li>
+<li>
+<p><strong>learningMetrics: Object</strong></p>
+<ul>
+<li>Aggregated learning statistics</li>
+</ul>
+</li>
+<li>
+<p><strong>progressHistory: Array</strong></p>
+<ul>
+<li>Historical progress data</li>
+</ul>
+</li>
+</ul>
+<h3 class="anchor anchorWithStickyNavbar_LWe7" id="methods-10">Methods:<a href="#methods-10" class="hash-link" aria-label="Direct link to Methods:" title="Direct link to Methods:">​</a></h3>
+<p><strong>trackAnswer(videoId, questionId, userAnswer)</strong></p>
+<p>Records question responses</p>
+<p><strong>Arguments:</strong></p>
+<ul>
+<li>videoId: String - Video identifier</li>
+<li>questionId: String - Question identifier</li>
+<li>userAnswer: String - User&#x27;s response</li>
+</ul>
+<p><strong>Returns:</strong> Promise&lt;void&gt;</p>
+<p><strong>Exceptions:</strong></p>
+<ul>
+<li>TrackingError: When answer can&#x27;t be recorded</li>
+</ul>
+<p><strong>generateSummary(userId)</strong></p>
+<p>Creates progress summary</p>
+<p><strong>Arguments:</strong></p>
+<ul>
+<li>userId: String - User identifier</li>
+</ul>
+<p><strong>Returns:</strong> Promise&lt;SummaryObject&gt;</p>
+<p><strong>Exceptions:</strong></p>
+<ul>
+<li>SummaryGenerationError: When summary can&#x27;t be created</li>
+</ul>
+<p><strong>updateHistory(userId)</strong></p>
+<p>Updates viewing history</p>
+<p><strong>Arguments:</strong></p>
+<ul>
+<li>userId: String - User identifier</li>
+</ul>
+<p><strong>Returns:</strong> Promise&lt;void&gt;</p>
+<p><strong>Exceptions:</strong></p>
+<ul>
+<li>HistoryUpdateError: When history update fails</li>
+</ul>
+<p><strong>saveVideoProgress(videoId)</strong></p>
+<p>Stores video progress</p>
+<p><strong>Arguments:</strong></p>
+<ul>
+<li>videoId: String - Video identifier</li>
+</ul>
+<p><strong>Returns:</strong> Promise&lt;void&gt;</p>
+<p><strong>Exceptions:</strong></p>
+<ul>
+<li>ProgressSaveError: When progress can&#x27;t be saved</li>
+</ul></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="row margin-top--sm theme-doc-footer-edit-meta-row"><div class="col"><a href="https://github.com/Capstone-Projects-2025-Spring/project-piggyback-learning-team-2/edit/main/documentation/docs/api-specification/frontend_api_documentation.md" target="_blank" rel="noopener noreferrer" class="theme-edit-this-page"><svg fill="currentColor" height="20" width="20" viewBox="0 0 40 40" class="iconEdit_Z9Sw" aria-hidden="true"><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"></path></g></svg>Edit this page</a></div><div class="col lastUpdated_JAkA"><details><summary>Revision History</summary><table><thead><tr><th scope="row">Author</th><th scope="row">Revision</th><th scope="row">Date</th></tr></thead><tbody>nothing</tbody></table></details><span class="theme-last-updated">Last updated<!-- --> by <b>Gabriel Lantigua</b></span></div></div></footer></article><nav class="pagination-nav docusaurus-mt-lg" aria-label="Docs pages"><a class="pagination-nav__link pagination-nav__link--prev" href="/project-piggyback-learning-team-2/docs/category/api-specification"><div class="pagination-nav__sublabel">Previous</div><div class="pagination-nav__label">API Specification</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/project-piggyback-learning-team-2/docs/api-specification/backend_api_documentation"><div class="pagination-nav__sublabel">Next</div><div class="pagination-nav__label">Backend Class Documentation</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#app" class="table-of-contents__link toc-highlight">App</a><ul><li><a href="#data-fields" class="table-of-contents__link toc-highlight">Data Fields:</a></li><li><a href="#methods" class="table-of-contents__link toc-highlight">Methods:</a></li></ul></li><li><a href="#homepage" class="table-of-contents__link toc-highlight">HomePage</a><ul><li><a href="#data-fields-1" class="table-of-contents__link toc-highlight">Data Fields:</a></li><li><a href="#methods-1" class="table-of-contents__link toc-highlight">Methods:</a></li></ul></li><li><a href="#videopage" class="table-of-contents__link toc-highlight">VideoPage</a><ul><li><a href="#data-fields-2" class="table-of-contents__link toc-highlight">Data Fields:</a></li><li><a href="#methods-2" class="table-of-contents__link toc-highlight">Methods:</a></li></ul></li><li><a href="#authmanager" class="table-of-contents__link toc-highlight">AuthManager</a><ul><li><a href="#data-fields-3" class="table-of-contents__link toc-highlight">Data Fields:</a></li><li><a href="#methods-3" class="table-of-contents__link toc-highlight">Methods:</a></li></ul></li><li><a href="#apihandler" class="table-of-contents__link toc-highlight">APIHandler</a><ul><li><a href="#data-fields-4" class="table-of-contents__link toc-highlight">Data Fields:</a></li><li><a href="#methods-4" class="table-of-contents__link toc-highlight">Methods:</a></li></ul></li><li><a href="#aiengine" class="table-of-contents__link toc-highlight">AIEngine</a><ul><li><a href="#data-fields-5" class="table-of-contents__link toc-highlight">Data Fields:</a></li><li><a href="#methods-5" class="table-of-contents__link toc-highlight">Methods:</a></li></ul></li><li><a href="#videoplayer" class="table-of-contents__link toc-highlight">VideoPlayer</a><ul><li><a href="#data-fields-6" class="table-of-contents__link toc-highlight">Data Fields:</a></li><li><a href="#methods-6" class="table-of-contents__link toc-highlight">Methods:</a></li></ul></li><li><a href="#searchengine" class="table-of-contents__link toc-highlight">SearchEngine</a><ul><li><a href="#data-fields-7" class="table-of-contents__link toc-highlight">Data Fields:</a></li><li><a href="#methods-7" class="table-of-contents__link toc-highlight">Methods:</a></li></ul></li><li><a href="#questionhandler" class="table-of-contents__link toc-highlight">QuestionHandler</a><ul><li><a href="#data-fields-8" class="table-of-contents__link toc-highlight">Data Fields:</a></li><li><a href="#methods-8" class="table-of-contents__link toc-highlight">Methods:</a></li></ul></li><li><a href="#dashboardpage" class="table-of-contents__link toc-highlight">DashboardPage</a><ul><li><a href="#data-fields-9" class="table-of-contents__link toc-highlight">Data Fields:</a></li><li><a href="#methods-9" class="table-of-contents__link toc-highlight">Methods:</a></li></ul></li><li><a href="#progressmanager" class="table-of-contents__link toc-highlight">ProgressManager</a><ul><li><a href="#data-fields-10" class="table-of-contents__link toc-highlight">Data Fields:</a></li><li><a href="#methods-10" class="table-of-contents__link toc-highlight">Methods:</a></li></ul></li></ul></div></div></div></div></main></div></div></div><footer class="footer"><div class="container container-fluid"><div class="row footer__links"><div class="col footer__col"><div class="footer__title">Docs</div><ul class="footer__items clean-list"><li class="footer__item"><a class="footer__link-item" href="/project-piggyback-learning-team-2/docs/intro">Documentation</a></li></ul></div><div class="col footer__col"><div class="footer__title">More</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://github.com/Capstone-Projects-2025-Spring/project-piggyback-learning-team-2" target="_blank" rel="noopener noreferrer" class="footer__link-item">GitHub<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_nPIU"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li></ul></div></div><div class="footer__bottom text--center"><div class="margin-bottom--sm"><img src="https://upload.wikimedia.org/wikipedia/commons/1/17/Temple_T_logo.svg" alt="My Site Logo" class="footer__logo themedComponent_mlkZ themedComponent--light_NVdE"><img src="https://upload.wikimedia.org/wikipedia/commons/1/17/Temple_T_logo.svg" alt="My Site Logo" class="footer__logo themedComponent_mlkZ themedComponent--dark_xIcU"></div><div class="footer__copyright">Copyright © 2025 Project Piggyback Learning Team 2, Inc. Built with Docusaurus.</div></div></div></footer></div>
+</body>
+</html>
