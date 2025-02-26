@@ -1,9 +1,23 @@
 import re
-from fastapi import FastAPI
+from fastapi import FastAPI, status, HTTPException, Response
 from pydantic import BaseModel, HttpUrl, field_validator
+import psycopg2
+from psycopg2.extras import RealDictCursor
+from dotenv import load_dotenv
+import os
 
 
 app = FastAPI()
+
+# Load environment variables from .env
+load_dotenv()
+
+# Fetch variables
+USER = os.getenv("user")
+PASSWORD = os.getenv("password")
+HOST = os.getenv("host")
+PORT = os.getenv("port")
+DBNAME = os.getenv("dbname")
 
 
 class YouTubeVideo(BaseModel):
@@ -54,8 +68,38 @@ class YouTubeVideo(BaseModel):
         return v
 
 
+# Connect to the database
+try:
+    conn = psycopg2.connect(
+        user=USER,
+        password=PASSWORD,
+        host=HOST,
+        port=PORT,
+        dbname=DBNAME,
+        cursor_factory=RealDictCursor
+    )
+    cursor = conn.cursor()
+    print("Database connection was successful!")
+except Exception as error:
+    print("Connecting to database failed")
+    print("Error:", error)
+
+
+# SQL query for testing reading data from table
+@app.get("/validateYT_URL/{video_url:path}")
+def get_URL(video_url: str):
+    cursor.execute("""SELECT * FROM user_engagement
+                   WHERE video_url = %s """, (str(video_url),))
+    engagement = cursor.fetchone()
+    if not engagement:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f'{"video url: doesn't exist"}')
+    return {"data": engagement}
+
+
+# SQL query for testing adding data to table
 @app.post("/validateYT_URL")
-def valid_YTvideo(video: YouTubeVideo):
+def add_URL(video: YouTubeVideo):
     """
     API endpoint for validating YouTube video URL
     It accepts a JSON payload containing YouTube  video URL
@@ -69,4 +113,34 @@ def valid_YTvideo(video: YouTubeVideo):
     Exceptions:
         - Raises HTTPException (422) when data is not valid URL
     """
-    return {"message": "Valid URL", "url": video.url}
+    cursor.execute("""INSERT INTO user_engagement (video_url) VALUES (%s)
+                   RETURNING * """, (str(video.url),))
+    new_url = cursor.fetchone()
+    # conn.commit
+    return {"message": "Valid URL", "url": video.url, "new row": new_url}
+
+
+# SQL query for testing deleting data from table
+@app.delete("/validateYT_URL/{video_url:path}",
+            status_code=status.HTTP_204_NO_CONTENT)
+def delete_URL(video_url: str):
+    cursor.execute("""DELETE FROM user_engagement WHERE video_url = %s
+                   returning *""", (str(video_url),))
+    deleted_url = cursor.fetchone()
+    # conn.commit
+    if deleted_url is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f'{"url: doesn't exist"}')
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@app.put("/validateYT_URL/{video_url:path}")
+def update_URL(video_url: str):
+    cursor.execute("""UPDATE user_engagement SET video_url = %s
+                   RETURNING *""", (str(video_url),))
+    updated_url = cursor.fetchone()
+    # conn.commit
+    if updated_url is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f'{"video url: doesn't exist"}')
+    return {"data": updated_url}
