@@ -1,10 +1,12 @@
 
 
 // used npm install react-youtube
-
-import React from 'react';
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from 'react';
+// import React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+// import { useState, useEffect, useRef } from "react";
 import YouTube from "react-youtube";
+import logo from '../images/Mob_Iron_Hog.png'; 
 import '../styles/video.css';
 
 // got this code from https://www.joshwcomeau.com/snippets/react-hooks/use-mouse-position/
@@ -57,8 +59,16 @@ export default function App() {
   useEffect(() => {
     const interval = setInterval(() => {
       if (videoRef.current && videoRef.current.getCurrentTime() > 0) {
-        setCurrentTime(videoRef.current.getCurrentTime())
-        console.log(`Current time: ${videoRef.current.getCurrentTime()}s`);
+        
+
+        const someTime = videoRef.current.getCurrentTime();
+        setCurrentTime(someTime);
+        console.log(`Current time: ${someTime}s`);
+  
+        if (someTime >= 11.00 && someTime <= 12.00) { // Change 10.50 to your desired time
+          alert("Triggered at 10.50 seconds!");
+        }
+        
 
         const playerState = videoRef.current.getPlayerState();
         console.log(playerState === 1 ? "Video is playing" : "Video is paused");
@@ -73,7 +83,25 @@ export default function App() {
   };
 
   return (
+    
     <div>
+      <div>
+      <header>
+        <div className="logo">
+          <img src={logo} alt="Piggyback Learning Logo" />
+        </div>
+        <nav>
+          <ul>
+            <li><Link to="/">Home</Link></li>
+            <li><Link to="/how-to-join">How to Join</Link></li>
+            <li><Link to="/signin">Sign In</Link></li>
+            <li><Link to="/video">Video (placeholder)</Link></li>
+            <li><Link to="/store">Store</Link></li>
+            <li><Link to="/ms">ms</Link></li>
+          </ul>
+        </nav>
+      </header>
+    </div>
       <div className="yvid">
         <YouTube 
           videoId={"DR-cfDsHCGA"} // we can add a variable here later when re-using this page
@@ -87,6 +115,7 @@ export default function App() {
       <button onClick={togglePause}>{isPaused ? "Play" : "Pause"}</button>
       <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
       <h2>Current Time: {currentTime.toFixed(2)}</h2>
+      <h3 onClick={() => alert("Test container clicked!")}>test container</h3>
       
     </div>
   );
