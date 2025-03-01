@@ -5,6 +5,7 @@ import Signin from './components/Signin';
 import Signup from './components/Signup';
 import Video from './components/Video';
 import PreKPage from './components/PreKPage';
+import MousePosition from './components/MousePosition';
 
 
 function App() {
@@ -16,6 +17,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/video" element={<Video />} />
         <Route path="/prek" element={<PreKPage />} /> 
+        <Route path="/ms" element={<MousePosition />} /> 
       </Routes>
     </Router>
   );
