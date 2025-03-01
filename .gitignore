@@ -39,7 +39,10 @@ Thumbs.db
 .git/
 .gitignore
 
+<<<<<<< HEAD
 node_modules/
 
+=======
+>>>>>>> 98c8d87
 # Virtual environments
 venv/
