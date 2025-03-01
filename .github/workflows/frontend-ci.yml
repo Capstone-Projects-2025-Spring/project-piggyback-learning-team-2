@@ -4,10 +4,11 @@ on:
   push:
     branches:
       - main
-      - Profile  
+      - develop
   pull_request:
     branches:
       - main
+      - develop
 
 jobs:
   build-and-test:
@@ -15,18 +16,21 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 18  
+          node-version: '18'
 
       - name: Install dependencies
         run: npm install
+        working-directory: ./piggyback-learning-frontend  
 
       - name: Build project
         run: npm run build
+        working-directory: ./piggyback-learning-frontend  
 
       - name: Run tests
-        run: npm test -- --watchAll=false
+        run: npm test
+        working-directory: ./piggyback-learning-frontend  
