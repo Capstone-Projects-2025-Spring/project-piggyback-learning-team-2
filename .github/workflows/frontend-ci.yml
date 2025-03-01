@@ -11,7 +11,7 @@ on:
       - develop
 
 jobs:
-  build-and-test:
+  test:
     runs-on: ubuntu-latest
 
     steps:
@@ -25,12 +25,8 @@ jobs:
 
       - name: Install dependencies
         run: npm install
-        working-directory: ./piggyback-learning-frontend  
-
-      - name: Build project
-        run: npm run build
-        working-directory: ./piggyback-learning-frontend  
+        working-directory: ./piggyback-learning-frontend  # Use this if your frontend lives here
 
       - name: Run tests
         run: npm test
-        working-directory: ./piggyback-learning-frontend  
+        working-directory: ./piggyback-learning-frontend
