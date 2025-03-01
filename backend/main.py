@@ -1,23 +1,14 @@
 import re
-from fastapi import FastAPI, status, HTTPException, Response
+from fastapi import FastAPI, status, HTTPException, Response, Depends
 from pydantic import BaseModel, HttpUrl, field_validator
-import psycopg2
-from psycopg2.extras import RealDictCursor
-from dotenv import load_dotenv
-import os
+from . import models
+from sqlalchemy.orm import Session
+from .database import engine, get_db
 
+
+models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
-
-# Load environment variables from .env
-load_dotenv()
-
-# Fetch variables
-USER = os.getenv("user")
-PASSWORD = os.getenv("password")
-HOST = os.getenv("host")
-PORT = os.getenv("port")
-DBNAME = os.getenv("dbname")
 
 
 class YouTubeVideo(BaseModel):
@@ -68,79 +59,76 @@ class YouTubeVideo(BaseModel):
         return v
 
 
-# Connect to the database
-try:
-    conn = psycopg2.connect(
-        user=USER,
-        password=PASSWORD,
-        host=HOST,
-        port=PORT,
-        dbname=DBNAME,
-        cursor_factory=RealDictCursor
-    )
-    cursor = conn.cursor()
-    print("Database connection was successful!")
-except Exception as error:
-    print("Connecting to database failed")
-    print("Error:", error)
-
-
-# SQL query for testing reading data from table
-@app.get("/validateYT_URL/{video_url:path}")
-def get_URL(video_url: str):
-    cursor.execute("""SELECT * FROM user_engagement
-                   WHERE video_url = %s """, (str(video_url),))
-    engagement = cursor.fetchone()
-    if not engagement:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f'{"video url: doesn't exist"}')
+# transition to use sqlalchemy
+@app.get("/sqlalchemy")
+def test_url(db: Session = Depends(get_db)):
+    engagement = db.query(models.User_engagment).all()
     return {"data": engagement}
 
 
-# SQL query for testing adding data to table
+# testing get data fromn table
+@app.get("/validateYT_URL/{video_url:path}")
+def get_URL(video_url: str, db: Session = Depends(get_db)):
+    engagement = db.query(models.User_engagment).filter(
+        models.User_engagment.video_url == video_url
+    ).first()
+    if not engagement:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Video URL doesn't exist"
+        )
+    return {"data": engagement}
+
+
+# testing adding data to table
 @app.post("/validateYT_URL")
-def add_URL(video: YouTubeVideo):
-    """
-    API endpoint for validating YouTube video URL
-    It accepts a JSON payload containing YouTube  video URL
-
-    Parameters and datatypes:
-        - video (YouTubeVideo): A Pydantic model instance
-
-    Return Value and output variables:
-        - dictionary with message and url
-
-    Exceptions:
-        - Raises HTTPException (422) when data is not valid URL
-    """
-    cursor.execute("""INSERT INTO user_engagement (video_url) VALUES (%s)
-                   RETURNING * """, (str(video.url),))
-    new_url = cursor.fetchone()
-    # conn.commit
-    return {"message": "Valid URL", "url": video.url, "new row": new_url}
+def add_URL(video: YouTubeVideo, db: Session = Depends(get_db)):
+    existing = db.query(models.User_engagment).filter(
+        models.User_engagment.video_url == str(video.url)
+    ).first()
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Video URL already exists"
+        )
+    new_engagement = models.User_engagment(video_url=str(video.url))
+    db.add(new_engagement)
+    db.commit()
+    db.refresh(new_engagement)
+    return {"message": "Valid URL", "url": video.url,
+            "new row": new_engagement}
 
 
-# SQL query for testing deleting data from table
+# testing deleting data from table
 @app.delete("/validateYT_URL/{video_url:path}",
             status_code=status.HTTP_204_NO_CONTENT)
-def delete_URL(video_url: str):
-    cursor.execute("""DELETE FROM user_engagement WHERE video_url = %s
-                   returning *""", (str(video_url),))
-    deleted_url = cursor.fetchone()
-    # conn.commit
-    if deleted_url is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f'{"url: doesn't exist"}')
+def delete_URL(video_url: str, db: Session = Depends(get_db)):
+    engagement = db.query(models.User_engagment).filter(
+        models.User_engagment.video_url == video_url
+    ).first()
+    if not engagement:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="URL doesn't exist"
+        )
+    db.delete(engagement)
+    db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
+# testing updating data in table
 @app.put("/validateYT_URL/{video_url:path}")
-def update_URL(video_url: str):
-    cursor.execute("""UPDATE user_engagement SET video_url = %s
-                   RETURNING *""", (str(video_url),))
-    updated_url = cursor.fetchone()
-    # conn.commit
-    if updated_url is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
-                            detail=f'{"video url: doesn't exist"}')
-    return {"data": updated_url}
+def update_URL(video_url: str, video: YouTubeVideo,
+               db: Session = Depends(get_db)):
+    engagement = db.query(models.User_engagment).filter(
+        models.User_engagment.video_url == video_url
+    ).first()
+    if not engagement:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Video URL doesn't exist"
+        )
+    engagement.video_url = str(video.url)
+    db.commit()
+    db.refresh(engagement)
+    return {"data": engagement}
