@@ -6,7 +6,6 @@ import Signup from './components/Signup';
 import Video from './components/Video';
 import PreKPage from './components/PreKPage';
 
-//import PreKPage from './PreKPage'; 
 
 function App() {
   return (
