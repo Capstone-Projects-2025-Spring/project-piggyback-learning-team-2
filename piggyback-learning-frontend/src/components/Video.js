@@ -3,6 +3,7 @@
 // used npm install react-youtube
 import React, { useState, useEffect, useRef } from 'react';
 // import React from 'react';
+// changing some stuff
 import { Link, useNavigate } from 'react-router-dom';
 // import { useState, useEffect, useRef } from "react";
 import YouTube from "react-youtube";
