@@ -74,8 +74,4 @@ def test_delete_url():
     assert response.status_code == 200
 
 
-# def test_update_url():
-#     video = "https://www.youtube.com/watch?v=lg5wznn3IBE"
-#     encoded_video = quote(video, safe='')
-#     response = client.put(f"/validateYT_URL/{encoded_video}")
-#     assert response.status_code == 200
+

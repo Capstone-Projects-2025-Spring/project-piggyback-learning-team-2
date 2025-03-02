@@ -1,5 +1,3 @@
-import React from "react";
-import ReactDOM from "react-dom/client";
 import { useState, useEffect } from 'react';
 
 const useMousePosition = () => {
@@ -21,18 +19,3 @@ const useMousePosition = () => {
 };
 
 export default useMousePosition;
-
-function App() {
-  const mousePosition = useMousePosition();
-
-  return (
-    <div>
-      <h1>Mouse Position</h1>
-      <p>X: {mousePosition.x}, Y: {mousePosition.y}</p>
-    </div>
-  );
-}
-
-// Render the component correctly
-const root = ReactDOM.createRoot(document.getElementById("root"));
-root.render(<App />);
