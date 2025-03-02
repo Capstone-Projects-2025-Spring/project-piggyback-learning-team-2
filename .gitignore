@@ -12,6 +12,8 @@ dist/
 coverage/
 __pycache__/
 .pytest_cache/
+.coverage
+.coveragerc
 
 # Logs & debugging
 npm-debug.log*
@@ -39,10 +41,5 @@ Thumbs.db
 .git/
 .gitignore
 
-<<<<<<< HEAD
-node_modules/
-
-=======
->>>>>>> 98c8d87
 # Virtual environments
 venv/
