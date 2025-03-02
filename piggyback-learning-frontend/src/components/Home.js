@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 //import { Link } from 'react-router-dom';
 import { Link, useNavigate } from 'react-router-dom';
+import logo from '../images/Mob_Iron_Hog.png'; 
 import '../styles/page.css';
 
 const Home = () => {
@@ -22,7 +23,7 @@ const Home = () => {
     <div>
       <header>
         <div className="logo">
-          <img src="/logo.png" alt="Piggyback Learning Logo" />
+          <img src={logo} alt="Piggyback Learning Logo" />
         </div>
         <nav>
           <ul>
@@ -31,6 +32,7 @@ const Home = () => {
             <li><Link to="/signin">Sign In</Link></li>
             <li><Link to="/video">Video (placeholder)</Link></li>
             <li><Link to="/store">Store</Link></li>
+            <li><Link to="/ms">ms</Link></li>
           </ul>
         </nav>
       </header>
@@ -67,6 +69,9 @@ const Home = () => {
               { src: "https://www.youtube.com/embed/tVHOBVAFjUw", title: "Basic Addition" },
               { src: "https://www.youtube.com/embed/o-6OKWU99Co", title: "Learning Shapes" },
               { src: "https://www.youtube.com/embed/qhOTU8_1Af4", title: "Colors and Patterns" },
+              { src: "https://www.youtube.com/embed/tA6c_kMJEl8", title: "Harry The Bunny - Educational Learning Videos for Toddlers | Baby Shows Compilation | Baby Sensory" },
+              { src: "https://www.youtube.com/embed/AKjxYkRlbks", title: "Mystery Doug - New 5-minute videos for your students" },
+              { src: "https://www.youtube.com/embed/JrBtNPnekUU", title: "Learn Why do we Cry and more Educational Video for Kids!!!" },
             ].map(video => (
               <div className="video-card" key={video.title}>
                 <iframe src={video.src} title={video.title} allowFullScreen></iframe>
