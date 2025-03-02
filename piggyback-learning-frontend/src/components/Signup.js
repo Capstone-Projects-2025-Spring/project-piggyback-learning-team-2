@@ -1,10 +1,17 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import '../styles/signup.css';
+import '../styles/signup.modules.css';
 
 const Signup = () => {
+  const [showWelcome, setShowWelcome] = useState(false);
+
+  useEffect(() => {
+    // Show welcome message after slight delay
+    setTimeout(() => setShowWelcome(true), 500);
+  }, []);
+
   return (
-    <div>
+    <div className="signup-page">
       <header>
         <h1>Piggyback Learning</h1>
         <nav>
@@ -19,7 +26,15 @@ const Signup = () => {
 
       <main>
         <div className="form-container">
-          <h2>Sign Up</h2>
+          {showWelcome && (
+            <div className="welcome-box">
+              <h2>Welcome to Piggyback Learning!</h2>
+              <p>Join us for fun learning adventures.</p>
+            </div>
+          )}
+
+          <h2 className="form-title">Sign Up</h2>
+
           <form>
             <div className="input-group">
               <label>First Name:</label>
@@ -39,6 +54,7 @@ const Signup = () => {
             </div>
             <button type="submit">Sign Up</button>
           </form>
+
           <p>Already have an account? <Link to="/signin">Sign In</Link></p>
         </div>
       </main>

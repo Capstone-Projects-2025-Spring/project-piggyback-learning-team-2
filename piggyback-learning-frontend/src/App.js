@@ -7,7 +7,6 @@ import Video from './components/Video';
 import PreKPage from './components/PreKPage';
 import MousePosition from './components/MousePosition';
 
-//import PreKPage from './PreKPage'; 
 
 function App() {
   return (

@@ -1,0 +1,191 @@
+/* Background setup */
+body {
+    background-image: url('https://getwallpapers.com/wallpaper/full/3/3/0/1115244-amazing-kids-desktop-background-1920x1200-images.jpg');
+    background-size: cover;
+    background-position: center;
+    margin: 0;
+    padding: 0;
+    font-family: 'Comic Sans MS', cursive;
+    min-height: 100vh; 
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header */
+header {
+    background-color: #4CAF50;
+    padding: 10px;
+    text-align: center;
+    color: white;
+    width: 100%;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 20;
+}
+
+header h1 {
+    font-size: 2em;
+    margin: 0;
+}
+
+header nav ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+header nav ul li {
+    display: inline;
+    margin: 0 15px;
+}
+
+header nav ul li a {
+    color: white;
+    text-decoration: none;
+    font-size: 1.2em;
+}
+
+header nav ul li a:hover {
+    text-decoration: underline;
+}
+
+/* Main - Center Form */
+main {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    margin-top: 50px; 
+    margin-bottom: 1px;
+}
+
+/* Form Container */
+.form-container {
+    max-width: 400px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 30px;
+    box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.2);
+    border: 3px solid #80ed84;
+    position: relative;
+    animation: floatUpDown 4s infinite ease-in-out;
+    box-sizing: border-box;
+}
+
+/* Floating form animation */
+@keyframes floatUpDown {
+    0% { transform: translateY(-10px); }
+    50% { transform: translateY(0); }
+    100% { transform: translateY(-10px); }
+}
+
+/* Welcome Box */
+.welcome-box {
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 12px;
+    border-radius: 25px;
+    margin-bottom: 15px;
+    box-shadow: 0px 20px 10px rgba(137, 161, 0, 0.3);
+    text-align: center;
+    animation: slideDownFadeIn 1s ease-out;
+}
+
+@keyframes slideDownFadeIn {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Welcome Box Hover */
+.welcome-box:hover {
+    background: linear-gradient(135deg, #FFD700, #FF69B4);
+    color: white;
+    transition: background 0.5s ease, color 0.5s ease;
+}
+
+/* Form Title */
+.form-title {
+    text-align: center;
+    font-size: 1.8em;
+    margin: 10px 0 20px;
+}
+
+/* Input Group */
+.form-container .input-group {
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.form-container .input-group label {
+    font-size: 1.1em;
+    margin-bottom: 2px;
+    color: #444;
+    display: block;
+}
+
+.form-container .input-group input {
+    width: 95%;
+    padding: 8px;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    box-sizing: border-box;
+    transition: all 0.3s ease;
+}
+
+.form-container .input-group input:hover {
+    border-color: #FFD700;
+    box-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
+}
+
+.form-container .input-group input:focus {
+    border-color: #4CAF50;
+    box-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+    transform: scale(1.05);
+}
+
+/* Button */
+.form-container button {
+    width: 50%;
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 15px;
+    font-size: 1.2em;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.form-container button:hover {
+    background-color: #45a049;
+    box-shadow: 0px 10px 15px rgba(0, 0, 0, 0.2); /* Add soft shadow */
+}
+
+/* Footer */
+footer {
+    width: 100%;
+    padding: 15px 0;
+    text-align: center;
+    background-color: #1976D2;
+    color: white;
+    margin-top: auto; /* Pushes footer to bottom if content is short */
+    font-size: 14px;
+}
+
+/* Links */
+a {
+    color: #4CAF50;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+a:hover {
+    color: #388e3c;
+}
