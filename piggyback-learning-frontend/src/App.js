@@ -6,7 +6,7 @@ import Signup from './components/Signup';
 import Video from './components/Video';
 import PreKPage from './components/PreKPage';
 import MousePosition from './components/MousePosition';
-
+import UserProfile from './components/UserProfileDashboard';  
 
 function App() {
   return (
@@ -16,8 +16,9 @@ function App() {
         <Route path="/signin" element={<Signin />} />
         <Route path="/signup" element={<Signup />} />
         <Route path="/video" element={<Video />} />
-        <Route path="/prek" element={<PreKPage />} /> 
-        <Route path="/ms" element={<MousePosition />} /> 
+        <Route path="/prek" element={<PreKPage />} />
+        <Route path="/ms" element={<MousePosition />} />
+        <Route path="/profile" element={<UserProfile />} />  
       </Routes>
     </Router>
   );

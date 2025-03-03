@@ -20,18 +20,19 @@ const Home = () => {
   };
 
   return (
-    <div>
+    <div className="home-container">
       <header>
         <div className="logo">
           <img src={logo} alt="Piggyback Learning Logo" />
         </div>
         <nav>
-          <ul>
+        <ul>
             <li><Link to="/">Home</Link></li>
             <li><Link to="/how-to-join">How to Join</Link></li>
             <li><Link to="/signin">Sign In</Link></li>
             <li><Link to="/video">Video (placeholder)</Link></li>
             <li><Link to="/store">Store</Link></li>
+            <li><Link to="/profile">Profile</Link></li>
             <li><Link to="/ms">ms</Link></li>
           </ul>
         </nav>
