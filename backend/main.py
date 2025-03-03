@@ -13,7 +13,12 @@ class YouTubeVideo(BaseModel):
     @field_validator("url")
     def check_YouTubeVideoURL(cls, v: HttpUrl) -> HttpUrl:
         url_str = str(v)
+        if "watch?v=" in url_str:
+            video_id = url_str.split("watch?v=")[-1]
+            v = f"https://www.youtube.com/embed/{video_id}"
+        
         # regex pattern found online that covers most YouTube video URL formats
+
         pattern = (
             r'^(?:https?:)?(?:\/\/)'
             r'?(?:youtu\.be\/|(?:www\.|m\.)?youtube\.com\/'

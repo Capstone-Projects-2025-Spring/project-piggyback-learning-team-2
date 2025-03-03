@@ -159,6 +159,55 @@ body {
     font-size: 1.2em;
     padding: 10px;
   }
+.video-submission input {
+  width: 100%;
+  max-width: 400px;
+  padding: 10px 15px;
+  font-size: 16px;
+  border: 2px solid #3498db;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+}
+
+/* Placeholder Styling */
+.video-submission input::placeholder {
+  color: #999;
+  font-style: italic;
+}
+
+/* Hover Effect */
+.video-submission input:hover {
+  border-color: #2980b9;
+}
+
+/* Focus Effect */
+.video-submission input:focus {
+  border-color: #2ecc71;
+  box-shadow: 0px 0px 8px rgba(46, 204, 113, 0.8);
+}
+
+/* Disabled Input */
+.video-submission input:disabled {
+  background-color: #e0e0e0;
+  cursor: not-allowed;
+}
+
+.video-submission button{
+    width: 20%;
+    max-width: 100px;
+    padding: 12px;
+    font-size: 1.3em;
+    font-weight: bold;
+    border: 2px solid #fff;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.85);
+    color: #333;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
   
   /* 🎥 Learning Videos */
   .videos {
