@@ -44,7 +44,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 40px 0;
+    padding: 100px 0; /* <<< This pushes profile card down from the top */
 }
 
 /* Profile card */
