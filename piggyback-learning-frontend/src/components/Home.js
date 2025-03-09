@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-//import { Link } from 'react-router-dom';
+import React, { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import logo from '../images/Mob_Iron_Hog.png'; 
 import '../styles/page.css';
@@ -7,6 +6,7 @@ import '../styles/page.css';
 const Home = () => {
   const [selectedGrade, setSelectedGrade] = useState("");
   const navigate = useNavigate();
+  const videoCardsRef = useRef(null); // Ref for the video cards container
 
   const handleGradeChange = (event) => {
     const selected = event.target.value;
@@ -19,14 +19,35 @@ const Home = () => {
     }
   };
 
+  // Function to scroll left
+  const scrollLeft = () => {
+    if (videoCardsRef.current) {
+      videoCardsRef.current.scrollBy({
+        left: -300, // Scroll by 300px to the left
+        behavior: 'smooth', // Smooth scrolling
+      });
+    }
+  };
+
+  // Function to scroll right
+  const scrollRight = () => {
+    if (videoCardsRef.current) {
+      videoCardsRef.current.scrollBy({
+        left: 300, // Scroll by 300px to the right
+        behavior: 'smooth', // Smooth scrolling
+      });
+    }
+  };
+
   return (
     <div className="home-container">
+      {/* Header */}
       <header>
         <div className="logo">
           <img src={logo} alt="Piggyback Learning Logo" />
         </div>
         <nav>
-        <ul>
+          <ul>
             <li><Link to="/">Home</Link></li>
             <li><Link to="/how-to-join">How to Join</Link></li>
             <li><Link to="/signin">Sign In</Link></li>
@@ -38,13 +59,16 @@ const Home = () => {
         </nav>
       </header>
 
+      {/* Main content */}
       <main>
+        {/* Welcome section */}
         <section className="intro">
           <h1>Welcome to Piggyback Learning!</h1>
           <p>Fun, Interactive Learning Games for Kids!</p>
           <Link to="/signup" className="cta-button">Sign Up for Free</Link>
         </section>
 
+        {/* Grade selection section */}
         <section className="grade-selection">
           <h2>Select Your Grade Level</h2>
           <div className="dropdown-container">
@@ -61,28 +85,34 @@ const Home = () => {
           </div>
         </section>
 
+        {/* Learning videos section */}
         <section className="videos">
           <h2>Learning Videos</h2>
-          <div className="video-cards">
-            {[
-              { src: "https://www.youtube.com/embed/DR-cfDsHCGA", title: "Introduction to Numbers" },
-              { src: "https://www.youtube.com/embed/Yt8GFgxlITs", title: "Counting 1-10" },
-              { src: "https://www.youtube.com/embed/tVHOBVAFjUw", title: "Basic Addition" },
-              { src: "https://www.youtube.com/embed/o-6OKWU99Co", title: "Learning Shapes" },
-              { src: "https://www.youtube.com/embed/qhOTU8_1Af4", title: "Colors and Patterns" },
-              { src: "https://www.youtube.com/embed/tA6c_kMJEl8", title: "Harry The Bunny - Educational Learning Videos for Toddlers | Baby Shows Compilation | Baby Sensory" },
-              { src: "https://www.youtube.com/embed/AKjxYkRlbks", title: "Mystery Doug - New 5-minute videos for your students" },
-              { src: "https://www.youtube.com/embed/JrBtNPnekUU", title: "Learn Why do we Cry and more Educational Video for Kids!!!" },
-            ].map(video => (
-              <div className="video-card" key={video.title}>
-                <iframe src={video.src} title={video.title} allowFullScreen></iframe>
-                <p>{video.title}</p>
-              </div>
-            ))}
+          <div className="video-scroll-container">
+            <button className="scroll-button left" onClick={scrollLeft}>&lt;</button>
+            <div className="video-cards" ref={videoCardsRef}>
+              {[
+                { src: "https://www.youtube.com/embed/DR-cfDsHCGA", title: "Introduction to Numbers" },
+                { src: "https://www.youtube.com/embed/Yt8GFgxlITs", title: "Counting 1-10" },
+                { src: "https://www.youtube.com/embed/tVHOBVAFjUw", title: "Basic Addition" },
+                { src: "https://www.youtube.com/embed/o-6OKWU99Co", title: "Learning Shapes" },
+                { src: "https://www.youtube.com/embed/qhOTU8_1Af4", title: "Colors and Patterns" },
+                { src: "https://www.youtube.com/embed/tA6c_kMJEl8", title: "Harry The Bunny - Educational Learning Videos for Toddlers | Baby Shows Compilation | Baby Sensory" },
+                { src: "https://www.youtube.com/embed/AKjxYkRlbks", title: "Mystery Doug - New 5-minute videos for your students" },
+                { src: "https://www.youtube.com/embed/JrBtNPnekUU", title: "Learn Why do we Cry and more Educational Video for Kids!!!" },
+              ].map(video => (
+                <div className="video-card" key={video.title}>
+                  <iframe src={video.src} title={video.title} allowFullScreen></iframe>
+                  <p>{video.title}</p>
+                </div>
+              ))}
+            </div>
+            <button className="scroll-button right" onClick={scrollRight}>&gt;</button>
           </div>
         </section>
       </main>
 
+      {/* Footer */}
       <footer>
         <p>&copy; 2025 Piggyback Learning. All Rights Reserved.</p>
       </footer>
