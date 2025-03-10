@@ -86,13 +86,48 @@ function Home() {
       return; 
     }
   
-    addYoutubeUrl(data.url, "New Video");
+    addYoutubeUrl(data.url, null);
   }
-  const addYoutubeUrl = (url, title) => {
-    console.log("Adding YouTube URL:", url, title);
-    setYoutubeUrls([...youtubeUrls, {src: url, title: title}]);
-  };
+  async function addYoutubeUrl(url, title) {
+    const [safe, videoTitle] = await isVideoSafe({ src: url });
 
+    if (safe) {
+      const newVideo = { src: url, title: videoTitle };
+      setYoutubeUrls((prevUrls) => [...prevUrls, newVideo]);
+      console.log(`Added video: ${videoTitle} (safe)`);
+    } else {
+      console.log(`Blocked video: ${videoTitle} (inappropriate)`);
+      // Optionally show user a message
+      alert(`Video "${videoTitle}" was not added because it's deemed inappropriate.`);
+    }
+  
+  };
+  async function isVideoSafe(video) {
+    try {
+     
+      const resp = await fetch("/youtube_metadata", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: video.src })
+      });
+
+      if (!resp.ok) {
+        console.warn("youtube_metadata request failed:", resp.status);
+        return false; 
+      }
+
+      const data = await resp.json();
+      const isAgeRestricted = data.metadata.age_restricted;
+      const videoTitle = data.metadata.title;
+      //const isMadeForKids   = data.metadata.made_for_kids;
+      console.log(isAgeRestricted);
+      return ([!isAgeRestricted,videoTitle /*&& isMadeForKids*/]);
+
+    } catch (error) {
+      console.error("Error checking video metadata:", error);
+      return [false, null];
+    }
+  }
   return (
     <div className="home-container">
       {/* Header */}
