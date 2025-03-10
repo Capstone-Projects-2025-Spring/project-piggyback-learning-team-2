@@ -121,7 +121,11 @@ function Home() {
           <p>Fun, Interactive Learning Games for Kids!</p>
           <Link to="/signup" className="cta-button">Sign Up for Free</Link>
         </section>
-
+        <section className = "youtube-url">
+          <h2>Enter a YouTube URL</h2>
+          <input type="text" id="youtubeUrl" placeholder="Enter a YouTube URL" />
+          <button onClick={validateYTURL}>Submit</button>
+        </section>
         {/* Grade selection section */}
         <section className="grade-selection">
           <h2>Select Your Grade Level</h2>
@@ -145,16 +149,7 @@ function Home() {
           <div className="video-scroll-container"/>
             <button className="scroll-button left" onClick={scrollLeft}>&lt;</button>
             <div className="video-cards" ref={videoCardsRef}>
-            {[
-              { src: "https://www.youtube.com/embed/DR-cfDsHCGA", title: "Introduction to Numbers" },
-              { src: "https://www.youtube.com/embed/Yt8GFgxlITs", title: "Counting 1-10" },
-              { src: "https://www.youtube.com/embed/tVHOBVAFjUw", title: "Basic Addition" },
-              { src: "https://www.youtube.com/embed/o-6OKWU99Co", title: "Learning Shapes" },
-              { src: "https://www.youtube.com/embed/qhOTU8_1Af4", title: "Colors and Patterns" },
-              { src: "https://www.youtube.com/embed/tA6c_kMJEl8", title: "Harry The Bunny - Educational Learning Videos for Toddlers | Baby Shows Compilation | Baby Sensory" },
-              { src: "https://www.youtube.com/embed/AKjxYkRlbks", title: "Mystery Doug - New 5-minute videos for your students" },
-              { src: "https://www.youtube.com/embed/JrBtNPnekUU", title: "Learn Why do we Cry and more Educational Video for Kids!!!" },
-            ].map(video => (
+            {youtubeUrls.map(video => (
               <div className="video-card" key={video.title}>
                 <iframe src={video.src} title={video.title} allowFullScreen></iframe>
                 <p>{video.title}</p>

@@ -1,9 +1,9 @@
 import re
 from fastapi import FastAPI, status, HTTPException, Response, Depends
 from pydantic import BaseModel, HttpUrl, field_validator
-from . import models
+import models
 from sqlalchemy.orm import Session
-from .database import engine, get_db
+from database import engine, get_db
 
 
 models.Base.metadata.create_all(bind=engine)
