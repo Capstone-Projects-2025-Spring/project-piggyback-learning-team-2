@@ -34,8 +34,8 @@ function Home() {
   const scrollLeft = () => {
     if (videoCardsRef.current) {
       videoCardsRef.current.scrollBy({
-        left: -300, // Scroll by 300px to the left
-        behavior: 'smooth', // Smooth scrolling
+        left: -300, 
+        behavior: 'smooth', 
       });
     }
   };
@@ -44,8 +44,8 @@ function Home() {
   const scrollRight = () => {
     if (videoCardsRef.current) {
       videoCardsRef.current.scrollBy({
-        left: 300, // Scroll by 300px to the right
-        behavior: 'smooth', // Smooth scrolling
+        left: 300, 
+        behavior: 'smooth',
       });
     }
   };
@@ -194,10 +194,7 @@ function Home() {
         </section>
       </main>
 
-      {/* Footer */}
-      <footer>
-        <p>&copy; 2025 Piggyback Learning. All Rights Reserved.</p>
-      </footer>
+      
     </div>
   );
 }
