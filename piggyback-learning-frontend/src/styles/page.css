@@ -214,6 +214,19 @@ main {
   width: 100%; 
   position: relative; 
 }
+.videos h2 {
+  font-size: 2.5em;
+  font-weight: bold;
+  background: linear-gradient(to right, #ff9800, #ffcc80);
+  color: white;
+  text-align: center;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  max-width: 20%;
+  margin: 0 auto 20px;
+  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+}
 
 .video-scroll-container {
   display: flex;
