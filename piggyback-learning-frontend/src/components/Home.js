@@ -73,49 +73,6 @@ function Home() {
     setYoutubeUrls([...youtubeUrls, {src: url, title: title}]);
   };
 
-  async function validateYTURL() {
-    const urlValue = document.getElementById("youtubeUrl").value;
-    let data;
-  
-    try {
-      const response = await fetch("/validateYT_URL", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ url: urlValue })
-      });
-  
-      const contentType = response.headers.get("content-type");
-      if (!response.ok) {
-        const errorData = contentType && contentType.includes("application/json")
-          ? await response.json()
-          : await response.text();
-        throw new Error(`${response.status}: ${JSON.stringify(errorData)}`);
-      }
-  
-      data = contentType && contentType.includes("application/json")
-        ? await response.json()
-        : await response.text();
-  
-      console.log("Backend response data:", data);
-      if (typeof data === 'string') {
-        data = JSON.parse(data);
-      }
-      setResponseData(JSON.stringify(data, null, 2));
-    } catch (err) {
-      console.error("Error:", err);
-      setResponseData("Error: " + err.message);
-      return; 
-    }
-  
-    addYoutubeUrl(data.url, "New Video");
-  }
-  const addYoutubeUrl = (url, title) => {
-    console.log("Adding YouTube URL:", url, title);
-    setYoutubeUrls([...youtubeUrls, {src: url, title: title}]);
-  };
-
   return (
     <div>
       <header>
@@ -160,7 +117,7 @@ function Home() {
         <section className="videos">
           <h2>Learning Videos</h2>
           <div className="video-cards">
-            {youtubeUrls.map.map(video => (
+            {youtubeUrls.map(video => (
               <div className="video-card" key={video.title}>
                 <iframe src={video.src} title={video.title} allowFullScreen></iframe>
                 <p>{video.title}</p>

@@ -87,10 +87,6 @@ def get_URL(video_url: str, db: Session = Depends(get_db)):
 
 # testing adding data to table
 @app.post("/validateYT_URL")
-<<<<<<< HEAD
-def valid_YTvideo(video: YouTubeVideo):
-    return {"message": "Valid URL", "url": video.url}
-=======
 def add_URL(video: YouTubeVideo, db: Session = Depends(get_db)):
     existing = db.query(models.User_engagment).filter(
         models.User_engagment.video_url == str(video.url)
@@ -141,4 +137,3 @@ def update_URL(video_url: str, video: YouTubeVideo,
     db.commit()
     db.refresh(engagement)
     return {"data": engagement}
->>>>>>> 8a8815ab7a81db7d7cd542a8108c5fca25cbf198
