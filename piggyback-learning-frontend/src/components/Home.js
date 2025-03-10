@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-//import { Link } from 'react-router-dom';
+import React, { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import logo from '../images/Mob_Iron_Hog.png'; 
 import '../styles/page.css';
@@ -7,6 +6,7 @@ import '../styles/page.css';
 function Home() {
   const [selectedGrade, setSelectedGrade] = useState("");
   const navigate = useNavigate();
+  const videoCardsRef = useRef(null); // Ref for the video cards container
   const [responseData, setResponseData] = useState("");
   const [youtubeUrls, setYoutubeUrls] = useState([
     { src: "https://www.youtube.com/embed/DR-cfDsHCGA", title: "Introduction to Numbers" },
@@ -27,6 +27,26 @@ function Home() {
       navigate("/prek"); // Navigate to Pre-K page
     } else {
       // Handle other grades if needed
+    }
+  };
+
+  // Function to scroll left
+  const scrollLeft = () => {
+    if (videoCardsRef.current) {
+      videoCardsRef.current.scrollBy({
+        left: -300, // Scroll by 300px to the left
+        behavior: 'smooth', // Smooth scrolling
+      });
+    }
+  };
+
+  // Function to scroll right
+  const scrollRight = () => {
+    if (videoCardsRef.current) {
+      videoCardsRef.current.scrollBy({
+        left: 300, // Scroll by 300px to the right
+        behavior: 'smooth', // Smooth scrolling
+      });
     }
   };
 
@@ -74,7 +94,8 @@ function Home() {
   };
 
   return (
-    <div>
+    <div className="home-container">
+      {/* Header */}
       <header>
         <div className="logo">
           <img src={logo} alt="Piggyback Learning Logo" />
@@ -86,18 +107,22 @@ function Home() {
             <li><Link to="/signin">Sign In</Link></li>
             <li><Link to="/store">Store</Link></li>
             <li><Link to="/video">Video (placeholder)</Link></li>
+            <li><Link to="/profile">Profile</Link></li>
             <li><Link to="/ms">ms</Link></li>
           </ul>
         </nav>
       </header>
 
+      {/* Main content */}
       <main>
+        {/* Welcome section */}
         <section className="intro">
           <h1>Welcome to Piggyback Learning!</h1>
           <p>Fun, Interactive Learning Games for Kids!</p>
           <Link to="/signup" className="cta-button">Sign Up for Free</Link>
         </section>
 
+        {/* Grade selection section */}
         <section className="grade-selection">
           <h2>Select Your Grade Level</h2>
           <div className="dropdown-container">
@@ -114,10 +139,22 @@ function Home() {
           </div>
         </section>
 
+        {/* Learning videos section */}
         <section className="videos">
           <h2>Learning Videos</h2>
-          <div className="video-cards">
-            {youtubeUrls.map(video => (
+          <div className="video-scroll-container"/>
+            <button className="scroll-button left" onClick={scrollLeft}>&lt;</button>
+            <div className="video-cards" ref={videoCardsRef}>
+            {[
+              { src: "https://www.youtube.com/embed/DR-cfDsHCGA", title: "Introduction to Numbers" },
+              { src: "https://www.youtube.com/embed/Yt8GFgxlITs", title: "Counting 1-10" },
+              { src: "https://www.youtube.com/embed/tVHOBVAFjUw", title: "Basic Addition" },
+              { src: "https://www.youtube.com/embed/o-6OKWU99Co", title: "Learning Shapes" },
+              { src: "https://www.youtube.com/embed/qhOTU8_1Af4", title: "Colors and Patterns" },
+              { src: "https://www.youtube.com/embed/tA6c_kMJEl8", title: "Harry The Bunny - Educational Learning Videos for Toddlers | Baby Shows Compilation | Baby Sensory" },
+              { src: "https://www.youtube.com/embed/AKjxYkRlbks", title: "Mystery Doug - New 5-minute videos for your students" },
+              { src: "https://www.youtube.com/embed/JrBtNPnekUU", title: "Learn Why do we Cry and more Educational Video for Kids!!!" },
+            ].map(video => (
               <div className="video-card" key={video.title}>
                 <iframe src={video.src} title={video.title} allowFullScreen></iframe>
                 <p>{video.title}</p>
@@ -127,6 +164,7 @@ function Home() {
         </section>
       </main>
 
+      {/* Footer */}
       <footer>
         <p>&copy; 2025 Piggyback Learning. All Rights Reserved.</p>
       </footer>
