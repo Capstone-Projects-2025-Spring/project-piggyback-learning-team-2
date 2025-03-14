@@ -1,4 +1,4 @@
-/* Base styles remain the same */
+/* Base Styles */
 body {
   font-family: 'Arial', sans-serif;
   margin: 0;
@@ -26,6 +26,7 @@ body {
   top: 0;
   z-index: 1000;
   height: var(--header-height);
+  box-sizing: border-box;
 }
 
 .logo-container {
@@ -50,16 +51,38 @@ body {
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
+.header-enhanced nav ul {
+  list-style-type: none;
+  display: flex;
+  padding: 0;
+  margin: 0;
+}
+
+.header-enhanced nav ul li {
+  margin: 0 10px;
+}
+
 .header-enhanced nav ul li a {
   color: white;
   padding: 10px 15px;
   border-radius: 25px;
+  text-decoration: none;
+  font-size: 1.2em;
+  font-weight: bold;
   transition: all 0.3s ease;
 }
 
 .header-enhanced nav ul li a:hover {
   background: rgba(255, 255, 255, 0.2);
   color: #ffeb3b;
+}
+
+/* Main Content */
+main {
+  padding-top: var(--header-height);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 /* Enhanced Intro */
@@ -76,12 +99,13 @@ body {
   font-size: 3.5em;
   color: white;
   text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
+  margin: 0 0 20px;
 }
 
 .tagline {
   font-size: 1.8em;
   color: #fff;
-  margin: 20px 0;
+  margin: 0 0 30px;
 }
 
 .cta-button {
@@ -90,6 +114,15 @@ body {
   font-size: 1.8em;
   border-radius: 50px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+  color: white;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.3s ease;
+}
+
+.cta-button:hover {
+  background: #45a049;
+  transform: scale(1.05);
 }
 
 .pulse {
@@ -111,13 +144,19 @@ body {
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
+.youtube-url-enhanced h2 {
+  font-size: 2.5em;
+  color: #333;
+  margin-bottom: 20px;
+}
+
 .url-input-container {
   display: flex;
   gap: 15px;
   justify-content: center;
   align-items: center;
   max-width: 700px;
-  margin: 20px auto;
+  margin: 0 auto;
 }
 
 .youtube-url-enhanced input[type="text"] {
@@ -126,6 +165,13 @@ body {
   border-radius: 25px;
   border: 3px solid var(--primary-green);
   width: 70%;
+  outline: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.youtube-url-enhanced input[type="text"]:focus {
+  border-color: #45a049;
+  box-shadow: 0 0 10px rgba(69, 160, 73, 0.5);
 }
 
 .submit-btn {
@@ -133,6 +179,9 @@ body {
   padding: 15px 35px;
   border-radius: 25px;
   font-size: 1.2em;
+  border: none;
+  color: white;
+  cursor: pointer;
   transition: all 0.3s ease;
 }
 
@@ -157,6 +206,13 @@ body {
   padding: 15px 30px;
   border-radius: 25px;
   color: white;
+  font-size: 2.5em;
+  margin-bottom: 20px;
+}
+
+.dropdown-container {
+  display: flex;
+  justify-content: center;
 }
 
 .grade-dropdown {
@@ -166,14 +222,21 @@ body {
   background: white;
   border: 3px solid var(--primary-green);
   width: 300px;
+  cursor: pointer;
+  outline: none;
   transition: all 0.3s ease;
 }
 
 .grade-dropdown:hover {
   transform: scale(1.05);
+  border-color: #45a049;
 }
 
-/* Enhanced Videos */
+.grade-dropdown option {
+  font-size: 1.2em;
+}
+
+/* Enhanced Videos Section with Horizontal Layout */
 .videos-enhanced {
   padding: 40px 20px;
   background: rgba(255, 255, 255, 0.95);
@@ -186,14 +249,46 @@ body {
   padding: 20px 40px;
   border-radius: 25px;
   display: inline-block;
+  color: white;
+  font-size: 2.5em;
+  margin-bottom: 30px;
+}
+
+.video-scroll-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  max-width: 100%;
+  padding: 0 20px;
+}
+
+.video-cards-horizontal {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 25px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-behavior: smooth;
+  padding: 20px 0;
+  width: 100%;
+  max-width: 1200px;
+  scrollbar-width: none; /* Hide scrollbar in Firefox */
+  -ms-overflow-style: none; /* Hide scrollbar in IE/Edge */
+}
+
+.video-cards-horizontal::-webkit-scrollbar {
+  display: none; /* Hide scrollbar in Chrome/Safari */
 }
 
 .video-card {
-  width: 320px;
+  flex: 0 0 320px; /* Fixed width for each card */
   background: white;
   border-radius: 20px;
   padding: 15px;
   transition: all 0.3s ease;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 .video-card:hover {
@@ -201,11 +296,29 @@ body {
   box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
 }
 
+.video-card iframe {
+  width: 100%;
+  height: 200px;
+  border: none;
+  border-radius: 15px;
+}
+
 .video-info {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 10px 0;
+}
+
+.video-info p {
+  margin: 0;
+  font-size: 1.1em;
+  font-weight: bold;
+  color: #333;
+  max-width: 80%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .play-icon {
@@ -219,11 +332,24 @@ body {
   font-size: 2em;
   background: var(--primary-green);
   border-radius: 50%;
+  border: none;
+  color: white;
+  cursor: pointer;
   transition: all 0.3s ease;
+  flex-shrink: 0;
 }
 
 .scroll-button:hover {
   transform: scale(1.1);
+  background: #45a049;
+}
+
+.scroll-button.left {
+  margin-right: 10px;
+}
+
+.scroll-button.right {
+  margin-left: 10px;
 }
 
 /* Enhanced Footer */
@@ -237,6 +363,7 @@ body {
   margin-top: 40px;
 }
 
+/* Animation */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }

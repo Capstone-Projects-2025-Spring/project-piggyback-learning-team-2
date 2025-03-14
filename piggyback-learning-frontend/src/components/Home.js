@@ -31,16 +31,12 @@ function Home() {
   async function validateYTURL() {
     const urlValue = document.getElementById("youtubeUrl").value;
     let data;
-  
     try {
       const response = await fetch("/validateYT_URL", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: urlValue })
       });
-  
       const contentType = response.headers.get("content-type");
       if (!response.ok) {
         const errorData = contentType && contentType.includes("application/json")
@@ -48,28 +44,22 @@ function Home() {
           : await response.text();
         throw new Error(`${response.status}: ${JSON.stringify(errorData)}`);
       }
-  
       data = contentType && contentType.includes("application/json")
         ? await response.json()
         : await response.text();
-  
       console.log("Backend response data:", data);
-      if (typeof data === 'string') {
-        data = JSON.parse(data);
-      }
+      if (typeof data === 'string') data = JSON.parse(data);
       setResponseData(JSON.stringify(data, null, 2));
     } catch (err) {
       console.error("Error:", err);
       setResponseData("Error: " + err.message);
-      return; 
+      return;
     }
-  
     addYoutubeUrl(data.url, null);
   }
 
   async function addYoutubeUrl(url, title) {
     const [safe, videoTitle] = await isVideoSafe({ src: url });
-
     if (safe) {
       const newVideo = { src: url, title: videoTitle };
       setYoutubeUrls((prevUrls) => [...prevUrls, newVideo]);
@@ -87,16 +77,13 @@ function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url: video.src })
       });
-
       if (!resp.ok) {
         console.warn("youtube_metadata request failed:", resp.status);
-        return [false, null]; 
+        return [false, null];
       }
-
       const data = await resp.json();
       const isAgeRestricted = data.metadata.age_restricted;
       const videoTitle = data.metadata.title;
-      console.log(isAgeRestricted);
       return [!isAgeRestricted, videoTitle];
     } catch (error) {
       console.error("Error checking video metadata:", error);
@@ -149,9 +136,9 @@ function Home() {
 
         <section className="videos-enhanced">
           <h2>Explore Learning Videos</h2>
-          <div className="video-scroll-container">
+          <div className="video-scroll-wrapper">
             <button className="scroll-button left" onClick={scrollLeft}>←</button>
-            <div className="video-cards" ref={videoCardsRef}>
+            <div className="video-cards-horizontal" ref={videoCardsRef}>
               {youtubeUrls.map((video, index) => (
                 <div className="video-card" key={index}>
                   <iframe src={video.src} title={video.title} allowFullScreen></iframe>
