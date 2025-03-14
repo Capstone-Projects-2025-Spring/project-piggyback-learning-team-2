@@ -1,315 +1,243 @@
+/* Base styles remain the same */
 body {
   font-family: 'Arial', sans-serif;
   margin: 0;
   padding: 0;
-  background-color: #f0f8ff;
+  background: linear-gradient(to bottom, #f0f8ff, #e6f3fa);
   text-align: center;
 }
 
 :root {
-  --header-height: 100px; 
+  --header-height: 120px;
+  --primary-green: #4CAF50;
+  --gradient-orange: linear-gradient(to right, #ff9800, #ffcc80);
 }
 
-/* 🌟 Header */
-header {
+/* Enhanced Header */
+.header-enhanced {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 10px;
-  background-color: #4CAF50;
-  color: white;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px 40px;
+  background: var(--primary-green);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
   position: fixed;
   width: 100%;
   top: 0;
-  left: 0;
   z-index: 1000;
-  height: var(--header-height); /* Apply the header height */
+  height: var(--header-height);
 }
 
-header .logo img {
-  width: auto;
-  height: auto;
-}
-
-header nav ul {
-  list-style-type: none;
+.logo-container {
   display: flex;
-  padding: 0;
-  margin: 0;
+  align-items: center;
+  gap: 15px;
 }
 
-header nav ul li {
-  margin: 0 10px;
+.logo-animated {
+  height: 80px;
+  transition: transform 0.3s ease;
 }
 
-header nav ul li a {
+.logo-animated:hover {
+  transform: rotate(360deg);
+}
+
+.site-title {
   color: white;
-  text-decoration: none;
-  font-size: 1.2em;
+  font-size: 1.8em;
   font-weight: bold;
-  transition: 0.3s;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
 }
 
-header nav ul li a:hover {
-  text-decoration: underline;
+.header-enhanced nav ul li a {
+  color: white;
+  padding: 10px 15px;
+  border-radius: 25px;
+  transition: all 0.3s ease;
+}
+
+.header-enhanced nav ul li a:hover {
+  background: rgba(255, 255, 255, 0.2);
   color: #ffeb3b;
 }
 
-/* Main content */
-main {
-  padding-top: var(--header-height); 
-  display: flex;
-  flex-direction: column;
-  gap: 10px; /* Add space between sections */
+/* Enhanced Intro */
+.intro-enhanced {
+  background: var(--gradient-orange);
+  padding: 80px 20px;
+  margin: 20px;
+  border-radius: 40px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 1s ease-in;
 }
 
-/* Hero Section */
-.intro {
-  background: linear-gradient(to right, #ff9800, #ffcc80);
-  padding: 10px 600px; 
+.intro-enhanced h1 {
+  font-size: 3.5em;
   color: white;
-  text-align: center;
-  border-radius: 30px; /* Add rounded corners */
-  margin: 0 10px; /* Add margin for spacing */
+  text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
 }
 
-.intro h1 {
-  font-size: 3em;
-  margin-bottom: 10px;
-}
-
-.intro p {
-  font-size: 1.4em;
-  margin-bottom: 20px;
-}
-
-.intro .cta-button {
-  background-color: #4CAF50;
-  color: white;
-  font-size: 1.5em;
-  padding: 15px 40px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-  text-decoration: none;
-  display: inline-block;
-  transition: 0.5s;
-}
-
-.intro .cta-button:hover {
-  background-color: #45a049;
-  transform: scale(1.05);
-}
-.youtube-url input[type="text"] {
-  width: 100%; 
-  max-width: 600px; 
-  padding: 12px; 
-  font-size: 1.0em; 
-  border: 2px solid #ccc; 
-  border-radius: 8px; 
-  outline: none; 
-  transition: border-color 0.3s ease, box-shadow 0.3s ease; 
-}
-.youtube-url input[type="text"]:focus {
-  border-color: #4CAF50; 
-  box-shadow: 0 0 10px rgba(76, 175, 80, 0.5); 
-}
-
-.youtube-url button {
-  background-color: #4CAF50; 
-  color: white; 
-  font-size: 1.2em; 
-  padding: 12px 24px; 
-  border: none; 
-  border-radius: 8px; 
-  cursor: pointer; 
-  transition: background-color 0.3s ease, transform 0.3s ease; 
-}
-  
-  .youtube-url button {
-    background-color: #4CAF50; 
-    color: white; 
-    font-size: 1.2em; 
-    padding: 12px 24px; 
-    border: none; 
-    border-radius: 8px; 
-    cursor: pointer; 
-    transition: background-color 0.3s ease, transform 0.3s ease; 
-  }
-  
-
-/* Grade Selection - Modern Glassmorphism */
-.grade-selection {
-  background: rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(10px);
-  padding: 20px; 
-  margin: 5px auto; 
-  max-width: 800px; 
-  width: 100%; 
-  text-align: center;
-  border-radius: 30px; 
+.tagline {
+  font-size: 1.8em;
   color: #fff;
-  font-weight: bold;
-  position: relative;
-  overflow: hidden;
-}
-/* Gradient Background */
-.grade-selection::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(to right, #9ad0e7, #f9a825);
-  z-index: -1;
-  opacity: 0.5;
-  border-radius: 10px;
+  margin: 20px 0;
 }
 
-/* Section Title */
-.grade-selection h2 {
-  font-size: 2.4em;
-  margin-bottom: 15px;
-  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+.cta-button {
+  background: var(--primary-green);
+  padding: 18px 50px;
+  font-size: 1.8em;
+  border-radius: 50px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
-/* Dropdown Styling */
-.dropdown-container {
+.pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* Enhanced YouTube URL Section */
+.youtube-url-enhanced {
+  padding: 40px 20px;
+  background: rgba(255, 255, 255, 0.9);
+  margin: 20px;
+  border-radius: 30px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.url-input-container {
   display: flex;
+  gap: 15px;
   justify-content: center;
-  margin-top: 10px;
+  align-items: center;
+  max-width: 700px;
+  margin: 20px auto;
+}
+
+.youtube-url-enhanced input[type="text"] {
+  padding: 15px;
+  font-size: 1.2em;
+  border-radius: 25px;
+  border: 3px solid var(--primary-green);
+  width: 70%;
+}
+
+.submit-btn {
+  background: var(--primary-green);
+  padding: 15px 35px;
+  border-radius: 25px;
+  font-size: 1.2em;
+  transition: all 0.3s ease;
+}
+
+.submit-btn:hover {
+  background: #45a049;
+  transform: translateY(-3px);
+}
+
+/* Enhanced Grade Selection */
+.grade-selection-enhanced {
+  margin: 20px;
+  padding: 40px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 40px;
+  backdrop-filter: blur(15px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.grade-selection-enhanced h2 {
+  background: var(--gradient-orange);
+  display: inline-block;
+  padding: 15px 30px;
+  border-radius: 25px;
+  color: white;
 }
 
 .grade-dropdown {
-  width: 80%;
-  max-width: 300px;
-  padding: 12px;
-  font-size: 1.3em;
-  font-weight: bold;
-  border: 2px solid #fff;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.85);
-  color: #333;
-  cursor: pointer;
-  outline: none;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
-.grade-dropdown:hover, .grade-dropdown:focus {
-  border-color: #ffeb3b;
-  box-shadow: 0px 4px 15px rgba(255, 235, 59, 0.5);
-}
-
-.grade-dropdown option {
-  font-size: 1.2em;
-  padding: 10px;
-}
-
-/* 🎥 Learning Videos */
-.videos {
-  margin: 20px 0; 
-  width: 100%; 
-  position: relative; 
-}
-.videos h2 {
-  font-size: 2.5em;
-  font-weight: bold;
-  background: linear-gradient(to right, #ff9800, #ffcc80);
-  color: white;
-  text-align: center;
   padding: 15px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  max-width: 20%;
-  margin: 0 auto 20px;
-  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
-}
-
-.video-scroll-container {
-  display: flex;
-  align-items: center;
-  gap: 10px; 
-  padding: 0 20px; 
-}
-
-.video-cards {
-  display: flex;
-  gap: 20px; /* Add space between video cards */
-  overflow-x: auto; /* Enable horizontal scrolling if needed */
-  scrollbar-width: none; /* Hide scrollbar for Firefox */
-  -ms-overflow-style: none; /* Hide scrollbar for IE/Edge */
-  padding-bottom: 20px; /* Add padding to prevent overflow issues */
-}
-
-.video-cards::-webkit-scrollbar {
-  display: none; /* Hide scrollbar for Chrome/Safari */
-}
-
-.video-card {
-  flex: 0 0 auto; /* Prevent flex items from shrinking or growing */
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  border-radius: 10px;
-  overflow: hidden;
+  font-size: 1.5em;
+  border-radius: 15px;
   background: white;
-  padding: 10px;
-  transition: transform 0.3s ease;
-  width: 300px; /* Set a fixed width for each video card */
+  border: 3px solid var(--primary-green);
+  width: 300px;
+  transition: all 0.3s ease;
 }
 
-.video-card:hover {
+.grade-dropdown:hover {
   transform: scale(1.05);
 }
 
-.video-card iframe {
-  width: 100%;
-  height: 200px;
+/* Enhanced Videos */
+.videos-enhanced {
+  padding: 40px 20px;
+  background: rgba(255, 255, 255, 0.95);
+  margin: 20px;
+  border-radius: 30px;
 }
 
-.video-card p {
-  font-size: 1.1em;
-  padding: 10px;
-  text-align: center;
-  font-weight: bold;
+.videos-enhanced h2 {
+  background: var(--gradient-orange);
+  padding: 20px 40px;
+  border-radius: 25px;
+  display: inline-block;
 }
 
-/* Scroll Buttons */
-.scroll-button {
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  font-size: 1.5em;
-  cursor: pointer;
+.video-card {
+  width: 320px;
+  background: white;
+  border-radius: 20px;
+  padding: 15px;
+  transition: all 0.3s ease;
+}
+
+.video-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+}
+
+.video-info {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  transition: background-color 0.3s ease;
+  padding: 10px 0;
+}
+
+.play-icon {
+  color: var(--primary-green);
+  font-size: 1.5em;
+}
+
+.scroll-button {
+  width: 50px;
+  height: 50px;
+  font-size: 2em;
+  background: var(--primary-green);
+  border-radius: 50%;
+  transition: all 0.3s ease;
 }
 
 .scroll-button:hover {
-  background-color: #45a049;
+  transform: scale(1.1);
 }
 
-.scroll-button.left {
-  margin-right: 10px; /* Space between left button and video cards */
-}
-
-.scroll-button.right {
-  margin-left: 10px; /* Space between right button and video cards */
-}
-
-/* 📌 Footer */
-footer {
-  background-color: #2c6bd9;
+/* Enhanced Footer */
+.footer-enhanced {
+  background: var(--primary-green);
+  padding: 30px;
   color: white;
-  text-align: center;
-  padding: 20px;
+  font-size: 1.5em;
+  border-top-left-radius: 40px;
+  border-top-right-radius: 40px;
   margin-top: 40px;
-  font-size: 1.2em;
-  width: 100%; /* Full width */
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
