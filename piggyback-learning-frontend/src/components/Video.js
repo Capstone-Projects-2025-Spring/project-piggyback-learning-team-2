@@ -40,6 +40,8 @@ export default function App() {
   const someMousePosition = useMousePosition(); // Call the hook here
   const [currentTime, setCurrentTime] = useState(0); // State for current time
   const videoRef = useRef(null);
+
+  // used this for reference for the overlay: https://www.youtube.com/watch?v=D9OJX6sSyYk  and https://github.com/unhingedmagikarp/medium-overlay.git 
   const [isOpen, setIsOpen] = useState(false);
 
   const toggleOverlay = () => {
