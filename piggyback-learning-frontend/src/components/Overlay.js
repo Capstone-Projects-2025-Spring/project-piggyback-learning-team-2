@@ -1,7 +1,7 @@
 // used https://www.youtube.com/watch?v=D9OJX6sSyYk
 
 import { Fragment } from "react";
-import "./overlay.css";
+import "../styles/overlay.css";
 
 export function Overlay({ isOpen, onClose, children }) {
   return (

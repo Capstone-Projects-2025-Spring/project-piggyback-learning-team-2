@@ -128,12 +128,16 @@ export default function App() {
       <button onClick={toggleOverlay}>Open Overlay</button>
 
       <Overlay isOpen={isOpen} onClose={toggleOverlay}>
-        <h1>Content in Overlay</h1>
+        <h1 onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}>
+          <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
+          <h2>Current Time: {currentTime.toFixed(2)}</h2>
+          {/* <h2 onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}>test container</h2> */}
+        </h1>
       </Overlay>
     </div>
-      <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
+      {/* <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
       <h2>Current Time: {currentTime.toFixed(2)}</h2>
-      <h3 onClick={() => alert("Test container clicked!")}>test container</h3>
+      <h3 onClick={() => alert("Test container clicked!")}>test container</h3> */}
 
       
     </div>
