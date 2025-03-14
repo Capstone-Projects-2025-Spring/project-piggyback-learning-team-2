@@ -19,8 +19,8 @@
     margin: auto;
     z-index: 10;
     padding: 30px;
-    width: fit-content;
-    height: fit-content;
+    width: 50%;
+    height: 50%;
   }
   
   .overlay__controls {
@@ -36,7 +36,7 @@
   
   .overlay__close {
     border: none;
-    background-color: transparent;
+    background-color: #4CAF50;
     font-size: 36px;
     cursor: pointer;
   }

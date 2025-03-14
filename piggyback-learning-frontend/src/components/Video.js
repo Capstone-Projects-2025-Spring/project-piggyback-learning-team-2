@@ -12,6 +12,8 @@ import YouTube from "react-youtube";
 import logo from '../images/Mob_Iron_Hog.png'; 
 import '../styles/video.css';
 import {Overlay} from './Overlay'
+import "../styles/overlay.css";
+
 
 
 // got this code from https://www.joshwcomeau.com/snippets/react-hooks/use-mouse-position/
@@ -133,7 +135,7 @@ export default function App() {
         <button onClick={toggleOverlay}>Open Overlay</button>
    
       </div>      
-      <div className="App">
+      <div className="overlay">
       <button className="overlay__close" onClick={toggleOverlay}>Open Overlay</button> 
       <Overlay isOpen={isOpen} onClose={toggleOverlay}>
         <h1 onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}>
