@@ -9,8 +9,16 @@ body {
 
 :root {
   --header-height: 120px;
+  --footer-height: 100px;
   --primary-green: #4CAF50;
   --gradient-orange: linear-gradient(to right, #ff9800, #ffcc80);
+}
+
+/* Home Container */
+.home-container {
+  width: 100%;
+  padding-bottom: var(--footer-height);
+  box-sizing: border-box;
 }
 
 /* Enhanced Header */
@@ -80,38 +88,44 @@ body {
 /* Main Content */
 main {
   padding-top: var(--header-height);
+  padding-bottom: 20px;
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-/* Enhanced Intro */
+/* Enhanced Intro - Smaller and Centered */
 .intro-enhanced {
   background: var(--gradient-orange);
-  padding: 80px 20px;
+  padding: 40px 20px;
   margin: 20px;
   border-radius: 40px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
   animation: fadeIn 1s ease-in;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 
 .intro-enhanced h1 {
-  font-size: 3.5em;
+  font-size: 2.5em;
   color: white;
-  text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.3);
-  margin: 0 0 20px;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  margin: 0 0 15px;
 }
 
 .tagline {
-  font-size: 1.8em;
+  font-size: 1.2em;
   color: #fff;
-  margin: 0 0 30px;
+  margin: 0 0 20px;
 }
 
 .cta-button {
   background: var(--primary-green);
-  padding: 18px 50px;
-  font-size: 1.8em;
+  padding: 12px 35px;
+  font-size: 1.2em;
   border-radius: 50px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
   color: white;
@@ -274,16 +288,16 @@ main {
   padding: 20px 0;
   width: 100%;
   max-width: 1200px;
-  scrollbar-width: none; /* Hide scrollbar in Firefox */
-  -ms-overflow-style: none; /* Hide scrollbar in IE/Edge */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .video-cards-horizontal::-webkit-scrollbar {
-  display: none; /* Hide scrollbar in Chrome/Safari */
+  display: none;
 }
 
 .video-card {
-  flex: 0 0 320px; /* Fixed width for each card */
+  flex: 0 0 320px;
   background: white;
   border-radius: 20px;
   padding: 15px;
@@ -352,7 +366,7 @@ main {
   margin-left: 10px;
 }
 
-/* Enhanced Footer */
+/* Enhanced Footer - Fixed at Bottom */
 .footer-enhanced {
   background: var(--primary-green);
   padding: 30px;
@@ -360,7 +374,13 @@ main {
   font-size: 1.5em;
   border-top-left-radius: 40px;
   border-top-right-radius: 40px;
-  margin-top: 40px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: var(--footer-height);
+  box-sizing: border-box;
+  z-index: 1000;
 }
 
 /* Animation */
