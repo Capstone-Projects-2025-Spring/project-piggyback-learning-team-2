@@ -9,6 +9,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import YouTube from "react-youtube";
 import logo from '../images/Mob_Iron_Hog.png'; 
 import '../styles/video.css';
+import {Overlay} from './Overlay'
+
 
 // got this code from https://www.joshwcomeau.com/snippets/react-hooks/use-mouse-position/
 const useMousePosition = () => {
@@ -38,6 +40,11 @@ export default function App() {
   const someMousePosition = useMousePosition(); // Call the hook here
   const [currentTime, setCurrentTime] = useState(0); // State for current time
   const videoRef = useRef(null);
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggleOverlay = () => {
+    setIsOpen(!isOpen);
+  };
 
 
   const togglePause = () => {
@@ -83,6 +90,8 @@ export default function App() {
     videoRef.current = event.target;
   };
 
+
+
   return (
     
     <div>
@@ -105,7 +114,7 @@ export default function App() {
     </div>
       <div className="yvid">
         <YouTube 
-          videoId={"DR-cfDsHCGA"} // we can add a variable here later when re-using this page
+          videoId={"tA6c_kMJEl8"} // we can add a variable here later when re-using this page
           opts={{
             height: "390",
             width: "640",
@@ -114,9 +123,18 @@ export default function App() {
         />
       </div>
       <button onClick={togglePause}>{isPaused ? "Play" : "Pause"}</button>
+
+      <div className="App">
+      <button onClick={toggleOverlay}>Open Overlay</button>
+
+      <Overlay isOpen={isOpen} onClose={toggleOverlay}>
+        <h1>Content in Overlay</h1>
+      </Overlay>
+    </div>
       <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
       <h2>Current Time: {currentTime.toFixed(2)}</h2>
       <h3 onClick={() => alert("Test container clicked!")}>test container</h3>
+
       
     </div>
   );
