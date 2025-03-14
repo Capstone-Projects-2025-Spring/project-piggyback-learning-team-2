@@ -119,12 +119,30 @@ footer {
     
 }
 
-
-
 .yvid {
-    margin: 5%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 50vh;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    margin: auto;
+    z-index: 10;
+    padding: 30px;
+    width: fit-content;
+    height: fit-content;
 }
+
+.bogos {
+    position: fixed;
+    top: 10;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    margin: auto;
+    z-index: 10;
+    padding: 30px;
+}
+
+
+
+

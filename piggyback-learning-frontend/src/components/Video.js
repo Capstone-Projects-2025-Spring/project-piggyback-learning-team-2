@@ -4,7 +4,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 // import React from 'react';
 // changing some stuff
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+// import { Link, useNavigate } from 'react-router-dom';
+
 // import { useState, useEffect, useRef } from "react";
 import YouTube from "react-youtube";
 import logo from '../images/Mob_Iron_Hog.png'; 
@@ -123,12 +125,16 @@ export default function App() {
             playerVars: {autoplay: 1,},}} 
           onReady={_onReady} 
         />
+         
       </div>
-      <button onClick={togglePause}>{isPaused ? "Play" : "Pause"}</button>
-
+      <div className="bogos">
+      <button className ="abc"onClick={togglePause}>{isPaused ? "Play" : "Pause"}</button>
+        <br></br>
+        <button onClick={toggleOverlay}>Open Overlay</button>
+   
+      </div>      
       <div className="App">
-      <button onClick={toggleOverlay}>Open Overlay</button>
-
+      <button className="overlay__close" onClick={toggleOverlay}>Open Overlay</button> 
       <Overlay isOpen={isOpen} onClose={toggleOverlay}>
         <h1 onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}>
           <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
