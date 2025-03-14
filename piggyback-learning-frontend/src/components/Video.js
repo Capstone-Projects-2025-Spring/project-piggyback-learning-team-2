@@ -79,9 +79,19 @@ export default function App() {
         setCurrentTime(someTime);
         console.log(`Current time: ${someTime}s`);
   
-        if (someTime >= 11.00 && someTime <= 12.00) { // Change 10.50 to your desired time
-          alert("Triggered at 10.50 seconds!");
+        if (someTime >= 10.00 && someTime <= 11.00) { 
+          alert(`Triggered at time: ${someTime}`)
         }
+        if (someTime >= 30.00 && someTime <= 31.00) { 
+          alert(`Triggered at time: ${someTime}`)
+        }
+        if (someTime >= 40.00 && someTime <= 41.00) { 
+          alert(`Triggered at time: ${someTime}`)
+        }
+        if (someTime >= 50.00 && someTime <= 51.00) {
+          alert(`Triggered at time: ${someTime}`)
+        }
+        
         
 
         const playerState = videoRef.current.getPlayerState();
@@ -127,29 +137,25 @@ export default function App() {
             playerVars: {autoplay: 1,},}} 
           onReady={_onReady} 
         />
-         
       </div>
       <div className="bogos">
-      <button className ="abc"onClick={togglePause}>{isPaused ? "Play" : "Pause"}</button>
+        <button className ="abc"onClick={togglePause}>{isPaused ? "Play" : "Pause"}</button>
         <br></br>
         <button onClick={toggleOverlay}>Open Overlay</button>
-   
       </div>      
       <div className="overlay">
-      <button className="overlay__close" onClick={toggleOverlay}>Open Overlay</button> 
-      <Overlay isOpen={isOpen} onClose={toggleOverlay}>
-        <h1 onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}>
-          <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
-          <h2>Current Time: {currentTime.toFixed(2)}</h2>
-          {/* <h2 onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}>test container</h2> */}
-        </h1>
-      </Overlay>
-    </div>
+        <button className="overlay__close" onClick={toggleOverlay}>Open Overlay</button> 
+          <Overlay isOpen={isOpen} onClose={toggleOverlay}>
+            <h1 onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}>
+              <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
+              <h2>Current Time: {currentTime.toFixed(2)}</h2>
+              {/* <h2 onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}>test container</h2> */}
+            </h1>
+          </Overlay>
+      </div>
       {/* <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
       <h2>Current Time: {currentTime.toFixed(2)}</h2>
-      <h3 onClick={() => alert("Test container clicked!")}>test container</h3> */}
-
-      
+      <h3 onClick={() => alert("Test container clicked!")}>test container</h3> */}  
     </div>
   );
 }
