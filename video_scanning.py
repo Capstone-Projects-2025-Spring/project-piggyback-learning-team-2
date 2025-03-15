@@ -9,13 +9,14 @@ import json
 import yt_dlp
 import logging
 from torch.serialization import add_safe_globals
-from yolov7.models.yolo import Model  # Import the Model class
+#from yolov7.models.yolo import Model  # Import the Model class
 import time
 import boto3
 from botocore.exceptions import ClientError
 import io
 from dotenv import load_dotenv
 import traceback
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # Load environment variables
 load_dotenv("aws_storage_credentials.env")
@@ -41,8 +42,8 @@ if not S3_BUCKET_NAME:
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-TRAINING_VIDEOS_FILE = "aws_storage_test.json"
-WEIGHTS_PATH = 'yolov7.pt'
+TRAINING_VIDEOS_FILE = "training_videos_end_1.json"
+#WEIGHTS_PATH = 'yolov7.pt'
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "yolov7"))
 
@@ -123,7 +124,7 @@ def load_training_videos():
         with open(TRAINING_VIDEOS_FILE, "r") as f:
             data = json.load(f)
             if "aws_storage_test" not in data:
-                raise ValueError("Invalid JSON structure: 'aws_storage_test' key not found")
+                raise ValueError("Invalid JSON structure: 'training_videos_end_1' key not found")
             return data["aws_storage_test"]
     except Exception as e:
         logger.error(f"Error loading training videos: {str(e)}")
@@ -216,6 +217,37 @@ def process_video(video_url, video_id, s3_client=None, frame_interval=30):
 
 if __name__ == "__main__":
     try:
+        s3_client = init_s3_client()
+        logger.info("Initialized S3 client successfully")
+
+        # Load training videos
+        with open(TRAINING_VIDEOS_FILE, "r") as f:
+            training_videos = json.load(f).get("training_videos_end_1", [])
+
+        logger.info(f"Loaded {len(training_videos)} videos")
+
+        # Use ThreadPoolExecutor for parallel processing
+        max_workers = max(1, min(8, len(training_videos)))
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            future_to_video = {
+                executor.submit(process_video, stream_youtube_video(video["Link"]), video["ID"], s3_client): video
+                for video in training_videos
+            }
+
+            for future in as_completed(future_to_video):
+                video = future_to_video[future]
+                try:
+                    result = future.result()
+                    logger.info(f"Completed processing for video ID: {video['ID']}")
+                except Exception as e:
+                    logger.error(f"Error processing video ID {video['ID']}: {str(e)}")
+
+    except Exception as e:
+        logger.error(f"Unexpected error: {str(e)}")
+
+'''
+if __name__ == "__main__":
+    try:
         # Initialize S3 client
         s3_client = init_s3_client()
         logger.info("Initialized S3 client successfully")
@@ -251,7 +283,7 @@ if __name__ == "__main__":
         logger.error(f"Fatal error: {str(e)}")
         logger.error(traceback.format_exc())
 
-'''
+
 def load_yolov7_model():
     """Load YOLOv7 model with PyTorch 2.6 compatibility."""
     try:
