@@ -1,0 +1,315 @@
+body {
+  font-family: 'Arial', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #f0f8ff;
+  text-align: center;
+}
+
+:root {
+  --header-height: 100px; 
+}
+
+/* 🌟 Header */
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 10px;
+  background-color: #4CAF50;
+  color: white;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  height: var(--header-height); /* Apply the header height */
+}
+
+header .logo img {
+  width: auto;
+  height: auto;
+}
+
+header nav ul {
+  list-style-type: none;
+  display: flex;
+  padding: 0;
+  margin: 0;
+}
+
+header nav ul li {
+  margin: 0 10px;
+}
+
+header nav ul li a {
+  color: white;
+  text-decoration: none;
+  font-size: 1.2em;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+header nav ul li a:hover {
+  text-decoration: underline;
+  color: #ffeb3b;
+}
+
+/* Main content */
+main {
+  padding-top: var(--header-height); 
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Add space between sections */
+}
+
+/* Hero Section */
+.intro {
+  background: linear-gradient(to right, #ff9800, #ffcc80);
+  padding: 10px 600px; 
+  color: white;
+  text-align: center;
+  border-radius: 30px; /* Add rounded corners */
+  margin: 0 10px; /* Add margin for spacing */
+}
+
+.intro h1 {
+  font-size: 3em;
+  margin-bottom: 10px;
+}
+
+.intro p {
+  font-size: 1.4em;
+  margin-bottom: 20px;
+}
+
+.intro .cta-button {
+  background-color: #4CAF50;
+  color: white;
+  font-size: 1.5em;
+  padding: 15px 40px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: 0.5s;
+}
+
+.intro .cta-button:hover {
+  background-color: #45a049;
+  transform: scale(1.05);
+}
+.youtube-url input[type="text"] {
+  width: 100%; 
+  max-width: 600px; 
+  padding: 12px; 
+  font-size: 1.0em; 
+  border: 2px solid #ccc; 
+  border-radius: 8px; 
+  outline: none; 
+  transition: border-color 0.3s ease, box-shadow 0.3s ease; 
+}
+.youtube-url input[type="text"]:focus {
+  border-color: #4CAF50; 
+  box-shadow: 0 0 10px rgba(76, 175, 80, 0.5); 
+}
+
+.youtube-url button {
+  background-color: #4CAF50; 
+  color: white; 
+  font-size: 1.2em; 
+  padding: 12px 24px; 
+  border: none; 
+  border-radius: 8px; 
+  cursor: pointer; 
+  transition: background-color 0.3s ease, transform 0.3s ease; 
+}
+  
+  .youtube-url button {
+    background-color: #4CAF50; 
+    color: white; 
+    font-size: 1.2em; 
+    padding: 12px 24px; 
+    border: none; 
+    border-radius: 8px; 
+    cursor: pointer; 
+    transition: background-color 0.3s ease, transform 0.3s ease; 
+  }
+  
+
+/* Grade Selection - Modern Glassmorphism */
+.grade-selection {
+  background: rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(10px);
+  padding: 20px; 
+  margin: 5px auto; 
+  max-width: 800px; 
+  width: 100%; 
+  text-align: center;
+  border-radius: 30px; 
+  color: #fff;
+  font-weight: bold;
+  position: relative;
+  overflow: hidden;
+}
+/* Gradient Background */
+.grade-selection::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to right, #9ad0e7, #f9a825);
+  z-index: -1;
+  opacity: 0.5;
+  border-radius: 10px;
+}
+
+/* Section Title */
+.grade-selection h2 {
+  font-size: 2.4em;
+  margin-bottom: 15px;
+  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Dropdown Styling */
+.dropdown-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.grade-dropdown {
+  width: 80%;
+  max-width: 300px;
+  padding: 12px;
+  font-size: 1.3em;
+  font-weight: bold;
+  border: 2px solid #fff;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.85);
+  color: #333;
+  cursor: pointer;
+  outline: none;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.grade-dropdown:hover, .grade-dropdown:focus {
+  border-color: #ffeb3b;
+  box-shadow: 0px 4px 15px rgba(255, 235, 59, 0.5);
+}
+
+.grade-dropdown option {
+  font-size: 1.2em;
+  padding: 10px;
+}
+
+/* 🎥 Learning Videos */
+.videos {
+  margin: 20px 0; 
+  width: 100%; 
+  position: relative; 
+}
+.videos h2 {
+  font-size: 2.5em;
+  font-weight: bold;
+  background: linear-gradient(to right, #ff9800, #ffcc80);
+  color: white;
+  text-align: center;
+  padding: 15px;
+  border-radius: 10px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  max-width: 20%;
+  margin: 0 auto 20px;
+  text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.video-scroll-container {
+  display: flex;
+  align-items: center;
+  gap: 10px; 
+  padding: 0 20px; 
+}
+
+.video-cards {
+  display: flex;
+  gap: 20px; /* Add space between video cards */
+  overflow-x: auto; /* Enable horizontal scrolling if needed */
+  scrollbar-width: none; /* Hide scrollbar for Firefox */
+  -ms-overflow-style: none; /* Hide scrollbar for IE/Edge */
+  padding-bottom: 20px; /* Add padding to prevent overflow issues */
+}
+
+.video-cards::-webkit-scrollbar {
+  display: none; /* Hide scrollbar for Chrome/Safari */
+}
+
+.video-card {
+  flex: 0 0 auto; /* Prevent flex items from shrinking or growing */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  background: white;
+  padding: 10px;
+  transition: transform 0.3s ease;
+  width: 300px; /* Set a fixed width for each video card */
+}
+
+.video-card:hover {
+  transform: scale(1.05);
+}
+
+.video-card iframe {
+  width: 100%;
+  height: 200px;
+}
+
+.video-card p {
+  font-size: 1.1em;
+  padding: 10px;
+  text-align: center;
+  font-weight: bold;
+}
+
+/* Scroll Buttons */
+.scroll-button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 1.5em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s ease;
+}
+
+.scroll-button:hover {
+  background-color: #45a049;
+}
+
+.scroll-button.left {
+  margin-right: 10px; /* Space between left button and video cards */
+}
+
+.scroll-button.right {
+  margin-left: 10px; /* Space between right button and video cards */
+}
+
+/* 📌 Footer */
+footer {
+  background-color: #2c6bd9;
+  color: white;
+  text-align: center;
+  padding: 20px;
+  margin-top: 40px;
+  font-size: 1.2em;
+  width: 100%; /* Full width */
+}

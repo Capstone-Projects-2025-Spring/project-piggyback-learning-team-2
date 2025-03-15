@@ -35,22 +35,30 @@ sidebar_position: 4
 
 #### Authentication
 - Users must log in and register with an email/password.
+- Upon successful registration, users receive a confirmation email.
+- Users are redirected to the login page after registration.
+- Users are directed to the main page after successful login.
 
 #### Video Playback
 - Play, pause, and resume videos with questions at specific timestamps.
+- Saved videos are stored and accessible via the user's account.
 
 #### Question Interaction
 - Display and allow answers to AI-generated questions.
 - Provide feedback and explanations for answers.
+- Saved user responses are stored for performance tracking.
 
 #### Performance Tracking
 - Show results after completing a video, including a review of each question.
+- Performance summaries are stored and accessible via the user's account.
 
 #### Saved Videos
 - Users can save videos for later and track watch history.
+- Saved videos are accessible via the user's account.
 
 #### Search
 - Enable search by video title or topic.
+- Search results are displayed in a categorized list.
 
 ### Non-Functional
 
@@ -62,9 +70,12 @@ sidebar_position: 4
 
 #### Database Storage
 - Store user data and video history securely.
+- Specify database versions and tools used.
 
 #### Usability
 - Simple, intuitive UI with easy navigation.
+- Define browser compatibility and recommend specific browsers for optimal performance.
 
 #### Security
 - Implement secure password management and data protection.
+- Include details on password encryption and data security measures.

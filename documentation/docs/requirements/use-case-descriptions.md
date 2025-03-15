@@ -15,8 +15,6 @@ sidebar_position: 5
 
 4. The user then is redirected to the landing page, where they log in with their email address and password. Once the user logs in they are directed to the main page, where they can click one of the videos displayed to play it, or search for a video with the search bar or topic sidebar.
 
-<img width="670" alt="Screenshot 2025-01-30 at 6 52 17 PM" src="https://github.com/user-attachments/assets/5929a32b-ef9c-43c5-8bf9-3880409c54bb" />
-
 ## Use Case 2 - Logging In
 *As a user, I want to be able to log in to my account in order to access videos, interact with them, and submit my own content to generate interactive videos from.*
 
@@ -27,22 +25,17 @@ sidebar_position: 5
 3. The user enters their email and password to login.
 
 4. If the user’s email and password are valid, the user is redirected to the main page. If not, they are notified that their credentials are valid.
-   
-<img width="678" alt="Screenshot 2025-01-30 at 6 53 24 PM" src="https://github.com/user-attachments/assets/18a57613-9fe9-4814-be34-797f2009d0a2" />
 
 ## Use Case 3 - Resetting a Password
 *As a user, I want to be able to reset my password in the event that I forget it and can no longer access my account as a result.*
 
 1. The user accesses the web application by going to “piggybacklearning.com”.
 
-
 2. The user selects the “Reset Password” button to access the reset page.
 
 3. The user enters their email address into the relevant field.
 
 4. If the user enters a valid, registered email address, they will receive a notification that a password reset email has been sent. If the email entered is invalid, the user will receive a notification that the email does not exist in our database and be told to register an account.
-
-<img width="678" alt="Screenshot 2025-01-30 at 6 54 22 PM" src="https://github.com/user-attachments/assets/fdc7106a-ba04-4442-9e97-f5ff4d972116" />
 
 ## Use Case 4 - Searching for a Video
 *As a user, I want to be able to search for different types of videos depending on my interests or a desired topic.*
@@ -54,8 +47,6 @@ sidebar_position: 5
 3. The user can also search by topic, clicking the “Topic List” text button from the options at the top of the site to be redirected to the topic list page, or hovering over it to see a list of topic options as well as a button to access the full list.
 
 4. The user then clicks on a topic, and is redirected to that topics page, where there are a selection of videos related to that topic to choose from.
-
-<img width="652" alt="Screenshot 2025-01-30 at 6 54 55 PM" src="https://github.com/user-attachments/assets/a3b76d14-7750-491e-a885-40007c6020b9" />
 
 ## Use Case 5 - Answering a Question During a Video
 *As a user, I want to be able to answer questions during a video.*
@@ -70,8 +61,6 @@ sidebar_position: 5
 
 5. After answering the question, the user is given feedback and an explanation about their answer, and the video resumes.
 
-<img width="667" alt="Screenshot 2025-01-30 at 6 55 44 PM" src="https://github.com/user-attachments/assets/c9239c18-6f56-4062-90a7-6d3f1bf687fa" />
-
 ## Use Case 6 - Getting Results Immediately After Watching a Video
 *As a user, I want to be able to see my results after answering all of the questions during a video.*
 
@@ -83,8 +72,6 @@ sidebar_position: 5
 
 4. When the video ends, the user will automatically have a summary generated for them of their performance, including the number of questions answered correctly, the number of questions answered incorrectly, and a review of each question.
 
-<img width="680" alt="Screenshot 2025-01-30 at 6 56 43 PM" src="https://github.com/user-attachments/assets/7d97348e-3c3a-4262-bb0c-af7736399120" />
-
 ## Use Case 7 - Saving a Video to Watch Later
 *As a user, I want to be able to save a video to my account to interact with later rather than having to search for it.*
 
@@ -93,8 +80,6 @@ sidebar_position: 5
 2. When the user finds a video they like, they can select the bookmark shaped save icon under the video to save it to their personal library.
 
 3. The user receives a notification that the video has been saved to their personal library.
-
-<img width="654" alt="Screenshot 2025-01-30 at 6 57 57 PM" src="https://github.com/user-attachments/assets/3cd50737-2082-4b11-badd-c587b3b34440" />
 
 ## Use Case 8 - Accessing Saved Videos
 *As a user, I want to be able to access the videos I have saved and interact with them.*
@@ -107,8 +92,6 @@ sidebar_position: 5
 
 4. The user clicks any one of these videos to play it.
 
-<img width="664" alt="Screenshot 2025-01-30 at 6 58 31 PM" src="https://github.com/user-attachments/assets/40858c00-7b1c-4dd4-bb21-ee49c01df82a" />
-
 ## Use Case 9 - Seeing Results from a Video Previously Watched
 *As a user, I want to be able to see a record of the videos I have watched in the past and a complete summary of how I answered the questions in those videos.*
 
@@ -117,6 +100,4 @@ sidebar_position: 5
 2. The user clicks on the “Activity History” text button in the sidebar of the profile page, which redirects them to the activity history page. The user then can see a list of all the videos they interacted with, with their most recent score displayed next to the video. 
 
 3. The user clicks the “Detailed Results” button under the most recent score for a video. This redirects them to a full breakdown of the questions for that video and their answers.
-
-<img width="655" alt="Screenshot 2025-01-30 at 7 03 44 PM" src="https://github.com/user-attachments/assets/6cef2c32-5a89-46a6-b7cd-a342c9c906f9" />
 

@@ -1,10 +1,50 @@
-# Generated files
-.docusaurus
 
-# Misc
-.DS_Store
+# Node.js dependencies
+node_modules/
+package-lock.json
+yarn.lock
+
+# Build artifacts
+build/
+dist/
+.docusaurus/
+
+# Testing & coverage reports
+coverage/
+__pycache__/
+.pytest_cache/
+.coverage
+.coveragerc
+
+# Logs & debugging
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# Environment variables
+.env
 .env.local
+.env.development
+.env.test
+.env.production
 .env.development.local
 .env.test.local
 .env.production.local
 *.env
+
+# Editor-specific files
+.vscode/
+.idea/
+*.sublime-workspace
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Git-specific
+.git/
+.gitignore
+
+# Virtual environments
+venv/
