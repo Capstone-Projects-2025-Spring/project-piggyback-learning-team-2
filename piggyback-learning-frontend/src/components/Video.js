@@ -4,11 +4,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 // import React from 'react';
 // changing some stuff
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
+// import { Link, useNavigate } from 'react-router-dom';
+
 // import { useState, useEffect, useRef } from "react";
 import YouTube from "react-youtube";
 import logo from '../images/Mob_Iron_Hog.png'; 
 import '../styles/video.css';
+import {Overlay} from './Overlay'
+import "../styles/overlay.css";
+
+
 
 // got this code from https://www.joshwcomeau.com/snippets/react-hooks/use-mouse-position/
 const useMousePosition = () => {
@@ -39,6 +45,13 @@ export default function App() {
   const [currentTime, setCurrentTime] = useState(0); // State for current time
   const videoRef = useRef(null);
 
+  // used this for reference for the overlay: https://www.youtube.com/watch?v=D9OJX6sSyYk  and https://github.com/unhingedmagikarp/medium-overlay.git 
+  const [isOpen, setIsOpen] = useState(false);
+
+  const toggleOverlay = () => {
+    setIsOpen(!isOpen);
+  };
+
 
   const togglePause = () => {
     setIsPaused((prev) => !prev);
@@ -66,9 +79,19 @@ export default function App() {
         setCurrentTime(someTime);
         console.log(`Current time: ${someTime}s`);
   
-        if (someTime >= 11.00 && someTime <= 12.00) { // Change 10.50 to your desired time
-          alert("Triggered at 10.50 seconds!");
+        if (someTime >= 10.00 && someTime <= 11.00) { 
+          alert(`Triggered at time: ${someTime}`)
         }
+        if (someTime >= 30.00 && someTime <= 31.00) { 
+          alert(`Triggered at time: ${someTime}`)
+        }
+        if (someTime >= 40.00 && someTime <= 41.00) { 
+          alert(`Triggered at time: ${someTime}`)
+        }
+        if (someTime >= 50.00 && someTime <= 51.00) {
+          alert(`Triggered at time: ${someTime}`)
+        }
+        
         
 
         const playerState = videoRef.current.getPlayerState();
@@ -82,6 +105,8 @@ export default function App() {
   const _onReady = (event) => {
     videoRef.current = event.target;
   };
+
+
 
   return (
     
@@ -105,7 +130,7 @@ export default function App() {
     </div>
       <div className="yvid">
         <YouTube 
-          videoId={"DR-cfDsHCGA"} // we can add a variable here later when re-using this page
+          videoId={"tA6c_kMJEl8"} // we can add a variable here later when re-using this page
           opts={{
             height: "390",
             width: "640",
@@ -113,11 +138,24 @@ export default function App() {
           onReady={_onReady} 
         />
       </div>
-      <button onClick={togglePause}>{isPaused ? "Play" : "Pause"}</button>
-      <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
+      <div className="bogos">
+        <button className ="abc"onClick={togglePause}>{isPaused ? "Play" : "Pause"}</button>
+        <br></br>
+        <button onClick={toggleOverlay}>Open Overlay</button>
+      </div>      
+      <div className="overlay">
+        <button className="overlay__close" onClick={toggleOverlay}>Open Overlay</button> 
+          <Overlay isOpen={isOpen} onClose={toggleOverlay}>
+            <h1 onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}>
+              <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
+              <h2>Current Time: {currentTime.toFixed(2)}</h2>
+              {/* <h2 onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}>test container</h2> */}
+            </h1>
+          </Overlay>
+      </div>
+      {/* <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
       <h2>Current Time: {currentTime.toFixed(2)}</h2>
-      <h3 onClick={() => alert("Test container clicked!")}>test container</h3>
-      
+      <h3 onClick={() => alert("Test container clicked!")}>test container</h3> */}  
     </div>
   );
 }
