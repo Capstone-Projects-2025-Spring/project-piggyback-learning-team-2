@@ -44,6 +44,7 @@ export default function App() {
   const someMousePosition = useMousePosition(); 
   const [currentTime, setCurrentTime] = useState(0); 
   const videoRef = useRef(null);
+  const [overlayContent, setOverlayContent] = useState(null);
 
   // used this for reference for the overlay: https://www.youtube.com/watch?v=D9OJX6sSyYk  and https://github.com/unhingedmagikarp/medium-overlay.git 
   const [isOpen, setIsOpen] = useState(false);
@@ -87,21 +88,48 @@ export default function App() {
           // alert(`Triggered at time: ${someTime}`)
           setIsPaused(true)
           setIsOpen(true)
+          setOverlayContent(
+            <div>
+              <h3>This is a test of changing the content of the overlay</h3>
+              <img onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)} src={logo} alt="Piggyback Learning Logo" />
+            </div>
+          )
         }
         if (someTime >= 30.00 && someTime <= 31.00) { 
           // alert(`Triggered at time: ${someTime}`)
           setIsPaused(true)
           setIsOpen(true)
+          setOverlayContent(
+            <h1 onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}>
+              <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
+              <h2>Current Time: {currentTime.toFixed(2)}</h2>
+              {/* <h2 onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}>test container</h2> */}
+            </h1>
+          )
         }
         if (someTime >= 40.00 && someTime <= 41.00) { 
           // alert(`Triggered at time: ${someTime}`)
           setIsPaused(true)
           setIsOpen(true)
+          setOverlayContent(
+            <h1 onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}>
+              <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
+              <h2>Current Time: {currentTime.toFixed(2)}</h2>
+              {/* <h2 onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}>test container</h2> */}
+            </h1>
+          )
         }
         if (someTime >= 50.00 && someTime <= 51.00) {
           // alert(`Triggered at time: ${someTime}`)
           setIsPaused(true)
           setIsOpen(true)
+          setOverlayContent(
+            <h1 onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}>
+              <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
+              <h2>Current Time: {currentTime.toFixed(2)}</h2>
+              {/* <h2 onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}>test container</h2> */}
+            </h1>
+          )
         }
         
         
@@ -112,7 +140,7 @@ export default function App() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [toggleOverlay]);
+  }, [toggleOverlay, someMousePosition]);
 
   const _onReady = (event) => {
     videoRef.current = event.target;
@@ -158,11 +186,7 @@ export default function App() {
       <div className="overlay">
         <button className="overlay__close" onClick={toggleOverlay}>Open Overlay</button> 
           <Overlay isOpen={isOpen} onClose={toggleOverlay}>
-            <h1 onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}>
-              <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
-              <h2>Current Time: {currentTime.toFixed(2)}</h2>
-              {/* <h2 onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}>test container</h2> */}
-            </h1>
+            <div>{overlayContent}</div>
           </Overlay>
       </div>
       {/* <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
