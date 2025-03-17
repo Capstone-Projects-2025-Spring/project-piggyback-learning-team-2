@@ -85,23 +85,23 @@ export default function App() {
   
         if (someTime >= 10.00 && someTime <= 11.00) { 
           // alert(`Triggered at time: ${someTime}`)
-          togglePause()
-          toggleOverlay()
+          setIsPaused(true)
+          setIsOpen(true)
         }
         if (someTime >= 30.00 && someTime <= 31.00) { 
           // alert(`Triggered at time: ${someTime}`)
-          togglePause()
-          toggleOverlay()
+          setIsPaused(true)
+          setIsOpen(true)
         }
         if (someTime >= 40.00 && someTime <= 41.00) { 
           // alert(`Triggered at time: ${someTime}`)
-          togglePause()
-          toggleOverlay()
+          setIsPaused(true)
+          setIsOpen(true)
         }
         if (someTime >= 50.00 && someTime <= 51.00) {
           // alert(`Triggered at time: ${someTime}`)
-          togglePause()
-          toggleOverlay()
+          setIsPaused(true)
+          setIsOpen(true)
         }
         
         
@@ -151,9 +151,9 @@ export default function App() {
         />
       </div>
       <div className="bogos">
-        {/* <button className ="abc"onClick={togglePause}>{isPaused ? "Play" : "Pause"}</button>
+        <button className ="abc"onClick={togglePause}>{isPaused ? "Play" : "Pause"}</button>
         <br></br>
-        <button onClick={toggleOverlay}>Open Overlay</button> */}
+        <button onClick={toggleOverlay}>Open Overlay</button>
       </div>      
       <div className="overlay">
         <button className="overlay__close" onClick={toggleOverlay}>Open Overlay</button> 
