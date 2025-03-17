@@ -1,7 +1,7 @@
 
 
 // used npm install react-youtube
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 // import React from 'react';
 // changing some stuff
 import { Link } from 'react-router-dom';
@@ -41,16 +41,20 @@ const useMousePosition = () => {
 
 export default function App() {
   const [isPaused, setIsPaused] = useState(false);
-  const someMousePosition = useMousePosition(); // Call the hook here
-  const [currentTime, setCurrentTime] = useState(0); // State for current time
+  const someMousePosition = useMousePosition(); 
+  const [currentTime, setCurrentTime] = useState(0); 
   const videoRef = useRef(null);
 
   // used this for reference for the overlay: https://www.youtube.com/watch?v=D9OJX6sSyYk  and https://github.com/unhingedmagikarp/medium-overlay.git 
   const [isOpen, setIsOpen] = useState(false);
 
-  const toggleOverlay = () => {
-    setIsOpen(!isOpen);
-  };
+  // const toggleOverlay = () => {
+  //   setIsOpen(!isOpen);
+  // };
+  const toggleOverlay = useCallback(() => {
+    setIsOpen(prev => !prev);
+  }, []);
+  
 
 
   const togglePause = () => {
@@ -80,16 +84,24 @@ export default function App() {
         console.log(`Current time: ${someTime}s`);
   
         if (someTime >= 10.00 && someTime <= 11.00) { 
-          alert(`Triggered at time: ${someTime}`)
+          // alert(`Triggered at time: ${someTime}`)
+          togglePause()
+          toggleOverlay()
         }
         if (someTime >= 30.00 && someTime <= 31.00) { 
-          alert(`Triggered at time: ${someTime}`)
+          // alert(`Triggered at time: ${someTime}`)
+          togglePause()
+          toggleOverlay()
         }
         if (someTime >= 40.00 && someTime <= 41.00) { 
-          alert(`Triggered at time: ${someTime}`)
+          // alert(`Triggered at time: ${someTime}`)
+          togglePause()
+          toggleOverlay()
         }
         if (someTime >= 50.00 && someTime <= 51.00) {
-          alert(`Triggered at time: ${someTime}`)
+          // alert(`Triggered at time: ${someTime}`)
+          togglePause()
+          toggleOverlay()
         }
         
         
@@ -100,7 +112,7 @@ export default function App() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [toggleOverlay]);
 
   const _onReady = (event) => {
     videoRef.current = event.target;
@@ -130,7 +142,7 @@ export default function App() {
     </div>
       <div className="yvid">
         <YouTube 
-          videoId={"tA6c_kMJEl8"} // we can add a variable here later when re-using this page
+          videoId={"9e5lcQycf2M"} // we can add a variable here later when re-using this page
           opts={{
             height: "390",
             width: "640",
@@ -139,9 +151,9 @@ export default function App() {
         />
       </div>
       <div className="bogos">
-        <button className ="abc"onClick={togglePause}>{isPaused ? "Play" : "Pause"}</button>
+        {/* <button className ="abc"onClick={togglePause}>{isPaused ? "Play" : "Pause"}</button>
         <br></br>
-        <button onClick={toggleOverlay}>Open Overlay</button>
+        <button onClick={toggleOverlay}>Open Overlay</button> */}
       </div>      
       <div className="overlay">
         <button className="overlay__close" onClick={toggleOverlay}>Open Overlay</button> 
