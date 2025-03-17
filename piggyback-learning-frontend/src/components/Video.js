@@ -10,10 +10,10 @@ import { Link } from 'react-router-dom';
 // import { useState, useEffect, useRef } from "react";
 import YouTube from "react-youtube";
 import logo from '../images/Mob_Iron_Hog.png'; 
+import questionImage from '../images/placeholderquestionImage.png'; 
 import '../styles/video.css';
 import {Overlay} from './Overlay'
 import "../styles/overlay.css";
-
 
 
 // got this code from https://www.joshwcomeau.com/snippets/react-hooks/use-mouse-position/
@@ -84,20 +84,20 @@ export default function App() {
         const someTime = videoRef.current.getCurrentTime();
         setCurrentTime(someTime);
         console.log(`Current time: ${someTime}s`);
-  
-        if (someTime >= 10.00 && someTime <= 11.00 && triggerCount == 0) { 
+
+        // if within x >1020 && x<1120 and y>600 && y<695
+        if (someTime >= 10.00 && someTime <= 11.00 && triggerCount === 0) { 
           // alert(`Triggered at time: ${someTime}`)
           setTriggerCount(1)
           setIsPaused(true)
           setIsOpen(true)
           setOverlayContent(
-            <div>
-              <h3>This is a test of changing the content of the overlay</h3>
-              <img onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)} src={logo} alt="Piggyback Learning Logo" />
+            <div className='overlayImage'>
+              <img onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)} src={questionImage} alt="place holder question image" class="questionImage" />
             </div>
           )
         }
-        if (someTime >= 30.00 && someTime <= 31.00 && triggerCount == 1) { 
+        if (someTime >= 30.00 && someTime <= 31.00 && triggerCount === 1) { 
           // alert(`Triggered at time: ${someTime}`)
           setTriggerCount(2)
           setIsPaused(true)
@@ -110,7 +110,7 @@ export default function App() {
             </h1>
           )
         }
-        if (someTime >= 40.00 && someTime <= 41.00 && triggerCount == 2) { 
+        if (someTime >= 40.00 && someTime <= 41.00 && triggerCount === 2) { 
           // alert(`Triggered at time: ${someTime}`)
           setTriggerCount(3)
           setIsPaused(true)
@@ -123,7 +123,7 @@ export default function App() {
             </h1>
           )
         }
-        if (someTime >= 50.00 && someTime <= 51.00 && triggerCount == 3) {
+        if (someTime >= 50.00 && someTime <= 51.00 && triggerCount === 3) {
           // alert(`Triggered at time: ${someTime}`)
           setTriggerCount(4)
           setIsPaused(true)
@@ -177,20 +177,22 @@ export default function App() {
         <YouTube 
           videoId={"9e5lcQycf2M"} // we can add a variable here later when re-using this page
           opts={{
-            height: "390",
-            width: "640",
+            height: "480",
+            width: "854",
             playerVars: {autoplay: 1,},}} 
           onReady={_onReady} 
         />
       </div>
       <div className="bogos">
-        <button className ="abc"onClick={togglePause}>{isPaused ? "Play" : "Pause"}</button>
+        {/* <button className ="abc"onClick={togglePause}>{isPaused ? "Play" : "Pause"}</button>
         <br></br>
-        <button onClick={toggleOverlay}>Open Overlay</button>
+        <button onClick={toggleOverlay}>Open Overlay</button> */}
       </div>      
       <div className="overlay">
         <button className="overlay__close" onClick={toggleOverlay}>Open Overlay</button> 
           <Overlay isOpen={isOpen} onClose={toggleOverlay}>
+              <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
+              <h2>Current Time: {currentTime.toFixed(2)}</h2>
             <div>{overlayContent}</div>
           </Overlay>
       </div>

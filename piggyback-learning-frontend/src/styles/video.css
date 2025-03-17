@@ -123,6 +123,15 @@ footer {
     padding: 30px;
 }
 
+.overlayImage {
+    margin: auto;
+    padding: 10px;
+}
 
-
-
+.questionImage {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 450px;
+    height: 250px;
+}
