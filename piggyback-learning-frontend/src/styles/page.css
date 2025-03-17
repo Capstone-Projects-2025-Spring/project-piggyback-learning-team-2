@@ -166,11 +166,12 @@ main {
 
 .url-input-container {
   display: flex;
-  gap: 15px;
+  gap: 0; /* Removed gap between input and button */
   justify-content: center;
   align-items: center;
   max-width: 700px;
   margin: 0 auto;
+  flex-wrap: nowrap; /* Ensures items stay in one line */
 }
 
 .youtube-url-enhanced input[type="text"] {
@@ -196,13 +197,11 @@ main {
   border: none;
   color: white;
   cursor: pointer;
-  transition: all 0.3s ease;
+  white-space: nowrap; 
 }
 
 .submit-btn:hover {
-  background: #45a049;
-  transform: translateY(-3px);
-}
+  background: var(--primary-green); 
 
 /* Enhanced Grade Selection */
 .grade-selection-enhanced {
@@ -266,6 +265,7 @@ main {
   color: white;
   font-size: 2.5em;
   margin-bottom: 30px;
+  text-align: center; 
 }
 
 .video-scroll-wrapper {
