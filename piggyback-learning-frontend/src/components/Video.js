@@ -45,6 +45,7 @@ export default function App() {
   const [currentTime, setCurrentTime] = useState(0); 
   const videoRef = useRef(null);
   const [overlayContent, setOverlayContent] = useState(null);
+  const [triggerCount, setTriggerCount] = useState(0);
 
   // used this for reference for the overlay: https://www.youtube.com/watch?v=D9OJX6sSyYk  and https://github.com/unhingedmagikarp/medium-overlay.git 
   const [isOpen, setIsOpen] = useState(false);
@@ -84,8 +85,9 @@ export default function App() {
         setCurrentTime(someTime);
         console.log(`Current time: ${someTime}s`);
   
-        if (someTime >= 10.00 && someTime <= 11.00) { 
+        if (someTime >= 10.00 && someTime <= 11.00 && triggerCount == 0) { 
           // alert(`Triggered at time: ${someTime}`)
+          setTriggerCount(1)
           setIsPaused(true)
           setIsOpen(true)
           setOverlayContent(
@@ -95,8 +97,9 @@ export default function App() {
             </div>
           )
         }
-        if (someTime >= 30.00 && someTime <= 31.00) { 
+        if (someTime >= 30.00 && someTime <= 31.00 && triggerCount == 1) { 
           // alert(`Triggered at time: ${someTime}`)
+          setTriggerCount(2)
           setIsPaused(true)
           setIsOpen(true)
           setOverlayContent(
@@ -107,8 +110,9 @@ export default function App() {
             </h1>
           )
         }
-        if (someTime >= 40.00 && someTime <= 41.00) { 
+        if (someTime >= 40.00 && someTime <= 41.00 && triggerCount == 2) { 
           // alert(`Triggered at time: ${someTime}`)
+          setTriggerCount(3)
           setIsPaused(true)
           setIsOpen(true)
           setOverlayContent(
@@ -119,8 +123,9 @@ export default function App() {
             </h1>
           )
         }
-        if (someTime >= 50.00 && someTime <= 51.00) {
+        if (someTime >= 50.00 && someTime <= 51.00 && triggerCount == 3) {
           // alert(`Triggered at time: ${someTime}`)
+          setTriggerCount(4)
           setIsPaused(true)
           setIsOpen(true)
           setOverlayContent(
