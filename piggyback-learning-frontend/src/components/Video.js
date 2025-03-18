@@ -1,7 +1,7 @@
 
 
 // used npm install react-youtube
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 // import React from 'react';
 // changing some stuff
 import { Link } from 'react-router-dom';
@@ -10,10 +10,10 @@ import { Link } from 'react-router-dom';
 // import { useState, useEffect, useRef } from "react";
 import YouTube from "react-youtube";
 import logo from '../images/Mob_Iron_Hog.png'; 
+import questionImage from '../images/placeholderquestionImage.png'; 
 import '../styles/video.css';
 import {Overlay} from './Overlay'
 import "../styles/overlay.css";
-
 
 
 // got this code from https://www.joshwcomeau.com/snippets/react-hooks/use-mouse-position/
@@ -41,16 +41,22 @@ const useMousePosition = () => {
 
 export default function App() {
   const [isPaused, setIsPaused] = useState(false);
-  const someMousePosition = useMousePosition(); // Call the hook here
-  const [currentTime, setCurrentTime] = useState(0); // State for current time
+  const someMousePosition = useMousePosition(); 
+  const [currentTime, setCurrentTime] = useState(0); 
   const videoRef = useRef(null);
+  const [overlayContent, setOverlayContent] = useState(null);
+  const [triggerCount, setTriggerCount] = useState(0);
 
   // used this for reference for the overlay: https://www.youtube.com/watch?v=D9OJX6sSyYk  and https://github.com/unhingedmagikarp/medium-overlay.git 
   const [isOpen, setIsOpen] = useState(false);
 
-  const toggleOverlay = () => {
-    setIsOpen(!isOpen);
-  };
+  // const toggleOverlay = () => {
+  //   setIsOpen(!isOpen);
+  // };
+  const toggleOverlay = useCallback(() => {
+    setIsOpen(prev => !prev);
+  }, []);
+  
 
 
   const togglePause = () => {
@@ -78,18 +84,57 @@ export default function App() {
         const someTime = videoRef.current.getCurrentTime();
         setCurrentTime(someTime);
         console.log(`Current time: ${someTime}s`);
-  
-        if (someTime >= 10.00 && someTime <= 11.00) { 
-          alert(`Triggered at time: ${someTime}`)
+
+        // if within x >1020 && x<1120 and y>600 && y<695
+        if (someTime >= 10.00 && someTime <= 11.00 && triggerCount === 0) { 
+          // alert(`Triggered at time: ${someTime}`)
+          setTriggerCount(1)
+          setIsPaused(true)
+          setIsOpen(true)
+          setOverlayContent(
+            <div className='overlayImage'>
+              <img onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)} src={questionImage} alt="place holder question image" class="questionImage" />
+            </div>
+          )
         }
-        if (someTime >= 30.00 && someTime <= 31.00) { 
-          alert(`Triggered at time: ${someTime}`)
+        if (someTime >= 30.00 && someTime <= 31.00 && triggerCount === 1) { 
+          // alert(`Triggered at time: ${someTime}`)
+          setTriggerCount(2)
+          setIsPaused(true)
+          setIsOpen(true)
+          setOverlayContent(
+            <h1 onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}>
+              <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
+              <h2>Current Time: {currentTime.toFixed(2)}</h2>
+              {/* <h2 onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}>test container</h2> */}
+            </h1>
+          )
         }
-        if (someTime >= 40.00 && someTime <= 41.00) { 
-          alert(`Triggered at time: ${someTime}`)
+        if (someTime >= 40.00 && someTime <= 41.00 && triggerCount === 2) { 
+          // alert(`Triggered at time: ${someTime}`)
+          setTriggerCount(3)
+          setIsPaused(true)
+          setIsOpen(true)
+          setOverlayContent(
+            <h1 onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}>
+              <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
+              <h2>Current Time: {currentTime.toFixed(2)}</h2>
+              {/* <h2 onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}>test container</h2> */}
+            </h1>
+          )
         }
-        if (someTime >= 50.00 && someTime <= 51.00) {
-          alert(`Triggered at time: ${someTime}`)
+        if (someTime >= 50.00 && someTime <= 51.00 && triggerCount === 3) {
+          // alert(`Triggered at time: ${someTime}`)
+          setTriggerCount(4)
+          setIsPaused(true)
+          setIsOpen(true)
+          setOverlayContent(
+            <h1 onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}>
+              <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
+              <h2>Current Time: {currentTime.toFixed(2)}</h2>
+              {/* <h2 onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}>test container</h2> */}
+            </h1>
+          )
         }
         
         
@@ -100,7 +145,7 @@ export default function App() {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, []);
+  }, [toggleOverlay, someMousePosition]);
 
   const _onReady = (event) => {
     videoRef.current = event.target;
@@ -130,27 +175,25 @@ export default function App() {
     </div>
       <div className="yvid">
         <YouTube 
-          videoId={"tA6c_kMJEl8"} // we can add a variable here later when re-using this page
+          videoId={"9e5lcQycf2M"} // we can add a variable here later when re-using this page
           opts={{
-            height: "390",
-            width: "640",
+            height: "480",
+            width: "854",
             playerVars: {autoplay: 1,},}} 
           onReady={_onReady} 
         />
       </div>
       <div className="bogos">
-        <button className ="abc"onClick={togglePause}>{isPaused ? "Play" : "Pause"}</button>
+        {/* <button className ="abc"onClick={togglePause}>{isPaused ? "Play" : "Pause"}</button>
         <br></br>
-        <button onClick={toggleOverlay}>Open Overlay</button>
+        <button onClick={toggleOverlay}>Open Overlay</button> */}
       </div>      
       <div className="overlay">
         <button className="overlay__close" onClick={toggleOverlay}>Open Overlay</button> 
           <Overlay isOpen={isOpen} onClose={toggleOverlay}>
-            <h1 onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}>
               <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
               <h2>Current Time: {currentTime.toFixed(2)}</h2>
-              {/* <h2 onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}>test container</h2> */}
-            </h1>
+            <div>{overlayContent}</div>
           </Overlay>
       </div>
       {/* <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
