@@ -4,15 +4,10 @@ from pydantic import BaseModel, HttpUrl, field_validator
 from . import models
 from sqlalchemy.orm import Session
 from .database import engine, get_db
-# from googleapiclient.discovery import build
-
-
+from .youtube import retreiveYoutubeMetaData
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
-
-YOUTUBE_API_KEY = "Insert API KEY"
-
 
 class YouTubeVideo(BaseModel):
     """
@@ -148,73 +143,30 @@ def update_URL(video_url: str, video: YouTubeVideo,
     return {"data": engagement}
 
 
-# @app.post("/youtube_metadata")
-# def get_youtube_metadata(video: YouTubeVideo):
-#     """
-#     Given a validated YouTube URL, extracts the video ID and retrieves
-#     metadata from the official YouTube Data API (v3).
-#     """
-#     # 1) Extract the video ID from the embed form
-#     #    Example: "https://www.youtube.com/embed/<video_id>"
-#     url_str = str(video.url)
-#     video_id = None
+@app.post("/youtube_metadata")
+def get_youtube_metadata(video: YouTubeVideo):
+    """
+    Given a validated YouTube URL, extracts the video ID and retrieves
+    metadata from the official YouTube Data API (v3).
+    """
+    #    Extract the video ID from the embed form
+    #    Example: "https://www.youtube.com/embed/<video_id>"
+    url_str = str(video.url)
+    video_id = None
 
-#     if "youtube.com/embed/" in url_str:
-#         video_id = url_str.split("youtube.com/embed/")[-1]
-#     elif "youtu.be/" in url_str:
-#         video_id = url_str.split("youtu.be/")[-1]
-#     elif "watch?v=" in url_str:
-#         video_id = url_str.split("watch?v=")[-1]
+    if "youtube.com/embed/" in url_str:
+        video_id = url_str.split("youtube.com/embed/")[-1]
+    elif "youtu.be/" in url_str:
+        video_id = url_str.split("youtu.be/")[-1]
+    elif "watch?v=" in url_str:
+        video_id = url_str.split("watch?v=")[-1]
 
-#     if not video_id:
-#         raise HTTPException(
-#             status_code=400,
-#             detail="Could not extract a valid video
-#             ID from the provided URL."
-#         )
-
-#     # 2) Build the YouTube Data API client
-#     youtube = build("youtube", "v3", developerKey=YOUTUBE_API_KEY)
-
-#     # 3) Call videos().list to get snippet, contentDetails, status, etc.
-#     request = youtube.videos().list(
-#         part="snippet,contentDetails,status",
-#         id=video_id
-#     )
-#     response = request.execute()
-
-#     items = response.get("items", [])
-#     if not items:
-#         raise HTTPException(
-#             status_code=404,
-#             detail="No video found for this ID."
-#         )
-
-#     video_data = items[0]
-#     snippet = video_data.get("snippet", {})
-#     content_details = video_data.get("contentDetails", {})
-#     status = video_data.get("status", {})
-
-#     # 4) Construct a simple metadata response
-#     metadata_response = {
-#         "video_id": video_id,
-#         "title": snippet.get("title"),
-#         "description": snippet.get("description"),
-#         "published_at": snippet.get("publishedAt"),
-#         "channel_id": snippet.get("channelId"),
-#         "channel_title": snippet.get("channelTitle"),
-#         "tags": snippet.get("tags"),
-#         "category_id": snippet.get("categoryId"),
-#         "content_rating": content_details.get("contentRating", {}),
-#         "duration": content_details.get("duration"),
-#         "dimension": content_details.get("dimension"),
-#         "definition": content_details.get("definition"),
-#         "caption": content_details.get("caption"),
-#         "licensed_content": content_details.get("licensedContent"),
-#         "age_restricted": (content_details.get("contentRating", {})
-#                            .get("ytRating") == "ytAgeRestricted"),
-#         "privacy_status": status.get("privacyStatus"),
-#         "made_for_kids": status.get("madeForKids"),
-#     }
-
-#     return {"metadata": metadata_response}
+    if not video_id:
+        raise HTTPException(
+            status_code=400,
+            detail="""Could not extract a valid video
+            ID from the provided URL."""
+        )
+    metadata = retreiveYoutubeMetaData(video_id)
+    return {"metadata": metadata}
+   
