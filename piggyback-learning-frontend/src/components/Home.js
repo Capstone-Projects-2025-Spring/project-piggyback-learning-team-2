@@ -121,7 +121,7 @@ function Home() {
       const videoTitle = data.metadata.title;
       //const isMadeForKids   = data.metadata.made_for_kids;
       console.log(isAgeRestricted);
-      return ([!isAgeRestricted,videoTitle /*&& isMadeForKids*/]);
+      return ([!isAgeRestricted,videoTitle ]);
 
     } catch (error) {
       console.error("Error checking video metadata:", error);
