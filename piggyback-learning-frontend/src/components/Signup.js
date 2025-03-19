@@ -85,10 +85,10 @@ const Signup = () => {
   return (
     <GoogleOAuthProvider clientId="658379694414-nbdeeuc5kavcd9l0k1e034atul49cv80.apps.googleusercontent.com">
       <div className={styles.signupPage}>
-        <header className={styles.header}>
+        <header>
           <h1>Piggyback Learning</h1>
           <nav>
-            <ul className={styles.navList}>
+            <ul>
               <li><Link to="/">Home</Link></li>
               <li><Link to="/how-to-join">How to Join</Link></li>
               <li><Link to="/signin">Sign In</Link></li>
@@ -97,74 +97,68 @@ const Signup = () => {
           </nav>
         </header>
 
-        <main className={styles.main}>
-          <div className={styles.formContainer}>
-            {showWelcome && (
-              <div className={styles.welcomeBox}>
-                <h2>Welcome to Piggyback Learning!</h2>
-                <p>Join us for fun learning adventures.</p>
-              </div>
-            )}
+      <main>
+        <div className="form-container">
+          {showWelcome && (
+            <div className="welcome-box">
+              <h2>Welcome to Piggyback Learning!</h2>
+              <p>Join us for fun learning adventures.</p>
+            </div>
+          )}
 
-            <h2 className={styles.formTitle}>Sign Up</h2>
+          <h2 className="form-title">Sign Up</h2>
 
-            {error && <p className={styles.errorMessage}>{error}</p>}
+          <form onSubmit={handleSubmit}>
+            <div className="input-group">
+              <label>First Name:</label>
+              <input
+                type="text"
+                name="firstName"
+                value={formData.firstName}
+                onChange={handleInputChange}
+                required
+                placeholder="Enter your first name"
+              />
+            </div>
+            <div className="input-group">
+              <label>Last Name:</label>
+              <input
+                type="text"
+                name="lastName"
+                value={formData.lastName}
+                onChange={handleInputChange}
+                required
+                placeholder="Enter your last name"
+              />
+            </div>
+            <div className="input-group">
+              <label>Email:</label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleInputChange}
+                required
+                placeholder="Enter your email"
+              />
+            </div>
+            <div className="input-group">
+              <label>Password:</label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleInputChange}
+                required
+                placeholder="Create a password"
+              />
+            </div>
+            <button type="submit">Sign Up</button>
+          </form>
 
-            <form onSubmit={handleSubmit}>
-              <div className={styles.inputGroup}>
-                <label>First Name:</label>
-                <input
-                  type="text"
-                  name="firstName"
-                  value={formData.firstName}
-                  onChange={handleInputChange}
-                  required
-                  placeholder="Enter your first name"
-                />
-              </div>
-              <div className={styles.inputGroup}>
-                <label>Last Name:</label>
-                <input
-                  type="text"
-                  name="lastName"
-                  value={formData.lastName}
-                  onChange={handleInputChange}
-                  required
-                  placeholder="Enter your last name"
-                />
-              </div>
-              <div className={styles.inputGroup}>
-                <label>Email:</label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  required
-                  placeholder="Enter your email"
-                />
-              </div>
-              <div className={styles.inputGroup}>
-                <label>Password:</label>
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleInputChange}
-                  required
-                  placeholder="Create a password"
-                />
-              </div>
-              <button type="submit" className={styles.signupButton}>
-                Sign Up
-              </button>
-            </form>
+          <p>Already have an account? <Link to="/signin">Sign In</Link></p>
 
-            <p>
-              Already have an account? <Link to="/signin">Sign In</Link>
-            </p>
-
-            {/* Google Sign-In Button */}
+              {/* Google Sign-In Button */}
             <div className={styles.googleSignIn}>
               <GoogleLogin
                 onSuccess={handleGoogleLoginSuccess}
@@ -184,13 +178,15 @@ const Signup = () => {
                 )}
               />
             </div>
-          </div>
-        </main>
 
-        <footer>
-          <p>&copy; 2025 Piggyback Learning. All Rights Reserved.</p>
-        </footer>
-      </div>
+
+        </div>
+      </main>
+
+      <footer>
+        <p>&copy; 2025 Piggyback Learning. All Rights Reserved.</p>
+      </footer>
+    </div>
     </GoogleOAuthProvider>
   );
 };
