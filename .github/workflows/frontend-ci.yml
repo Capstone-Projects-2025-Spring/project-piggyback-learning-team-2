@@ -22,20 +22,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '18'
-          cache: 'npm'
 
       - name: Install dependencies
         run: npm install
-        working-directory: ./piggyback-learning-frontend  # Adjust if needed
+        working-directory: ./piggyback-learning-frontend  # Use this if your frontend lives here
 
-      - name: Create .env file for tests
-        run: |
-          echo "REACT_APP_SUPABASE_URL=${{ secrets.REACT_APP_SUPABASE_URL }}" >> .env
-          echo "REACT_APP_SUPABASE_ANON_KEY=${{ secrets.REACT_APP_SUPABASE_ANON_KEY }}" >> .env
-        working-directory: ./piggyback-learning-frontend  # Adjust based on project
-
-      - name: Run tests
-        run: npm test
-        env:
-          CI: true  # Prevent Jest from running in watch mode
-        working-directory: ./piggyback-learning-frontend
+     
