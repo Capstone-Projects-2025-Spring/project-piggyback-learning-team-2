@@ -14,9 +14,6 @@ function Home() {
     { src: "https://www.youtube.com/embed/tVHOBVAFjUw", title: "Basic Addition" },
     { src: "https://www.youtube.com/embed/o-6OKWU99Co", title: "Learning Shapes" },
     { src: "https://www.youtube.com/embed/qhOTU8_1Af4", title: "Colors and Patterns" },
-    { src: "https://www.youtube.com/embed/tA6c_kMJEl8", title: "Harry The Bunny" },
-    { src: "https://www.youtube.com/embed/AKjxYkRlbks", title: "Mystery Doug" },
-    { src: "https://www.youtube.com/embed/JrBtNPnekUU", title: "Why Do We Cry" },
   ]);
 
   const handleGradeChange = (event) => {
