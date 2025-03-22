@@ -1,12 +1,14 @@
 from googleapiclient.discovery import build
+from fastapi import HTTPException
 from dotenv import load_dotenv
 import os
 from pathlib import Path
 load_dotenv(dotenv_path=Path(__file__).parent / ".env")
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
 
+
 def retreiveYoutubeMetaData(video_id):
-     # 1) Build the YouTube Data API client
+    # 1) Build the YouTube Data API client
     youtube = build("youtube", "v3", developerKey=YOUTUBE_API_KEY)
 
     # 2) Call videos().list to get snippet, contentDetails, status, etc.
