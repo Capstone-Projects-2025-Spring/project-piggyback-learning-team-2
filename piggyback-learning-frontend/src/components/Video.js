@@ -1,3 +1,16 @@
+
+
+/*
+
+in researching how to implement the questions and have an end of video review I found this: https://react.dev/learn/updating-objects-in-state
+ill research the example given for the mouse pointer for a more accurate version and likely end up using it for the image interaction
+ 
+
+*/
+
+
+
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import YouTube from "react-youtube";
@@ -37,6 +50,7 @@ export default function App() {
   const [isOpen, setIsOpen] = useState(false);
   const [overlayType, setOverlayType] = useState(null);
 
+  const [answers, setAnswers] = useState({}); // Store answers for questions
 
   const toggleOverlay = useCallback(() => {
     setIsOpen(prev => !prev);
@@ -107,86 +121,99 @@ export default function App() {
     videoRef.current = event.target;
   };
 
+
+  // uses Copying objects with the spread syntax from https://react.dev/learn/updating-objects-in-state with help from overlord gpt
+  const userAnswer = (questionKey) => {
+    const selectedOption = document.querySelector(`input[name="${questionKey}"]:checked`);
+    if (selectedOption) {
+      setAnswers(prev => ({ ...prev, [questionKey]: selectedOption.value }));
+      console.log(`Answer for ${questionKey}:`, selectedOption.value); // Debugging log
+    } else {
+      console.log(`No answer selected for ${questionKey}`);
+    }
+    togglePandOtogether(); 
+  };
+
 // used this source from chatgpt https://dev.to/remejuan/dynamically-render-components-based-on-configuration-3l42 (reasoning sucks but search is better than google at finding code that works)
 // uses this way of updating the rendered overlay content because it creates a stale closure otherwise, incidentally this'll probably make it easier to coonect with any back end components 
-const renderOverlayContent = () => {
-    switch(overlayType) {
-      case "question1":
-        return (
-          <div className='overlayImage'>
-            <h1>Click on Squeeks!</h1>
-            <img
-              onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}
-              src={questionImage}
-              alt="place holder question img"
-              className="questionImage" 
-            />
-          </div>
-        );
-      case "question2":
-        return (
-          <div className='overlayImage'>
-            <h1>What muscle is responsible for causing hiccups?</h1>
-            <br />
-            <input type="radio" name="question" value="A" id="a" />
-            <label htmlFor="a">Heart</label>
-            <br />
-            <input type="radio" name="question" value="B" id="b" />
-            <label htmlFor="b">Diaphragm</label>
-            <br />
-            <input type="radio" name="question" value="C" id="c" />
-            <label htmlFor="c">Stomach</label>
-            <br />
-            <input type="radio" name="question" value="D" id="d" />
-            <label htmlFor="d">Lungs</label>
-            <br />
-            <button className="button" onClick={togglePandOtogether}>Submit</button> 
-          </div>
-        );
-      case "question3":
-        return (
-          <div className='overlayImage'>
-            <h1>Which of the following is NOT a common cause of hiccups?</h1>
-            <br />
-            <input type="radio" name="question" value="A" id="a" />
-            <label htmlFor="a">Eating too quickly</label>
-            <br />
-            <input type="radio" name="question" value="B" id="b" />
-            <label htmlFor="b">Drinking carbonated beverages</label>
-            <br />
-            <input type="radio" name="question" value="C" id="c" />
-            <label htmlFor="c">Holding your breath</label>
-            <br />
-            <input type="radio" name="question" value="D" id="d" />
-            <label htmlFor="d">Sudden excitement</label>
-            <br />
-            <button className="button" onClick={togglePandOtogether}>Submit</button> 
+  const renderOverlayContent = () => {
+      switch(overlayType) {
+        case "question1":
+          return (
+            <div className='overlayImage'>
+              <h1>Click on Squeeks!</h1>
+              <img
+                onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}
+                src={questionImage}
+                alt="place holder question img"
+                className="questionImage" 
+              />
+            </div>
+          );
+        case "question2":
+          return (
+            <div className='overlayImage'>
+              <h1>What muscle is responsible for causing hiccups?</h1>
+              <br />
+              <input type="radio" name="question" value="A" id="a" />
+              <label htmlFor="a">Heart</label>
+              <br />
+              <input type="radio" name="question" value="B" id="b" />
+              <label htmlFor="b">Diaphragm</label>
+              <br />
+              <input type="radio" name="question" value="C" id="c" />
+              <label htmlFor="c">Stomach</label>
+              <br />
+              <input type="radio" name="question" value="D" id="d" />
+              <label htmlFor="d">Lungs</label>
+              <br />
+              <button className="button" onClick={() =>userAnswer("question2")}>Submit</button> 
+            </div>
+          );
+        case "question3":
+          return (
+            <div className='overlayImage'>
+              <h1>Which of the following is NOT a common cause of hiccups?</h1>
+              <br />
+              <input type="radio" name="question" value="A" id="a" />
+              <label htmlFor="a">Eating too quickly</label>
+              <br />
+              <input type="radio" name="question" value="B" id="b" />
+              <label htmlFor="b">Drinking carbonated beverages</label>
+              <br />
+              <input type="radio" name="question" value="C" id="c" />
+              <label htmlFor="c">Holding your breath</label>
+              <br />
+              <input type="radio" name="question" value="D" id="d" />
+              <label htmlFor="d">Sudden excitement</label>
+              <br />
+              <button className="button" onClick={() =>userAnswer("question3")}>Submit</button> 
 
-          </div>
-        );
-      case "question4":
-        return (
-          <div className='overlayImage'>
-            <h1>Why do hiccups make a "hic" sound?</h1>
-            <br />
-            <input type="radio" name="question" value="A" id="a" />
-            <label htmlFor="a">Air quickly rushes into the lungs</label>
-            <br />
-            <input type="radio" name="question" value="B" id="b" />
-            <label htmlFor="b">The vocal cords suddenly close</label>
-            <br />
-            <input type="radio" name="question" value="C" id="c" />
-            <label htmlFor="c">The stomach contracts</label>
-            <br />
-            <input type="radio" name="question" value="D" id="d" />
-            <label htmlFor="d">The heart skips a beat</label>
-            <br />
-            <button className="button" onClick={togglePandOtogether}>Submit</button> 
-          </div>
-        );
-      default:
-        return null;
-    }
+            </div>
+          );
+        case "question4":
+          return (
+            <div className='overlayImage'>
+              <h1>Why do hiccups make a "hic" sound?</h1>
+              <br />
+              <input type="radio" name="question" value="A" id="a" />
+              <label htmlFor="a">Air quickly rushes into the lungs</label>
+              <br />
+              <input type="radio" name="question" value="B" id="b" />
+              <label htmlFor="b">The vocal cords suddenly close</label>
+              <br />
+              <input type="radio" name="question" value="C" id="c" />
+              <label htmlFor="c">The stomach contracts</label>
+              <br />
+              <input type="radio" name="question" value="D" id="d" />
+              <label htmlFor="d">The heart skips a beat</label>
+              <br />
+              <button className="button" onClick={() =>userAnswer("question4")}>Submit</button> 
+            </div>
+          );
+        default:
+          return null;
+      }
   };
 
   return (
@@ -222,7 +249,7 @@ const renderOverlayContent = () => {
       <div className="bogos">
       </div>      
       <div className="overlay">
-        <button className="overlay__close" onClick={togglePandOtogether}>Open Overlay</button> 
+        <button className="overlay__close" onClick={() =>togglePandOtogether}>Open Overlay</button> 
           <Overlay isOpen={isOpen} onClose={togglePandOtogether}>
             {renderOverlayContent()}
           </Overlay>
