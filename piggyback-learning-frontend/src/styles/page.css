@@ -203,6 +203,7 @@ main {
 .submit-btn:hover {
   background: var(--primary-green); 
 }
+
 /* Enhanced Grade Selection */
 .grade-selection-enhanced {
   margin: 20px;
