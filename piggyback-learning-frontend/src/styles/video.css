@@ -112,6 +112,10 @@ footer {
     height: fit-content;
 }
 
+.questionText {
+    margin: 30px;
+}
+
 .bogos {
     position: fixed;
     top: 10;

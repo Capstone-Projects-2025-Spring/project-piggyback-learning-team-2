@@ -1,13 +1,5 @@
-
-
-// used npm install react-youtube
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-// import React from 'react';
-// changing some stuff
 import { Link } from 'react-router-dom';
-// import { Link, useNavigate } from 'react-router-dom';
-
-// import { useState, useEffect, useRef } from "react";
 import YouTube from "react-youtube";
 import logo from '../images/Mob_Iron_Hog.png'; 
 import questionImage from '../images/placeholderquestionImage.png'; 
@@ -16,7 +8,6 @@ import {Overlay} from './Overlay'
 import "../styles/overlay.css";
 
 
-// got this code from https://www.joshwcomeau.com/snippets/react-hooks/use-mouse-position/
 const useMousePosition = () => {
   const [mousePosition, setMousePosition] = useState({ x: null, y: null });
 
@@ -26,15 +17,11 @@ const useMousePosition = () => {
     };
 
     window.addEventListener("mousemove", updateMousePosition);
-
-    return () => {
-      window.removeEventListener("mousemove", updateMousePosition);
-    };
+    return () => window.removeEventListener("mousemove", updateMousePosition);
   }, []);
 
   return mousePosition;
 };
-
 
 // refactored https://codesandbox.io/p/sandbox/react-youtube-play-pause-video-using-an-external-button-c77o1v?file=%2Fsrc%2FApp.tsx%3A19%2C18 for the mouse cursor position code
 // but removed the typescript annotations using online resources as an aid
@@ -44,15 +31,13 @@ export default function App() {
   const someMousePosition = useMousePosition(); 
   const [currentTime, setCurrentTime] = useState(0); 
   const videoRef = useRef(null);
-  const [overlayContent, setOverlayContent] = useState(null);
   const [triggerCount, setTriggerCount] = useState(0);
 
   // used this for reference for the overlay: https://www.youtube.com/watch?v=D9OJX6sSyYk  and https://github.com/unhingedmagikarp/medium-overlay.git 
   const [isOpen, setIsOpen] = useState(false);
+  const [overlayType, setOverlayType] = useState(null);
 
-  // const toggleOverlay = () => {
-  //   setIsOpen(!isOpen);
-  // };
+
   const toggleOverlay = useCallback(() => {
     setIsOpen(prev => !prev);
   }, []);
@@ -62,6 +47,14 @@ export default function App() {
   const togglePause = () => {
     setIsPaused((prev) => !prev);
   };
+
+  const togglePandOtogether = () => {
+    toggleOverlay();
+    togglePause();
+    // setIsPaused(true)
+    // setIsOpen(true)
+  };
+  
   
   useEffect(() => {
     if (videoRef.current) {
@@ -79,79 +72,122 @@ export default function App() {
   useEffect(() => {
     const interval = setInterval(() => {
       if (videoRef.current && videoRef.current.getCurrentTime() > 0) {
-        
-
         const someTime = videoRef.current.getCurrentTime();
         setCurrentTime(someTime);
-        console.log(`Current time: ${someTime}s`);
-
-        // if within x >1020 && x<1120 and y>600 && y<695
-        if (someTime >= 10.00 && someTime <= 11.00 && triggerCount === 0) { 
-          // alert(`Triggered at time: ${someTime}`)
-          setTriggerCount(1)
-          setIsPaused(true)
-          setIsOpen(true)
-          setOverlayContent(
-            <div className='overlayImage'>
-              <img onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)} src={questionImage} alt="place holder question image" class="questionImage" />
-            </div>
-          )
+        if (someTime >= 10.00 && triggerCount === 0) { 
+          setTriggerCount(1);
+          setIsPaused(true);
+          setIsOpen(true);
+          setOverlayType("question1");
         }
-        if (someTime >= 30.00 && someTime <= 31.00 && triggerCount === 1) { 
-          // alert(`Triggered at time: ${someTime}`)
-          setTriggerCount(2)
-          setIsPaused(true)
-          setIsOpen(true)
-          setOverlayContent(
-            <h1 onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}>
-              <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
-              <h2>Current Time: {currentTime.toFixed(2)}</h2>
-              {/* <h2 onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}>test container</h2> */}
-            </h1>
-          )
+        if (someTime >= 30.00 && triggerCount === 1) { 
+          setTriggerCount(2);
+          setIsPaused(true);
+          setIsOpen(true);
+          setOverlayType("question2");
         }
-        if (someTime >= 40.00 && someTime <= 41.00 && triggerCount === 2) { 
-          // alert(`Triggered at time: ${someTime}`)
-          setTriggerCount(3)
-          setIsPaused(true)
-          setIsOpen(true)
-          setOverlayContent(
-            <h1 onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}>
-              <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
-              <h2>Current Time: {currentTime.toFixed(2)}</h2>
-              {/* <h2 onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}>test container</h2> */}
-            </h1>
-          )
+        if (someTime >= 40.00 && triggerCount === 2) { 
+          setTriggerCount(3);
+          setIsPaused(true);
+          setIsOpen(true);
+          setOverlayType("question3");
         }
-        if (someTime >= 50.00 && someTime <= 51.00 && triggerCount === 3) {
-          // alert(`Triggered at time: ${someTime}`)
-          setTriggerCount(4)
-          setIsPaused(true)
-          setIsOpen(true)
-          setOverlayContent(
-            <h1 onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}>
-              <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
-              <h2>Current Time: {currentTime.toFixed(2)}</h2>
-              {/* <h2 onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}>test container</h2> */}
-            </h1>
-          )
+        if (someTime >= 50.00 && triggerCount === 3) {
+          setTriggerCount(4);
+          setIsPaused(true);
+          setIsOpen(true);
+          setOverlayType("question4");
         }
-        
-        
-
-        const playerState = videoRef.current.getPlayerState();
-        console.log(playerState === 1 ? "Video is playing" : "Video is paused");
       }
-    }, 1000);
-
+    }, 100);
     return () => clearInterval(interval);
-  }, [toggleOverlay, someMousePosition]);
+  }, [triggerCount, currentTime]);
 
   const _onReady = (event) => {
     videoRef.current = event.target;
   };
 
+// used this source from chatgpt https://dev.to/remejuan/dynamically-render-components-based-on-configuration-3l42 (reasoning sucks but search is better than google at finding code that works)
+// uses this way of updating the rendered overlay content because it creates a stale closure otherwise, incidentally this'll probably make it easier to coonect with any back end components 
+const renderOverlayContent = () => {
+    switch(overlayType) {
+      case "question1":
+        return (
+          <div className='overlayImage'>
+            <h1>Click on Squeeks!</h1>
+            <img
+              onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}
+              src={questionImage}
+              alt="place holder question img"
+              className="questionImage" 
+            />
+          </div>
+        );
+      case "question2":
+        return (
+          <div className='overlayImage'>
+            <h1>What muscle is responsible for causing hiccups?</h1>
+            <br />
+            <input type="radio" name="question" value="A" id="a" />
+            <label htmlFor="a">Heart</label>
+            <br />
+            <input type="radio" name="question" value="B" id="b" />
+            <label htmlFor="b">Diaphragm</label>
+            <br />
+            <input type="radio" name="question" value="C" id="c" />
+            <label htmlFor="c">Stomach</label>
+            <br />
+            <input type="radio" name="question" value="D" id="d" />
+            <label htmlFor="d">Lungs</label>
+            <br />
+            <button className="button" onClick={togglePandOtogether}>Submit</button> 
+          </div>
+        );
+      case "question3":
+        return (
+          <div className='overlayImage'>
+            <h1>Which of the following is NOT a common cause of hiccups?</h1>
+            <br />
+            <input type="radio" name="question" value="A" id="a" />
+            <label htmlFor="a">Eating too quickly</label>
+            <br />
+            <input type="radio" name="question" value="B" id="b" />
+            <label htmlFor="b">Drinking carbonated beverages</label>
+            <br />
+            <input type="radio" name="question" value="C" id="c" />
+            <label htmlFor="c">Holding your breath</label>
+            <br />
+            <input type="radio" name="question" value="D" id="d" />
+            <label htmlFor="d">Sudden excitement</label>
+            <br />
+            <button className="button" onClick={togglePandOtogether}>Submit</button> 
 
+          </div>
+        );
+      case "question4":
+        return (
+          <div className='overlayImage'>
+            <h1>Why do hiccups make a "hic" sound?</h1>
+            <br />
+            <input type="radio" name="question" value="A" id="a" />
+            <label htmlFor="a">Air quickly rushes into the lungs</label>
+            <br />
+            <input type="radio" name="question" value="B" id="b" />
+            <label htmlFor="b">The vocal cords suddenly close</label>
+            <br />
+            <input type="radio" name="question" value="C" id="c" />
+            <label htmlFor="c">The stomach contracts</label>
+            <br />
+            <input type="radio" name="question" value="D" id="d" />
+            <label htmlFor="d">The heart skips a beat</label>
+            <br />
+            <button className="button" onClick={togglePandOtogether}>Submit</button> 
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
     
@@ -184,16 +220,11 @@ export default function App() {
         />
       </div>
       <div className="bogos">
-        {/* <button className ="abc"onClick={togglePause}>{isPaused ? "Play" : "Pause"}</button>
-        <br></br>
-        <button onClick={toggleOverlay}>Open Overlay</button> */}
       </div>      
       <div className="overlay">
-        <button className="overlay__close" onClick={toggleOverlay}>Open Overlay</button> 
-          <Overlay isOpen={isOpen} onClose={toggleOverlay}>
-              <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
-              <h2>Current Time: {currentTime.toFixed(2)}</h2>
-            <div>{overlayContent}</div>
+        <button className="overlay__close" onClick={togglePandOtogether}>Open Overlay</button> 
+          <Overlay isOpen={isOpen} onClose={togglePandOtogether}>
+            {renderOverlayContent()}
           </Overlay>
       </div>
       {/* <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
