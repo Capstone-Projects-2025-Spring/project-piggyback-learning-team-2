@@ -134,6 +134,16 @@ export default function App() {
     togglePandOtogether(); 
   };
 
+  const checkMousePosition = () => {
+    // x >1020 && x<1120 and y>600 && y<695
+    if (someMousePosition.x >= 1020 && someMousePosition.x <= 1120 && someMousePosition.y >= 600 && someMousePosition.y <= 695) {
+      alert(`thats right!`);
+    } else {
+      alert(`a Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`);
+    }
+  };
+
+
 // used this source from chatgpt https://dev.to/remejuan/dynamically-render-components-based-on-configuration-3l42 (reasoning sucks but search is better than google at finding code that works)
 // uses this way of updating the rendered overlay content because it creates a stale closure otherwise, incidentally this'll probably make it easier to coonect with any back end components 
   const renderOverlayContent = () => {
@@ -143,7 +153,7 @@ export default function App() {
             <div className='overlayImage'>
               <h1>Click on Squeeks!</h1>
               <img
-                onClick={() => alert(`Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`)}
+                onClick={checkMousePosition}
                 src={questionImage}
                 alt="place holder question img"
                 className="questionImage" 
