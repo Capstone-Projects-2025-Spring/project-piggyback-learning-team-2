@@ -88,25 +88,25 @@ export default function App() {
       if (videoRef.current && videoRef.current.getCurrentTime() > 0) {
         const someTime = videoRef.current.getCurrentTime();
         setCurrentTime(someTime);
-        if (someTime >= 10.00 && triggerCount === 0) { 
+        if (someTime >= 20.00 && triggerCount === 0) { 
           setTriggerCount(1);
           setIsPaused(true);
           setIsOpen(true);
           setOverlayType("question1");
         }
-        if (someTime >= 30.00 && triggerCount === 1) { 
+        if (someTime >= 80.00 && triggerCount === 1) { 
           setTriggerCount(2);
           setIsPaused(true);
           setIsOpen(true);
           setOverlayType("question2");
         }
-        if (someTime >= 40.00 && triggerCount === 2) { 
+        if (someTime >= 90.00 && triggerCount === 2) { 
           setTriggerCount(3);
           setIsPaused(true);
           setIsOpen(true);
           setOverlayType("question3");
         }
-        if (someTime >= 50.00 && triggerCount === 3) {
+        if (someTime >= 118.00 && triggerCount === 3) {
           setTriggerCount(4);
           setIsPaused(true);
           setIsOpen(true);
@@ -138,8 +138,10 @@ export default function App() {
     // x >1020 && x<1120 and y>600 && y<695
     if (someMousePosition.x >= 1020 && someMousePosition.x <= 1120 && someMousePosition.y >= 600 && someMousePosition.y <= 695) {
       alert(`thats right!`);
+      togglePandOtogether(); 
     } else {
-      alert(`a Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`);
+      alert(`try again!`);
+      // alert(`a Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`);
     }
   };
 
