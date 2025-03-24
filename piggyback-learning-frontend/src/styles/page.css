@@ -166,7 +166,6 @@ main {
 
 .url-input-container {
   display: flex;
-  /*gap: 0; /* Removed gap between input and button */
   justify-content: center;
   align-items: center;
   max-width: 700px;
