@@ -113,15 +113,6 @@ function Home() {
           <p className="tagline">Where Learning Meets Fun & Adventure!</p>
           <Link to="/signup" className="cta-button pulse">Start Your Journey Free</Link>
         </section>
-
-        <section className="youtube-url-enhanced">
-          <h2>Add Your Learning Video</h2>
-          <div className="url-input-container">
-            <input type="text" id="youtubeUrl" placeholder="Paste YouTube URL here..." />
-            <button onClick={validateYTURL} className="submit-btn">Add Video</button>
-          </div>
-        </section>
-
         <section className="grade-selection-enhanced">
           <h2>Choose Your Learning Path</h2>
           <div className="dropdown-container">
@@ -151,6 +142,15 @@ function Home() {
             </div>
             <button className="scroll-button right" onClick={scrollRight}>→</button>
           </div>
+        </section>
+        <section className="youtube-url-enhanced">
+          <h2>Add Your Own Learning Video</h2>
+          <div className="url-input-container">
+            <input type="text" id="youtubeUrl" placeholder="Paste YouTube URL here..." />
+            </div>
+            <div>
+            <button onClick={validateYTURL} className="submit-btn">Add Video</button>
+            </div>
         </section>
       </main>
 
