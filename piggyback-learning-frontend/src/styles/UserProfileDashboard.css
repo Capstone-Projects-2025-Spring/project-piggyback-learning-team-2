@@ -204,6 +204,21 @@ body {
         transform: translateY(0);
     }
 }
+.signout-button {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin-top: 15px;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 5px;
+}
+
+.signout-button:hover {
+    background-color: #c0392b;
+}
+
 
 /* Loading and Error Messages */
 .loading, .error {

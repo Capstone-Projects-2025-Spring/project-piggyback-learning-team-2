@@ -67,6 +67,15 @@ function UserProfile() {
         fetchProfile();
     }, [navigate]);
 
+    const handleSignOut = async () => {
+        const { error } = await supabase.auth.signOut();
+        if (error) {
+            console.error("Sign out error:", error.message);
+        } else {
+            navigate('/signin');
+        }
+    };
+
     if (loading) return <div className="loading">Loading Profile...</div>;
     if (!profile) return <div className="error">Error loading profile.</div>;
 
@@ -143,6 +152,10 @@ function UserProfile() {
 
                     <button className="back-button" onClick={() => navigate('/')}>
                         ⬅️ Back to Home
+                    </button>
+
+                    <button className="signout-button" onClick={handleSignOut}>
+                        🚪 Sign Out
                     </button>
                 </div>
             </div>
