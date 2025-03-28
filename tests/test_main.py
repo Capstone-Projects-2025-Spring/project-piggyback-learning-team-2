@@ -61,17 +61,14 @@ def test_invalid_YTvideo():
 
 
 def test_get_url():
-    video = "https://www.youtube.com/watch?v=lg5wznn3IBE"
+    video = "https://www.youtube.com/embed/lg5wznn3IBE"
     encoded_video = quote(video, safe='')
     response = client.get(f"/validateYT_URL/{encoded_video}")
     assert response.status_code == 200
 
 
 def test_delete_url():
-    video = "https://www.youtube.com/watch?v=lg5wznn3IBE"
+    video = "https://www.youtube.com/embed/lg5wznn3IBE"
     encoded_video = quote(video, safe='')
     response = client.get(f"/validateYT_URL/{encoded_video}")
     assert response.status_code == 200
-
-
-
