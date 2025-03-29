@@ -16,7 +16,6 @@ const Signup = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Show welcome message after slight delay
     setTimeout(() => setShowWelcome(true), 500);
   }, []);
 
@@ -28,59 +27,94 @@ const Signup = () => {
     });
   };
 
-  // Handle email/password signup
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log('Sign Up button clicked'); 
     setError('');
 
     try {
-      const { data, error } = await supabase.auth.signUp({
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
-        options: {
-          data: {
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-          },
-        },
       });
 
-      if (error) {
-        throw error;
+      if (signUpError) throw signUpError;
+
+      const userId = data?.user?.id;
+
+      if (userId) {
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert({
+            id: userId,
+            first_name: formData.firstName,
+            last_name: formData.lastName,
+            email: formData.email,
+          });
+
+        if (insertError) throw insertError;
       }
 
-      console.log('Signup successful:', data);
-      navigate('/profile'); // Redirect to profile or home page after signup
+      console.log('Signup and profile creation successful:', data);
+      navigate('/profile');
     } catch (error) {
       setError(error.message);
       console.error('Error during signup:', error);
     }
   };
 
-  // Handle Google Sign-In
   const handleGoogleLoginSuccess = async (credentialResponse) => {
+    setError('');
     try {
       const { data, error } = await supabase.auth.signInWithIdToken({
         provider: 'google',
         token: credentialResponse.credential,
       });
-
-      if (error) {
-        throw error;
-      }
-
+  
+      if (error) throw error;
+  
       console.log('Google sign-in successful:', data);
-      navigate('/profile'); // Redirect to profile or home page after sign-in
+      const user = data.user;
+  
+      if (user) {
+        const { data: existingProfile, error: profileFetchError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', user.id)
+          .single();
+  
+        if (profileFetchError || !existingProfile) {
+          const { error: insertError } = await supabase.from('profiles').insert({
+            id: user.id,
+            email: user.email,
+            first_name: user.user_metadata?.given_name || '',
+            last_name: user.user_metadata?.family_name || '',
+          });
+  
+          if (insertError) {
+            console.error('Error creating profile for Google user:', insertError);
+          } else {
+            console.log('Profile created for Google user.');
+          }
+        } else {
+          console.log('Google user profile already exists.');
+        }
+      }
+  
+      navigate('/profile');
     } catch (error) {
       setError(error.message);
       console.error('Error with Google sign-in:', error);
     }
   };
+  
 
   const handleGoogleLoginError = () => {
     setError('Google sign-in failed. Please try again.');
     console.log('Google Login Failed');
   };
+
+  
 
   return (
     <GoogleOAuthProvider clientId="658379694414-nbdeeuc5kavcd9l0k1e034atul49cv80.apps.googleusercontent.com">

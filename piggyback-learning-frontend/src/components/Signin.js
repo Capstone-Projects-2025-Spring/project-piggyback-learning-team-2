@@ -19,49 +19,68 @@ const Signin = () => {
     const handleEmailSignIn = async (e) => {
         e.preventDefault();
         setError('');
-
+    
         try {
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email,
-                password,
-            });
-
-            if (error) {
-                throw error;
-            }
-
-            console.log('Signed in successfully:', data);
-            navigate('/profile'); // Redirect to dashboard or home page after sign-in
-        } catch (error) {
-            setError(error.message);
-            console.error('Error signing in:', error);
+          const { data, error: signInError } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
+    
+          if (signInError) throw signInError;
+    
+          console.log('Signed in successfully:', data);
+    
+          // Optional: Fetch profile
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', data.user.id)
+            .single();
+    
+          if (profileError) {
+            console.warn('Profile not found:', profileError.message);
+          } else {
+            console.log('User profile:', profile);
+          }
+    
+          navigate('/profile');
+        } catch (err) {
+          setError(err.message);
+          console.error('Error signing in:', err);
         }
-    };
-
-    // Handle Google sign-in
-    const handleGoogleLoginSuccess = async (credentialResponse) => {
+      };
+    
+      const handleGoogleLoginSuccess = async (credentialResponse) => {
         try {
-            const { data, error } = await supabase.auth.signInWithIdToken({
-                provider: 'google',
-                token: credentialResponse.credential,
-            });
-
-            if (error) {
-                throw error;
-            }
-
-            console.log('Google sign-in successful:', data);
-            navigate('/profile'); // Redirect to dashboard or home page after sign-in
+          const { data, error } = await supabase.auth.signInWithIdToken({
+            provider: 'google',
+            token: credentialResponse.credential,
+          });
+    
+          if (error) throw error;
+    
+          console.log('Google sign-in successful:', data);
+    
+          const user = data.user;
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+    
+          console.log('Profile:', profile);
+    
+          navigate('/profile');
         } catch (error) {
-            setError(error.message);
-            console.error('Error with Google sign-in:', error);
+          setError(error.message);
+          console.error('Error with Google sign-in:', error);
         }
-    };
-
-    const handleGoogleLoginError = () => {
+      };
+    
+      const handleGoogleLoginError = () => {
         setError('Google sign-in failed. Please try again.');
         console.log('Google Login Failed');
-    };
+      };
 
     return (
         <GoogleOAuthProvider clientId="658379694414-nbdeeuc5kavcd9l0k1e034atul49cv80.apps.googleusercontent.com">
