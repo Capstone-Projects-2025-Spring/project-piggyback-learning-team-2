@@ -16,6 +16,7 @@ const Signup = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Show welcome message after slight delay
     setTimeout(() => setShowWelcome(true), 500);
   }, []);
 
@@ -27,9 +28,9 @@ const Signup = () => {
     });
   };
 
+  // Handle email/password signup
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Sign Up button clicked'); 
     setError('');
 
     try {
@@ -37,11 +38,11 @@ const Signup = () => {
         email: formData.email,
         password: formData.password,
       });
-
+  
       if (signUpError) throw signUpError;
-
+  
       const userId = data?.user?.id;
-
+  
       if (userId) {
         const { error: insertError } = await supabase
           .from('profiles')
@@ -50,11 +51,13 @@ const Signup = () => {
             first_name: formData.firstName,
             last_name: formData.lastName,
             email: formData.email,
+            avatar_url: 'https://th.bing.com/th/id/OIP.1LaOBAiExqeZ_5-dyWMFAwHaEJ?w=278&h=180&c=7&r=0&o=5&dpr=1.5&pid=1.7', 
+          bio: 'This is my profile!'
           });
-
+  
         if (insertError) throw insertError;
       }
-
+  
       console.log('Signup and profile creation successful:', data);
       navigate('/profile');
     } catch (error) {
@@ -63,58 +66,30 @@ const Signup = () => {
     }
   };
 
+  // Handle Google Sign-In
   const handleGoogleLoginSuccess = async (credentialResponse) => {
-    setError('');
     try {
       const { data, error } = await supabase.auth.signInWithIdToken({
         provider: 'google',
         token: credentialResponse.credential,
       });
-  
-      if (error) throw error;
-  
-      console.log('Google sign-in successful:', data);
-      const user = data.user;
-  
-      if (user) {
-        const { data: existingProfile, error: profileFetchError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
-  
-        if (profileFetchError || !existingProfile) {
-          const { error: insertError } = await supabase.from('profiles').insert({
-            id: user.id,
-            email: user.email,
-            first_name: user.user_metadata?.given_name || '',
-            last_name: user.user_metadata?.family_name || '',
-          });
-  
-          if (insertError) {
-            console.error('Error creating profile for Google user:', insertError);
-          } else {
-            console.log('Profile created for Google user.');
-          }
-        } else {
-          console.log('Google user profile already exists.');
-        }
+
+      if (error) {
+        throw error;
       }
-  
-      navigate('/profile');
+
+      console.log('Google sign-in successful:', data);
+      navigate('/profile'); // Redirect to profile or home page after sign-in
     } catch (error) {
       setError(error.message);
       console.error('Error with Google sign-in:', error);
     }
   };
-  
 
   const handleGoogleLoginError = () => {
     setError('Google sign-in failed. Please try again.');
     console.log('Google Login Failed');
   };
-
-  
 
   return (
     <GoogleOAuthProvider clientId="658379694414-nbdeeuc5kavcd9l0k1e034atul49cv80.apps.googleusercontent.com">
