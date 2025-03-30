@@ -221,13 +221,19 @@ export default function App() {
   };
 
   // im gonna need to refactor to account for multiple questions, probably gonna fold checkMousePosition into this using the list logic used in for the questions 
-  const videoReplayOnWrongAnswer = () => {
-    if (answers["question2"] === "C") {
+  const videoReplayOnWrongAnswer = (questionId) => {
+
+    const currentData = timeStampData.find(item => item.id === questionId);
+    if (!currentData) {
+      console.error("No data found for question:", questionId);
+      return;
+    }
+    if (answers[questionId] === currentData.correctAnswer) {
       alert(`thats right!`);
       togglePandOtogether();
      
-    } else {
-      // rewind timestamp by 30 seconds
+    } 
+    else {
       if (videoRef.current < 30) {
         alert(`try again!`);
         videoRef.current.seekTo(0, true);
@@ -247,14 +253,17 @@ export default function App() {
 
  
 
-  // used https://react.dev/learn/rendering-lists gotten from chatgpt (search function saved me again)
+  // // used https://react.dev/learn/rendering-lists gotten from chatgpt (search function saved me again)
+  // // used this source from chatgpt https://dev.to/remejuan/dynamically-render-components-based-on-configuration-3l42 (reasoning sucks but search is better than google at finding code that works)
+  // // uses this way of updating the rendered overlay content because it creates a stale closure otherwise, incidentally this'll probably make it easier to coonect with any back end components 
+  // // Refactored render function that uses the questionsData list but now questionsData doesn't have any functions baked into it
+  
+
   const questionsData = [
     {
       id: "question1",
       type: "image",
-      title: "Click on Squeeks!",
-      src: questionImage,
-      onClick: checkMousePosition
+      title: "Click on Squeeks!"
     },
     {
       id: "question2",
@@ -265,8 +274,7 @@ export default function App() {
         { value: "B", label: "Diaphragm" },
         { value: "C", label: "Stomach" },
         { value: "D", label: "Lungs" }
-      ],
-      onSubmit: videoReplayOnWrongAnswer
+      ]
     },
     {
       id: "question3",
@@ -277,8 +285,7 @@ export default function App() {
         { value: "B", label: "Drinking carbonated beverages" },
         { value: "C", label: "Holding your breath" },
         { value: "D", label: "Sudden excitement" }
-      ],
-      onSubmit: togglePandOtogether
+      ]
     },
     {
       id: "question4",
@@ -289,36 +296,53 @@ export default function App() {
         { value: "B", label: "The vocal cords suddenly close" },
         { value: "C", label: "The stomach contracts" },
         { value: "D", label: "The heart skips a beat" }
-      ],
-      onSubmit: togglePandOtogether
+      ]
     },
     {
       id: "end",
       type: "end",
-      title: "Heres How You Did!",
-      onSubmit: togglePandOtogether
+      title: "Here's How You Did!"
     }
   ];
-  
 
-  // used this source from chatgpt https://dev.to/remejuan/dynamically-render-components-based-on-configuration-3l42 (reasoning sucks but search is better than google at finding code that works)
-  // uses this way of updating the rendered overlay content because it creates a stale closure otherwise, incidentally this'll probably make it easier to coonect with any back end components 
-
-  // Refactored render function that uses the questionsData list 
   const renderOverlayContent = () => {
+    // Find the current question based on overlayType
     const currentQuestion = questionsData.find(q => q.id === overlayType);
     if (!currentQuestion) return null;
-
+  
+    // Set up local variables for the submit handler and extra props.
+    let onSubmit = null;
+    let extraProps = {};
+  
+    // Decide the action functions based on the question id
+    switch (currentQuestion.id) {
+      case "question1":
+        extraProps.src = questionImage;
+        extraProps.onClick = checkMousePosition;
+        break;
+      case "question2":
+        onSubmit = videoReplayOnWrongAnswer;
+        break;
+      case "question3":
+      case "question4":
+      case "end":
+        onSubmit = togglePandOtogether;
+        break;
+      default:
+        break;
+    }
+  
+    // Render based on the type of question
     switch (currentQuestion.type) {
       case "image":
         return (
           <div className="overlayImage">
             <h1>{currentQuestion.title}</h1>
             <img
-              src={currentQuestion.src}
+              src={extraProps.src}
               alt="question"
               className="questionImage"
-              onClick={currentQuestion.onClick}
+              onClick={extraProps.onClick}
             />
           </div>
         );
@@ -342,51 +366,39 @@ export default function App() {
                 <br />
               </React.Fragment>
             ))}
-            <button className="button" onClick={currentQuestion.onSubmit}>
+            {/* <button className="button" onClick={onSubmit}> */}
+            <button className="button" onClick={() => videoReplayOnWrongAnswer(currentQuestion.id)}>
               Submit
             </button>
           </div>
         );
-        // messing with the map and filter with some help from https://www.freecodecamp.org/news/how-to-build-a-quiz-app-using-react and https://react.dev/learn/rendering-lists but chatgpt is covering all my errors (i just hope i didnt have to fight it for 5 hrs at a time)
-        // this is coming with the addition of other function but it broke something so im exluding it from the commit 
-        case "end":
-          return (
-            <div style={{ 
-              height: 300, 
-              overflowY: 'scroll', 
-              border: '1px solid #ccc' 
-            }}>
-              
-              <h2>{currentQuestion.title}</h2>
-              
-              <ul>
-                {questionsData
-                  .filter(q => q.type !== "end")
-                  .map(q => (
-                    <li key={q.id}>
-                      <strong>{q.title}</strong>
-                      {/* this will eventually be how answers is going to be formatted, pending implementation of the functions */}
-                      <div>User's Answer: {answers[q.id]?.answer || "Not answered"}</div>
-                      <div>Time Taken: {answers[q.id]?.timeTaken || "N/A"}</div>
-                      <div>Number of Retries: {answers[q.id]?.numRetry || "N/A"}</div>
-                    </li>
-                  ))}
-              </ul>
-              <button className="button" onClick={currentQuestion.onSubmit}>
-                OK!
-              </button>
-            </div>
-          );
-      // case "end":
-      //   return (
-      //     <div className="overlayImage">
-      //       <h2>{currentQuestion.title}</h2>
-      //       <pre>{JSON.stringify(answers, null, 2)}</pre>
-      //       <button className="button" onClick={currentQuestion.onSubmit}>
-      //         OK!
-      //       </button>
-      //     </div>
-      //   );
+      case "end":
+        return (
+          <div
+            style={{
+              height: 300,
+              overflowY: 'scroll',
+              border: '1px solid #ccc'
+            }}
+          >
+            <h2>{currentQuestion.title}</h2>
+            <ul>
+              {questionsData
+                .filter(q => q.type !== "end")
+                .map(q => (
+                  <li key={q.id}>
+                    <strong>{q.title}</strong>
+                    <div>User's Answer: {answers[q.id]?.answer || "Not answered"}</div>
+                    <div>Time Taken: {answers[q.id]?.timeTaken || "N/A"}</div>
+                    <div>Number of Retries: {answers[q.id]?.numRetry || "N/A"}</div>
+                  </li>
+                ))}
+            </ul>
+            <button className="button" onClick={onSubmit}>
+              OK!
+            </button>
+          </div>
+        );
       default:
         return null;
     }
