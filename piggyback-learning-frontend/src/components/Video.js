@@ -351,8 +351,14 @@ export default function App() {
         // this is coming with the addition of other function but it broke something so im exluding it from the commit 
         case "end":
           return (
-            <div className="overlayImage">
+            <div style={{ 
+              height: 300, 
+              overflowY: 'scroll', 
+              border: '1px solid #ccc' 
+            }}>
+              
               <h2>{currentQuestion.title}</h2>
+              
               <ul>
                 {questionsData
                   .filter(q => q.type !== "end")
