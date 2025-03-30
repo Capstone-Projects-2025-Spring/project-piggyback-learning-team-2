@@ -198,7 +198,7 @@ export default function App() {
     {
       id: "question1",
       type: "image",
-      title: "Click on Squeeks!"
+      title: "Who is Squeeks? (Click on the Image!)"
     },
     {
       id: "question2",
