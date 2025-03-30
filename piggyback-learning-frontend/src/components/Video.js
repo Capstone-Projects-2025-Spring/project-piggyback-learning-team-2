@@ -91,82 +91,26 @@ export default function App() {
     { id: "question4", otherTimeStamp: 118, someTriggerCount: 3, correctAnswer: "A" },
     { id: "end",       otherTimeStamp: 170, someTriggerCount: 4, correctAnswer: "" }
   ];
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     if (videoRef.current && videoRef.current.getCurrentTime() > 0) {
-  //       const someTime = videoRef.current.getCurrentTime();
-  //       setCurrentTime(someTime);
-  //       if (someTime >= 20.00 && triggerCount === 0) { 
-  //         setTriggerCount(triggerCount+1);
-  //         setIsPaused(true);
-  //         setIsOpen(true);
-  //         setOverlayType("question1");
-  //       }
-  //       if (someTime >= 80.00 && triggerCount === 1) { 
-  //         setTriggerCount(triggerCount+1);
-  //         setIsPaused(true);
-  //         setIsOpen(true);
-  //         setOverlayType("question2");
-  //       }
-  //       if (someTime >= 90.00 && triggerCount === 2) { 
-  //         setTriggerCount(triggerCount+1);
-  //         setIsPaused(true);
-  //         setIsOpen(true);
-  //         setOverlayType("question3");
-  //       }
-  //       if (someTime >= 118.00 && triggerCount === 3) {
-  //         setTriggerCount(triggerCount+1);
-  //         setIsPaused(true);
-  //         setIsOpen(true);
-  //         setOverlayType("question4");
-  //       }
-  //       if (someTime >= 170.00 && triggerCount === 4) {
-  //         setTriggerCount(triggerCount+1);
-  //         setIsPaused(true);
-  //         setIsOpen(true);
-  //         setOverlayType("end");
-  //       }
-  //     }
-  //   }, 100);
-  //   return () => clearInterval(interval);
-  // }, [triggerCount, currentTime]);
-
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     if (videoRef.current && videoRef.current.getCurrentTime() > 0) {
-  //       const someTime = videoRef.current.getCurrentTime();
-  //       setCurrentTime(someTime);
-  //       const currentTrigger = timeStampData[triggerCount];
-  //       if (someTime >= currentTrigger.otherTimeStamp && triggerCount === currentTrigger.someTriggerCount) {
-  //         setTriggerCount(triggerCount + 1);
-  //         setIsPaused(true);
-  //         setIsOpen(true);
-  //         setOverlayType(currentTrigger.id);
-  //       }
-  //     }
-  //   }, 100);
-  //   return () => clearInterval(interval);
-  // }, [triggerCount, currentTime]);
 
   useEffect(() => {
     const interval = setInterval(() => {
       if (videoRef.current && videoRef.current.getCurrentTime() > 0) {
         const someTime = videoRef.current.getCurrentTime();
         setCurrentTime(someTime);
-        console.log("Current time:", someTime);
-        console.log("Current trigger count:", triggerCount);
+        // console.log("Current time:", someTime);
+        // console.log("Current trigger count:", triggerCount);
         
         const currentTrigger = timeStampData[triggerCount];
         if (currentTrigger) {
-          console.log("Current trigger object:", currentTrigger);
-          console.log(
-            "Condition check:",
-            someTime >= currentTrigger.otherTimeStamp,
-            "&&",
-            triggerCount === currentTrigger.someTriggerCount
-          );
+          // console.log("Current trigger object:", currentTrigger);
+          // console.log(
+          //   "Condition check:",
+          //   someTime >= currentTrigger.otherTimeStamp,
+          //   "&&",
+          //   triggerCount === currentTrigger.someTriggerCount
+          // );
           if (someTime >= currentTrigger.otherTimeStamp && triggerCount === currentTrigger.someTriggerCount) {
-            console.log("Trigger condition met for:", currentTrigger.id);
+            // console.log("Trigger condition met for:", currentTrigger.id);
             setTriggerCount(triggerCount + 1);
             setIsPaused(true);
             setIsOpen(true);
@@ -248,17 +192,8 @@ export default function App() {
       }
     }
   };
-
-
-
- 
-
-  // // used https://react.dev/learn/rendering-lists gotten from chatgpt (search function saved me again)
-  // // used this source from chatgpt https://dev.to/remejuan/dynamically-render-components-based-on-configuration-3l42 (reasoning sucks but search is better than google at finding code that works)
-  // // uses this way of updating the rendered overlay content because it creates a stale closure otherwise, incidentally this'll probably make it easier to coonect with any back end components 
-  // // Refactored render function that uses the questionsData list but now questionsData doesn't have any functions baked into it
   
-
+  // question data that is going to be refactored later for a database API call that fetches the data
   const questionsData = [
     {
       id: "question1",
@@ -331,7 +266,9 @@ export default function App() {
       default:
         break;
     }
-  
+
+    // used https://react.dev/learn/rendering-lists and  https://dev.to/remejuan/dynamically-render-components-based-on-configuration-3l42 
+    // chatgpt search function carrying alot with reasoning fixing syntax and logic errors where those occured, especially as I had to refactor the code to not account for hard-coding.
     // Render based on the type of question
     switch (currentQuestion.type) {
       case "image":
