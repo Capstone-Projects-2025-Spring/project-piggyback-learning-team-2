@@ -50,7 +50,7 @@ export default function App() {
   const [isOpen, setIsOpen] = useState(false);
   const [overlayType, setOverlayType] = useState(null);
 
-  const [answers, setAnswers] = useState({}); // Store answers for questions
+  const [answers, setAnswers] = useState({}); // stores answers for questions
   
 
   const toggleOverlay = useCallback(() => {
@@ -295,15 +295,16 @@ export default function App() {
     {
       id: "end",
       type: "end",
-      title: "Stored Answers",
+      title: "Heres How You Did!",
       onSubmit: togglePandOtogether
     }
   ];
+  
 
   // used this source from chatgpt https://dev.to/remejuan/dynamically-render-components-based-on-configuration-3l42 (reasoning sucks but search is better than google at finding code that works)
   // uses this way of updating the rendered overlay content because it creates a stale closure otherwise, incidentally this'll probably make it easier to coonect with any back end components 
 
-  // Refactored render function that uses the questionsData list
+  // Refactored render function that uses the questionsData list 
   const renderOverlayContent = () => {
     const currentQuestion = questionsData.find(q => q.id === overlayType);
     if (!currentQuestion) return null;
@@ -346,16 +347,40 @@ export default function App() {
             </button>
           </div>
         );
-      case "end":
-        return (
-          <div className="overlayImage">
-            <h2>{currentQuestion.title}</h2>
-            <pre>{JSON.stringify(answers, null, 2)}</pre>
-            <button className="button" onClick={currentQuestion.onSubmit}>
-              OK!
-            </button>
-          </div>
-        );
+        // messing with the map and filter with some help from https://www.freecodecamp.org/news/how-to-build-a-quiz-app-using-react and https://react.dev/learn/rendering-lists but chatgpt is covering all my errors (i just hope i didnt have to fight it for 5 hrs at a time)
+        // this is coming with the addition of other function but it broke something so im exluding it from the commit 
+        case "end":
+          return (
+            <div className="overlayImage">
+              <h2>{currentQuestion.title}</h2>
+              <ul>
+                {questionsData
+                  .filter(q => q.type !== "end")
+                  .map(q => (
+                    <li key={q.id}>
+                      <strong>{q.title}</strong>
+                      {/* this will eventually be how answers is going to be formatted, pending implementation of the functions */}
+                      <div>User's Answer: {answers[q.id]?.answer || "Not answered"}</div>
+                      <div>Time Taken: {answers[q.id]?.timeTaken || "N/A"}</div>
+                      <div>Number of Retries: {answers[q.id]?.numRetry || "N/A"}</div>
+                    </li>
+                  ))}
+              </ul>
+              <button className="button" onClick={currentQuestion.onSubmit}>
+                OK!
+              </button>
+            </div>
+          );
+      // case "end":
+      //   return (
+      //     <div className="overlayImage">
+      //       <h2>{currentQuestion.title}</h2>
+      //       <pre>{JSON.stringify(answers, null, 2)}</pre>
+      //       <button className="button" onClick={currentQuestion.onSubmit}>
+      //         OK!
+      //       </button>
+      //     </div>
+      //   );
       default:
         return null;
     }
