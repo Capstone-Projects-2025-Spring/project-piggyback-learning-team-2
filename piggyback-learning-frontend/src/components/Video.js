@@ -309,7 +309,32 @@ export default function App() {
             }}
           >
             <h2>{currentQuestion.title}</h2>
+
             <ul>
+              {questionsData
+                .filter(q => q.type !== "end")
+                .map(q => {
+                  const selectedAnswer = answers[q.id]?.answer;
+                  let displayAnswer = "Not answered";
+                  if (selectedAnswer && q.options) {
+                    const option = q.options.find(opt => opt.value === selectedAnswer);
+                    if (option) {
+                      displayAnswer = `(${selectedAnswer}) ${option.label}`;
+                    } else {
+                      displayAnswer = selectedAnswer;
+                    }
+                  }
+                  return (
+                    <li key={q.id}>
+                      <strong>{q.title}</strong>
+                      <div>Answer: {displayAnswer}</div>
+                      <div>Time Taken: {answers[q.id]?.timeTaken || "N/A"}</div>
+                      <div>Number of Retries: {answers[q.id]?.numRetry || "N/A"}</div>
+                    </li>
+                  );
+                })}
+            </ul>
+            {/* <ul>
               {questionsData
                 .filter(q => q.type !== "end")
                 .map(q => (
@@ -320,7 +345,7 @@ export default function App() {
                     <div>Number of Retries: {answers[q.id]?.numRetry || "N/A"}</div>
                   </li>
                 ))}
-            </ul>
+            </ul> */}
             <button className="button" onClick={onSubmit}>
               OK!
             </button>
