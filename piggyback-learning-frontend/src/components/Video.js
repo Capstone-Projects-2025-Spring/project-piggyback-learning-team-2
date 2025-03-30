@@ -1,15 +1,11 @@
 
-
 /*
 
 in researching how to implement the questions and have an end of video review I found this: https://react.dev/learn/updating-objects-in-state
 ill research the example given for the mouse pointer for a more accurate version and likely end up using it for the image interaction
- 
+
 
 */
-
-
-
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
@@ -179,26 +175,7 @@ export default function App() {
   };
 
 
-  // uses Copying objects with the spread syntax from https://react.dev/learn/updating-objects-in-state with help from overlord gpt
-  // const userAnswer = (questionKey) => {
-  //   const selectedOption = document.querySelector(`input[name="${questionKey}"]:checked`);
-  //   if (selectedOption) {
-  //     setAnswers(prev => ({ ...prev, [questionKey]: selectedOption.value }));
-  //     console.log(`Answer for ${questionKey}:`, selectedOption.value); // Debugging log
-  //   } else {
-  //     console.log(`No answer selected for ${questionKey}`);
-  //   }
-  //   togglePandOtogether(); 
-  // };
-
-
-  // const userAnswer = (questionId, selectedAnswer) => {
-  //   setAnswers(prevAnswers => ({
-  //     ...prevAnswers,
-  //     [questionId]: selectedAnswer
-  //   }));
-  // };
-
+  // https://react.dev/learn/updating-objects-in-state  helped but refactored over multiple iterations
   const userAnswer = (questionId, selectedAnswer, someTimeTaken, someNumRetry) => {
     setAnswers(prevAnswers => ({
       ...prevAnswers,
@@ -212,7 +189,6 @@ export default function App() {
   };
 
   const checkMousePosition = () => {
-    // x >1020 && x<1120 and y>600 && y<695
     if (someMousePosition.x >= 1020 && someMousePosition.x <= 1120 && someMousePosition.y >= 600 && someMousePosition.y <= 695) {
       alert(`thats right!`);
       togglePandOtogether(); 
