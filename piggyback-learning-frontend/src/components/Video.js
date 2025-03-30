@@ -146,10 +146,22 @@ export default function App() {
   // };
 
 
-  const userAnswer = (questionId, selectedAnswer) => {
+  // const userAnswer = (questionId, selectedAnswer) => {
+  //   setAnswers(prevAnswers => ({
+  //     ...prevAnswers,
+  //     [questionId]: selectedAnswer
+  //   }));
+  // };
+
+  const userAnswer = (questionId, selectedAnswer, someTimeTaken, someNumRetry) => {
     setAnswers(prevAnswers => ({
       ...prevAnswers,
-      [questionId]: selectedAnswer
+      [questionId]: {
+        ...prevAnswers[questionId],
+        answer: selectedAnswer,
+        timeTaken: someTimeTaken,
+        numRetry: someNumRetry
+      }
     }));
   };
 
@@ -172,7 +184,7 @@ export default function App() {
       console.error("No data found for question:", questionId);
       return;
     }
-    if (answers[questionId] === currentData.correctAnswer) {
+    if (answers[questionId]?.answer === currentData.correctAnswer) {
       alert(`thats right!`);
       togglePandOtogether();
      
@@ -294,7 +306,7 @@ export default function App() {
                   name={currentQuestion.id}
                   id={`${currentQuestion.id}-${option.value}`}
                   value={option.value}
-                  checked={answers[currentQuestion.id] === option.value}
+                  checked={answers[currentQuestion.id]?.answer === option.value}
                   onChange={() => userAnswer(currentQuestion.id, option.value)}
                 />
                 <label htmlFor={`${currentQuestion.id}-${option.value}`}>
@@ -325,7 +337,7 @@ export default function App() {
                 .map(q => (
                   <li key={q.id}>
                     <strong>{q.title}</strong>
-                    <div>User's Answer: {answers[q.id]?.answer || "Not answered"}</div>
+                    <div>Answer: {answers[q.id]?.answer || "Not answered"}</div>
                     <div>Time Taken: {answers[q.id]?.timeTaken || "N/A"}</div>
                     <div>Number of Retries: {answers[q.id]?.numRetry || "N/A"}</div>
                   </li>
