@@ -52,7 +52,8 @@ export default function App() {
 
   const [answers, setAnswers] = useState({}); // stores answers for questions
 
-
+  // store question data
+  // this should be replaced with something that makes an API call to fill the array with content.
   const questionsData = React.useMemo(() => [
     {
       id: "question1",
