@@ -51,6 +51,68 @@ export default function App() {
   const [overlayType, setOverlayType] = useState(null);
 
   const [answers, setAnswers] = useState({}); // stores answers for questions
+
+
+  const questionsData = React.useMemo(() => [
+    {
+      id: "question1",
+      type: "image",
+      title: "Who is Squeeks? (Click on the Image!)",
+      otherTimeStamp: 20,
+      someTriggerCount: 0,
+      correctAnswer: ""
+    },
+    {
+      id: "question2",
+      type: "multipleChoice",
+      title: "What muscle is responsible for causing hiccups?",
+      options: [
+        { value: "A", label: "Heart" },
+        { value: "B", label: "Diaphragm" },
+        { value: "C", label: "Stomach" },
+        { value: "D", label: "Lungs" }
+      ],
+      otherTimeStamp: 80,
+      someTriggerCount: 1,
+      correctAnswer: "B"
+    },
+    {
+      id: "question3",
+      type: "multipleChoice",
+      title: "Which of the following is NOT a common cause of hiccups?",
+      options: [
+        { value: "A", label: "Eating too quickly" },
+        { value: "B", label: "Drinking carbonated beverages" },
+        { value: "C", label: "Holding your breath" },
+        { value: "D", label: "Sudden excitement" }
+      ],
+      otherTimeStamp: 90,
+      someTriggerCount: 2,
+      correctAnswer: "D"
+    },
+    {
+      id: "question4",
+      type: "multipleChoice",
+      title: 'Why do hiccups make a "hic" sound?',
+      options: [
+        { value: "A", label: "Air quickly rushes into the lungs" },
+        { value: "B", label: "The vocal cords suddenly close" },
+        { value: "C", label: "The stomach contracts" },
+        { value: "D", label: "The heart skips a beat" }
+      ],
+      otherTimeStamp: 118,
+      someTriggerCount: 3,
+      correctAnswer: "A"
+    },
+    {
+      id: "end",
+      type: "end",
+      title: "Here's How You Did!",
+      otherTimeStamp: 170,
+      someTriggerCount: 4,
+      correctAnswer: ""
+    }
+  ], []);
   
 
   const toggleOverlay = useCallback(() => {
@@ -84,47 +146,6 @@ export default function App() {
     }
   }, [isPaused]);
 
-  // const timeStampData = [
-  //   { id: "question1", otherTimeStamp: 20, someTriggerCount: 0, correctAnswer: "" },
-  //   { id: "question2", otherTimeStamp: 80, someTriggerCount: 1, correctAnswer: "B" },
-  //   { id: "question3", otherTimeStamp: 90, someTriggerCount: 2, correctAnswer: "D" },
-  //   { id: "question4", otherTimeStamp: 118, someTriggerCount: 3, correctAnswer: "A" },
-  //   { id: "end",       otherTimeStamp: 170, someTriggerCount: 4, correctAnswer: "" }
-  // ];
-
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     if (videoRef.current && videoRef.current.getCurrentTime() > 0) {
-  //       const someTime = videoRef.current.getCurrentTime();
-  //       setCurrentTime(someTime);
-  //       // console.log("Current time:", someTime);
-  //       // console.log("Current trigger count:", triggerCount);
-        
-  //       const currentTrigger = timeStampData[triggerCount];
-  //       if (currentTrigger) {
-  //         // console.log("Current trigger object:", currentTrigger);
-  //         // console.log(
-  //         //   "Condition check:",
-  //         //   someTime >= currentTrigger.otherTimeStamp,
-  //         //   "&&",
-  //         //   triggerCount === currentTrigger.someTriggerCount
-  //         // );
-  //         if (someTime >= currentTrigger.otherTimeStamp && triggerCount === currentTrigger.someTriggerCount) {
-  //           // console.log("Trigger condition met for:", currentTrigger.id);
-  //           setTriggerCount(triggerCount + 1);
-  //           setIsPaused(true);
-  //           setIsOpen(true);
-  //           setOverlayType(currentTrigger.id);
-  //         }
-  //       } else {
-  //         console.log("No trigger defined for triggerCount:", triggerCount);
-  //       }
-  //     } else {
-  //       console.log("Video not ready or getCurrentTime() <= 0");
-  //     }
-  //   }, 100);
-  //   return () => clearInterval(interval);
-  // }, [triggerCount, currentTime]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -148,7 +169,7 @@ export default function App() {
       }
     }, 100);
     return () => clearInterval(interval);
-  }, [triggerCount, currentTime]);
+  }, [triggerCount, currentTime, questionsData]);
 
   
 
@@ -230,112 +251,7 @@ export default function App() {
   };
   
   // question data that is going to be refactored later for a database API call that fetches the data
-  // const questionsData = [
-  //   {
-  //     id: "question1",
-  //     type: "image",
-  //     title: "Who is Squeeks? (Click on the Image!)"
-  //   },
-  //   {
-  //     id: "question2",
-  //     type: "multipleChoice",
-  //     title: "What muscle is responsible for causing hiccups?",
-  //     options: [
-  //       { value: "A", label: "Heart" },
-  //       { value: "B", label: "Diaphragm" },
-  //       { value: "C", label: "Stomach" },
-  //       { value: "D", label: "Lungs" }
-  //     ]
-  //   },
-  //   {
-  //     id: "question3",
-  //     type: "multipleChoice",
-  //     title: "Which of the following is NOT a common cause of hiccups?",
-  //     options: [
-  //       { value: "A", label: "Eating too quickly" },
-  //       { value: "B", label: "Drinking carbonated beverages" },
-  //       { value: "C", label: "Holding your breath" },
-  //       { value: "D", label: "Sudden excitement" }
-  //     ]
-  //   },
-  //   {
-  //     id: "question4",
-  //     type: "multipleChoice",
-  //     title: 'Why do hiccups make a "hic" sound?',
-  //     options: [
-  //       { value: "A", label: "Air quickly rushes into the lungs" },
-  //       { value: "B", label: "The vocal cords suddenly close" },
-  //       { value: "C", label: "The stomach contracts" },
-  //       { value: "D", label: "The heart skips a beat" }
-  //     ]
-  //   },
-  //   {
-  //     id: "end",
-  //     type: "end",
-  //     title: "Here's How You Did!"
-  //   }
-  // ];
-
-  const questionsData = [
-    {
-      id: "question1",
-      type: "image",
-      title: "Who is Squeeks? (Click on the Image!)",
-      otherTimeStamp: 20,
-      someTriggerCount: 0,
-      correctAnswer: ""
-    },
-    {
-      id: "question2",
-      type: "multipleChoice",
-      title: "What muscle is responsible for causing hiccups?",
-      options: [
-        { value: "A", label: "Heart" },
-        { value: "B", label: "Diaphragm" },
-        { value: "C", label: "Stomach" },
-        { value: "D", label: "Lungs" }
-      ],
-      otherTimeStamp: 80,
-      someTriggerCount: 1,
-      correctAnswer: "B"
-    },
-    {
-      id: "question3",
-      type: "multipleChoice",
-      title: "Which of the following is NOT a common cause of hiccups?",
-      options: [
-        { value: "A", label: "Eating too quickly" },
-        { value: "B", label: "Drinking carbonated beverages" },
-        { value: "C", label: "Holding your breath" },
-        { value: "D", label: "Sudden excitement" }
-      ],
-      otherTimeStamp: 90,
-      someTriggerCount: 2,
-      correctAnswer: "D"
-    },
-    {
-      id: "question4",
-      type: "multipleChoice",
-      title: 'Why do hiccups make a "hic" sound?',
-      options: [
-        { value: "A", label: "Air quickly rushes into the lungs" },
-        { value: "B", label: "The vocal cords suddenly close" },
-        { value: "C", label: "The stomach contracts" },
-        { value: "D", label: "The heart skips a beat" }
-      ],
-      otherTimeStamp: 118,
-      someTriggerCount: 3,
-      correctAnswer: "A"
-    },
-    {
-      id: "end",
-      type: "end",
-      title: "Here's How You Did!",
-      otherTimeStamp: 170,
-      someTriggerCount: 4,
-      correctAnswer: ""
-    }
-  ];
+  
 
   const renderOverlayContent = () => {
     // Find the current question based on overlayType
