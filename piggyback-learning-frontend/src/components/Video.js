@@ -155,6 +155,14 @@ export default function App() {
   //     otherTimeStamp: 90,
   //     someTriggerCount: 2,
   //     correctAnswer: "B"
+  //   },
+  //   {
+  //     id: "end",
+  //     type: "end",
+  //     title: "Here's How You Did!",
+  //     otherTimeStamp: 400,
+  //     someTriggerCount: 4,
+  //     correctAnswer: ""
   //   }
   // ], []);
   
@@ -203,6 +211,14 @@ export default function App() {
   //     otherTimeStamp: 120,
   //     someTriggerCount: 2,
   //     correctAnswer: "D"
+  //   },
+  //   {
+  //     id: "end",
+  //     type: "end",
+  //     title: "Here's How You Did!",
+  //     otherTimeStamp: 215,
+  //     someTriggerCount: 4,
+  //     correctAnswer: ""
   //   }
   // ], []);
 
@@ -251,6 +267,14 @@ export default function App() {
   //     otherTimeStamp: 110,
   //     someTriggerCount: 2,
   //     correctAnswer: "C"
+  //   },
+  //   {
+  //     id: "end",
+  //     type: "end",
+  //     title: "Here's How You Did!",
+  //     otherTimeStamp: 185,
+  //     someTriggerCount: 4,
+  //     correctAnswer: ""
   //   }
   // ], []);
 
