@@ -88,6 +88,16 @@ function Home() {
     }
   }
 
+  const navLinks = [
+    { label: "Home", path: "/" },
+    { label: "How to Join", path: "/how-to-join" },
+    { label: "Sign In", path: "/signin" },
+    //{ label: "Sign Up", path: "/signup" },
+    { label: "Store", path: "/store" },
+    { label: "Video", path: "/video" },
+    { label: "Profile", path: "/profile" },
+    { label: "Contact Us", path: "/contact" },];
+  
   return (
     <div className="home-container">
       <header className="header-enhanced">
@@ -97,8 +107,10 @@ function Home() {
         </div>
         <nav>
           <ul>
-            {["Home", "How to Join", "Sign In", "Store", "Video", "Profile", "ms"].map(item => (
-              <li key={item}><Link to={`/${item.toLowerCase().replace(" ", "-")}`}>{item}</Link></li>
+            {navLinks.map((item, index) => (
+              <li key={index}>
+                <Link to={item.path}>{item.label}</Link>
+              </li>
             ))}
           </ul>
         </nav>
