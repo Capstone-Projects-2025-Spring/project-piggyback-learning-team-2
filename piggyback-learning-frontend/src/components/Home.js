@@ -9,10 +9,10 @@ function Home() {
   const videoCardsRef = useRef(null);
   const [responseData, setResponseData] = useState("");
   const [youtubeUrls, setYoutubeUrls] = useState([
-    { src: "https://www.youtube.com/embed/DR-cfDsHCGA", title: "Introduction to Numbers" },
-    { src: "https://www.youtube.com/embed/Yt8GFgxlITs", title: "Counting 1-10" },
-    { src: "https://www.youtube.com/embed/tVHOBVAFjUw", title: "Basic Addition" },
-    { src: "https://www.youtube.com/embed/o-6OKWU99Co", title: "Learning Shapes" },
+    { src: "https://www.youtube.com/embed/9e5lcQycf2M", title: " Why Do We Get Hiccups? | Body Science for Kids" },
+    { src: "https://www.youtube.com/embed/al-do-HGuIk", title: "Water Cycle | How the Hydrologic Cycle Works" },
+    { src: "https://www.youtube.com/embed/fEiVi9TB_RQ", title: "What Causes Thunder and Lightning? | Weather Science | SciShow Kids" },
+    { src: "https://www.youtube.com/embed/Gg0TXNXgz-w", title: "How Do Airplanes Fly?" },
     { src: "https://www.youtube.com/embed/qhOTU8_1Af4", title: "Colors and Patterns" },
   ]);
 
