@@ -1,6 +1,5 @@
-from fastapi import FastAPI, HTTPException, Depends
-# from fastapi import status, Response
-from . import models, schemas
+from fastapi import FastAPI, HTTPException, Depends, status
+from . import models, schemas, tools
 from sqlalchemy.orm import Session
 from .database import engine, get_db
 from .youtube import retreiveYoutubeMetaData
@@ -46,3 +45,17 @@ def get_youtube_metadata(video: schemas.YouTubeVideo):
         )
     metadata = retreiveYoutubeMetaData(video_id)
     return {"metadata": metadata}
+
+
+@app.post("/register", status_code=status.HTTP_201_CREATED,
+          response_model=schemas.UserResponse)
+def register_user(user: schemas.UserCredentials,
+                  db: Session = Depends(get_db)):
+    hashed_password = tools.hash(user.password)
+    user.password = hashed_password
+    new_user = models.User_Login(**user.model_dump())
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+
+    return new_user
