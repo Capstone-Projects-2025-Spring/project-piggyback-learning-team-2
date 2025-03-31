@@ -117,18 +117,10 @@ function Home() {
       </header>
 
       <main>
-        <section className="intro-enhanced">
-          <h1>Welcome to Piggyback Learning!</h1>
+      <section className="intro-enhanced">
+        <h1 className="animated-heading">Welcome to Piggyback Learning!</h1>
           <p className="tagline">Where Learning Meets Fun & Adventure!</p>
-          <Link to="/signup" className="cta-button pulse">Start Your Journey Free</Link>
-        </section>
-
-        <section className="youtube-url-enhanced">
-          <h2>Add Your Learning Video</h2>
-          <div className="url-input-container">
-            <input type="text" id="youtubeUrl" placeholder="Paste YouTube URL here..." />
-            <button onClick={validateYTURL} className="submit-btn">Add Video</button>
-          </div>
+            <Link to="/signup" className="cta-button pulse">Start Your Journey Free</Link>
         </section>
 
         <section className="grade-selection-enhanced">
@@ -141,7 +133,16 @@ function Home() {
               ))}
             </select>
           </div>
-        </section>
+</section>
+
+{/* url input and video section */}
+<section className="youtube-url-enhanced">
+  <h2>Add Your Learning Video</h2>
+  <div className="url-input-container">
+    <input type="text" id="youtubeUrl" placeholder="Paste YouTube URL here..." />
+    <button onClick={validateYTURL} className="submit-btn">Add Video</button>
+  </div>
+</section>
 
         <section className="videos-enhanced">
           <h2>Explore Learning Videos</h2>
