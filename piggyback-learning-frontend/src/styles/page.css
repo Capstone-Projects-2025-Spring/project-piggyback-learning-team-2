@@ -253,10 +253,13 @@ main {
 }
 
 .submit-btn {
+  display: block;
+  margin: 1rem auto;
+  width: 300px;
   background: var(--primary-green);
-  padding: 15px 35px;
-  border-radius: 25px;
-  font-size: 1.2em;
+  padding: 10px 10px;
+  border-radius: 15px;
+  font-size: 1.0em;
   border: none;
   color: white;
   cursor: pointer;
@@ -267,7 +270,6 @@ main {
   transform: scale(1.05);
   background: #45a049;
 }
-
 
 /* Animations */
 @keyframes bounceIn {
@@ -281,6 +283,7 @@ main {
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
 }
+
 
 /* Enhanced Grade Selection */
 .grade-selection-enhanced {
