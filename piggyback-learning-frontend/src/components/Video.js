@@ -48,6 +48,8 @@ export default function App() {
 
   const [answers, setAnswers] = useState({}); // stores answers for questions
 
+  const [someVideoEmbed, setSomeVideoEmbed] = useState("9e5lcQycf2M");
+
   // store question data
   // this should be replaced with something that makes an API call to fill the array with content.
 
@@ -362,12 +364,12 @@ export default function App() {
   };
 
   const checkMousePosition = () => {
-    if (someMousePosition.x >= 1020 && someMousePosition.x <= 1120 && someMousePosition.y >= 600 && someMousePosition.y <= 695) {
+    if (someMousePosition.x >= 1020 && someMousePosition.x <= 1120 && someMousePosition.y >= 480 && someMousePosition.y <= 580) {
       alert(`thats right!`);
       togglePandOtogether(); 
     } else {
-      alert(`try again!`);
-      // alert(`a Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`);
+      /// alert(`try again!`);
+      alert(`a Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`);
     }
   };
 
@@ -549,7 +551,7 @@ export default function App() {
     </div>
       <div className="yvid">
         <YouTube 
-          videoId={"9e5lcQycf2M"} // we can add a variable here later when re-using this page
+          videoId={someVideoEmbed} // we can add a variable here later when re-using this page
           opts={{
             height: "480",
             width: "854",
