@@ -3,13 +3,14 @@ from . import models, schemas, tools
 from sqlalchemy.orm import Session
 from .database import engine, get_db
 from .youtube import retreiveYoutubeMetaData
-from .routers import crud_test
+from .routers import crud_test, authentication
 
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
 app.include_router(crud_test.router)
+app.include_router(authentication.router)
 
 
 # transition to use sqlalchemy
@@ -47,10 +48,19 @@ def get_youtube_metadata(video: schemas.YouTubeVideo):
     return {"metadata": metadata}
 
 
+# testing out user registration
 @app.post("/register", status_code=status.HTTP_201_CREATED,
           response_model=schemas.UserResponse)
 def register_user(user: schemas.UserCredentials,
                   db: Session = Depends(get_db)):
+    existing_user = (db.query(models.User_Login)
+                     .filter(models.User_Login.email == user.email)
+                     .first())
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already exists"
+        )
     hashed_password = tools.hash(user.password)
     user.password = hashed_password
     new_user = models.User_Login(**user.model_dump())
