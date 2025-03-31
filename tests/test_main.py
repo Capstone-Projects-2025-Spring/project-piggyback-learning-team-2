@@ -72,3 +72,44 @@ def test_delete_url():
     encoded_video = quote(video, safe='')
     response = client.get(f"/validateYT_URL/{encoded_video}")
     assert response.status_code == 200
+
+
+# test for success
+def test_register():
+    payload = {
+        "email": "hahaa@gmail.com",
+        "password": "1234"
+    }
+    response = client.post("/register", json=payload)
+    assert response.status_code == 201
+
+
+# test for failure
+def test_duplicate_register():
+    payload = {
+        "email": "haha@gmail.com",
+        "password": "1234"
+    }
+    response = client.post("/register", json=payload)
+    assert response.status_code == 400
+
+
+def test_login_success():
+    form_data = {
+        "username": "hahaa@gmail.com",
+        "password": "1234"
+    }
+    response = client.post("/login", data=form_data)
+    assert response.status_code == 201, response.text
+    json_data = response.json()
+    assert "access_token" in json_data
+    assert json_data["token_type"] == "bearer"
+
+
+def test_login_failure():
+    form_data = {
+        "username": "1234@gmail.com",
+        "password": "1234"
+    }
+    response = client.post("/login", data=form_data)
+    assert response.status_code == 403, response.text

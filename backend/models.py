@@ -4,7 +4,6 @@ from sqlalchemy.sql.expression import text
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 
 
-# still need alembic for updates
 class User_engagment(Base):
     __tablename__ = "user_engagement"
 
@@ -15,3 +14,13 @@ class User_engagment(Base):
     session_started = Column(TIMESTAMP(timezone=True), nullable=False,
                              server_default=text('now()'))
     video_url = Column(String(255), primary_key=True, nullable=False)
+
+
+class User_Login(Base):
+    __tablename__ = "user_login"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    email = Column(String(255), unique=True, nullable=False)
+    timestamp = Column(TIMESTAMP(timezone=True), nullable=False,
+                       server_default=('now()'))
+    password = Column(String(255), nullable=False)
