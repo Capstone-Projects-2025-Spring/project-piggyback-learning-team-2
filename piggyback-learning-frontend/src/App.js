@@ -19,6 +19,9 @@ function App() {
         <Route path="/prek" element={<PreKPage />} />
         <Route path="/ms" element={<MousePosition />} />
         <Route path="/profile" element={<UserProfile />} />  
+        <Route path="/contact" element={<div>Contact Us</div>} />
+        
+
         
 
 
