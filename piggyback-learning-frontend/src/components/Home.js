@@ -136,14 +136,24 @@ function Home() {
           </div>
 </section>
 
-{/* url input and video section */}
+{/* url input and video section 
 <section className="youtube-url-enhanced">
   <h2>Add Your Learning Video</h2>
   <div className="url-input-container">
     <input type="text" id="youtubeUrl" placeholder="Paste YouTube URL here..." />
     <button onClick={validateYTURL} className="submit-btn">Add Video</button>
   </div>
-</section>
+</section>*/}
+ 
+        <section className="youtube-url-enhanced">
+          <h2>Add Your Own Learning Video</h2>
+          <div className="url-input-container">
+            <input type="text" id="youtubeUrl" placeholder="Paste YouTube URL here..." />
+            </div>
+            <div>
+            <button onClick={validateYTURL} className="submit-btn">Add Video</button>
+            </div>
+        </section>
 
         <section className="videos-enhanced">
           <h2>Explore Learning Videos</h2>
@@ -162,16 +172,8 @@ function Home() {
             </div>
             <button className="scroll-button right" onClick={scrollRight}>→</button>
           </div>
-        </section>
-        <section className="youtube-url-enhanced">
-          <h2>Add Your Own Learning Video</h2>
-          <div className="url-input-container">
-            <input type="text" id="youtubeUrl" placeholder="Paste YouTube URL here..." />
-            </div>
-            <div>
-            <button onClick={validateYTURL} className="submit-btn">Add Video</button>
-            </div>
-        </section>
+        
+          </section>
       </main>
 
       <footer className="footer-enhanced">
