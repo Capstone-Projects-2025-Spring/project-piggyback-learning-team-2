@@ -1,5 +1,0 @@
-1. What is the cheetah known as? (Detected Objects: None)
-2. Where are cheetahs mostly found? (Detected Objects: cake (0.80))
-3. How long can cheetahs sprint before they overheat? (Detected Objects: bear (0.50), horse (0.34), bear (0.30))
-4. Which animal will steal a cheetah's dinner? (Detected Objects: book (0.65), dog (0.56))
-5. How do baby cheetahs (cubs) learn to hunt? (Detected Objects: None)

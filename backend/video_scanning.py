@@ -3,18 +3,41 @@ import os
 import sys
 import logging
 import numpy as np
-import json
 import cv2
 import torch
 import traceback
-import math
 import re
 import yt_dlp
 from dotenv import load_dotenv
+import threading
 
 # Import functions from audio_scanning.py
-from Audio_Scanning import generate_questions_from_youtube
+from backend.audio_Scanning import generate_questions_from_youtube, validate_youtube_url
 
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+
+app = Flask(__name__)
+# Configure CORS properly
+CORS(app, resources={
+    r"/health": {"origins": "*"},
+    r"/verify_url": {"origins": "*"},
+    r"/process": {"origins": "*"},
+    r"/results": {"origins": "*"}
+})
+
+@app.route('/health', methods=['GET', 'OPTIONS'])
+def health_check():
+    """Enhanced health check endpoint"""
+    response = jsonify({
+        "status": "healthy",
+        "version": "1.0",
+        "timestamp": time.time()
+    })
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+    return response
+
+app.config['UPLOAD_FOLDER'] = ('frames')
 # Add the yolov7 directory to the Python path
 yolov7_path = os.path.join(os.path.dirname(__file__), "yolov7")
 sys.path.append(yolov7_path)
@@ -24,21 +47,21 @@ from yolov7.utils.general import non_max_suppression
 from yolov7.utils.torch_utils import select_device
 
 # Load environment variables
-load_dotenv("aws_storage_credentials.env")
+load_dotenv("../aws_storage_credentials.env")
 
 # AWS S3 Configuration
 AWS_ACCESS_KEY_ID = os.getenv('AWS_ACCESS_KEY_ID')
 AWS_SECRET_ACCESS_KEY = os.getenv('AWS_SECRET_ACCESS_KEY')
 AWS_DEFAULT_REGION = os.getenv('AWS_DEFAULT_REGION')
 S3_BUCKET_NAME = os.getenv('S3_BUCKET_NAME')
-S3_FRAMES_PREFIX = os.getenv('S3_FRAMES_PREFIX', 'frames/')
+S3_FRAMES_PREFIX = os.getenv('S3_FRAMES_PREFIX', '../frames/')
 S3_TIMESTAMPS_PREFIX = os.getenv('S3_TIMESTAMPS_PREFIX', 'timestamps/')
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-WEIGHTS_PATH = 'yolov7.pt'
+WEIGHTS_PATH = '../yolov7.pt'
 
 # Function to ensure clean files before processing
 def ensure_clean_files():
@@ -203,7 +226,8 @@ def get_youtube_stream_url(youtube_url):
         raise
 
 # Parse questions.txt file to extract questions and timestamps
-def parse_questions_file(file_path="questions.txt"):
+def parse_questions_file(filename="questions.txt"):
+    file_path = os.path.join(os.getcwd(), filename)
     logger.info(f"Parsing questions file: {file_path}")
 
     # Check if file exists
@@ -225,13 +249,17 @@ def parse_questions_file(file_path="questions.txt"):
             logger.error("No timestamps found in the file")
             return []
 
+        # Replace the timestamp parsing section with:
         timestamp_text = timestamp_line.group(1).strip()
-        # Extract numbers from format like "1.10s, 2.25s"
-        timestamps = re.findall(r'(\d+)\.(\d+)s', timestamp_text)
+        # Extract numbers from format like "1.25, 2.30"
+        timestamps = re.findall(r'(\d+)\.(\d+)', timestamp_text)
 
         if not timestamps:
-            logger.error(f"Could not parse timestamps from: {timestamp_text}")
-            return []
+            # Try alternative format without 's'
+            timestamps = re.findall(r'(\d+)\s*:\s*(\d+)', timestamp_text)
+            if not timestamps:
+                logger.error(f"Could not parse timestamps from: {timestamp_text}")
+                return []
 
         # Convert to seconds
         parsed_timestamps = []
@@ -309,6 +337,153 @@ def wait_for_file(file_path, timeout=300, check_interval=5):
     logger.info(f"File {file_path} is available")
     return True
 
+def run_processing(youtube_url):
+    try:
+        # Set up directories
+        os.makedirs("../frames", exist_ok=True)
+        ensure_clean_files()
+
+        # Audio processing
+        questions_with_timestamps = generate_questions_from_youtube(youtube_url)
+        if not wait_for_file("../questions.txt", timeout=300):
+            raise Exception("Question generation timeout")
+
+        # Video processing
+        stream_url = get_youtube_stream_url(youtube_url)
+        model, device = load_yolov7_model(WEIGHTS_PATH)
+        timestamps = [ts for _, ts in parse_questions_file("../questions.txt")]
+
+        # Frame extraction
+        frames = process_video(stream_url, timestamps)
+        for timestamp, frame in frames:
+            cv2.imwrite(f"frames/frame_{timestamp}.jpg", frame)
+
+        # Object detection
+        updated_questions = []
+        for q, ts in parse_questions_file():
+            frame_data = next((f for t, f in frames if t == ts), None)
+            if frame_data:
+                detections = detect_objects(model, device, frame_data)
+                obj_str = format_detections(detections, model.names)
+                updated_questions.append(f"{q} (Objects: {obj_str})")
+
+        # Save results
+        with open("../updated_questions.txt", "w") as f:
+            f.write("\n".join(updated_questions))
+
+        return True
+    except Exception as e:
+        logger.error(f"Processing failed: {str(e)}")
+        return False
+
+# Progress tracking for audio processing
+processing_status = {
+    'current': 'not_started',
+    'message': ''
+}
+
+@app.route('/progress', methods=['GET'])
+def get_progress():
+    return jsonify({
+        'status': processing_status['current'],
+        'message': processing_status['message']
+    })
+
+def update_progress(status, message):
+    processing_status['current'] = status
+    processing_status['message'] = message
+    print(f"Progress: {status} - {message}")
+
+
+@app.route('/process', methods=['POST'])
+def handle_request():
+    try:
+        data = request.get_json()
+        print(f"Received processing request for: {data.get('url')}")
+
+        if not data or 'url' not in data:
+            logger.error("No URL provided in request")
+            return jsonify({"error": "Missing YouTube URL"}), 400
+
+        # Verify URL again in case frontend validation was bypassed
+        if not validate_youtube_url(data['url']):
+            return jsonify({"error": "Invalid YouTube URL"}), 400
+
+        # Run processing in background thread
+        thread = threading.Thread(
+            target=run_processing,
+            args=(data['url'],)
+        )
+        thread.start()
+
+        return jsonify({
+            "status": "processing_started",
+            "message": "Video is being processed. Check /results later."
+        })
+
+    except Exception as e:
+        logger.error(f"API error: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/verify_url', methods=['POST'])
+def verify_url():
+    """Endpoint to validate YouTube URLs before processing"""
+    from backend.audio_Scanning import validate_youtube_url
+
+    data = request.get_json()
+    if not data or 'url' not in data:
+        return jsonify({"valid": False, "error": "No URL provided"}), 400
+
+    is_valid = validate_youtube_url(data['url'])
+    return jsonify({
+        "valid": is_valid,
+        "error": "Invalid YouTube URL" if not is_valid else None
+    })
+
+@app.route('/results', methods=['GET'])
+def get_results():
+    """Check if processing is done with better status reporting"""
+    if not os.path.exists("../updated_questions.txt"):
+        return jsonify({
+            "status": "processing",
+            "progress": processing_status.get('message', 'In progress')
+        })
+
+    try:
+        with open("../updated_questions.txt", "r") as f:
+            questions = f.read()
+            if not questions.strip():
+                return jsonify({
+                    "status": "error",
+                    "error": "Generated questions file is empty"
+                })
+
+        return jsonify({
+            "status": "complete",
+            "questions": questions,
+            "frames": [
+                f"frames/{f}"
+                for f in os.listdir("../frames")
+                if f.endswith('.jpg')
+            ]
+        })
+
+    except Exception as e:
+        return jsonify({
+            "status": "error",
+            "error": str(e)
+        })
+
+@app.route('/test', methods=['GET', 'OPTIONS'])
+def test_endpoint():
+    """Simple test endpoint"""
+    response = jsonify({"message": "Backend is working!"})
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    return response
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=8000, debug=True)
+'''
 # Main function
 def main():
     # Set up directories for output
@@ -420,3 +595,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+'''
