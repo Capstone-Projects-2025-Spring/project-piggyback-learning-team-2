@@ -48,3 +48,6 @@ Thumbs.db
 
 # Virtual environments
 venv/
+
+# Docker
+docker-compose-dev.yml

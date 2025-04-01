@@ -34,23 +34,32 @@ const Signup = () => {
     setError('');
 
     try {
-      const { data, error } = await supabase.auth.signUp({
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
-        options: {
-          data: {
+      });
+  
+      if (signUpError) throw signUpError;
+  
+      const userId = data?.user?.id;
+  
+      if (userId) {
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert({
+            id: userId,
             first_name: formData.firstName,
             last_name: formData.lastName,
-          },
-        },
-      });
-
-      if (error) {
-        throw error;
+            email: formData.email,
+            avatar_url: 'https://th.bing.com/th/id/OIP.1LaOBAiExqeZ_5-dyWMFAwHaEJ?w=278&h=180&c=7&r=0&o=5&dpr=1.5&pid=1.7', 
+          bio: 'This is my profile!'
+          });
+  
+        if (insertError) throw insertError;
       }
-
-      console.log('Signup successful:', data);
-      navigate('/profile'); // Redirect to profile or home page after signup
+  
+      console.log('Signup and profile creation successful:', data);
+      navigate('/profile');
     } catch (error) {
       setError(error.message);
       console.error('Error during signup:', error);

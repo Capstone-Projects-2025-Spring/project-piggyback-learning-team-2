@@ -1,5 +1,5 @@
 import re
-from pydantic import BaseModel, HttpUrl, field_validator
+from pydantic import BaseModel, HttpUrl, field_validator, EmailStr
 
 
 class YouTubeVideo(BaseModel):
@@ -54,3 +54,25 @@ class YouTubeVideo(BaseModel):
                 "The URL provided by the user is not a valid YouTube video URL"
             )
         return v
+
+
+class UserCredentials(BaseModel):
+    email: EmailStr
+    password: str
+
+
+class UserResponse(BaseModel):
+    id: int
+    email: EmailStr
+
+    class Config:
+        from_attributes = True
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    username: str | None = None

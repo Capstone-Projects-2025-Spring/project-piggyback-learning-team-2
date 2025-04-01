@@ -33,10 +33,10 @@ function UserProfile() {
 
             const user = authData.user;
             let { data: profileData, error: profileError } = await supabase
-                .from('profiles')
-                .select('id, name, email, avatar_url, bio')
-                .eq('id', user.id)
-                .single();
+  .from('profiles')
+  .select('id, first_name, last_name, email, avatar_url, bio')  
+  .eq('id', user.id)
+  .single();
 
             if (profileError) {
                 const { data: newProfile, error: insertError } = await supabase
@@ -102,7 +102,7 @@ function UserProfile() {
                             src={profile.avatar_url || "https://via.placeholder.com/150"}
                             alt="Profile"
                         />
-                        <h2>{profile.name}</h2>
+                        <h2>{profile.first_name} {profile.last_name}</h2>
                         <p>{profile.bio}</p>
                     </div>
 

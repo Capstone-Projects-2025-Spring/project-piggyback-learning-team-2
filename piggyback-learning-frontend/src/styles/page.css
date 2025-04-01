@@ -82,7 +82,7 @@ body {
 
 .header-enhanced nav ul li a:hover {
   background: rgba(255, 255, 255, 0.2);
-  color: #ffeb3b;
+  color: #ffeb38db;
 }
 
 /* Main Content */
@@ -94,21 +94,83 @@ main {
   gap: 20px;
 }
 
-/* Enhanced Intro - Smaller and Centered */
+/* Enhanced Intro - Animated Welcome Box */
 .intro-enhanced {
   background: var(--gradient-orange);
-  padding: 40px 20px;
-  margin: 20px;
+  padding: 70px 150px;
+  margin: 20px auto;
   border-radius: 40px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  animation: fadeIn 1s ease-in;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
+
+  animation: slideDownFadeIn 1s ease-out, floatUpDown 3s ease-in-out infinite;
+  transition: background 0.5s ease, color 0.5s ease;
 }
 
+.intro-enhanced:hover {
+  background: linear-gradient(135deg, #FFD700, #ff46a2);
+  color: white;
+}
+
+/* Animations */
+@keyframes floatUpDown {
+  0% { transform: translateY(-10px); }
+  50% { transform: translateY(0); }
+  100% { transform: translateY(-10px); }
+}
+
+@keyframes slideDownFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animated-heading { 
+  font-size: 2.8em;
+  font-weight: bold;
+  text-align: center;
+  background: linear-gradient(270deg,
+    #0018cb,  
+    #1a85ff,  
+    #ff00aa,  
+    #00fff7,  
+    #ff0000,  
+    #ff0000   
+  );
+  background-size: 1000% 1000%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradientFlow 8s ease infinite, fadeIn 1.5s ease-out;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  will-change: background-position;
+}
+
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+
+@keyframes gradientFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+
+/* Text inside box */
 .intro-enhanced h1 {
   font-size: 2.5em;
   color: white;
@@ -122,6 +184,7 @@ main {
   margin: 0 0 20px;
 }
 
+/* Button */
 .cta-button {
   background: var(--primary-green);
   padding: 12px 35px;
@@ -149,43 +212,44 @@ main {
   100% { transform: scale(1); }
 }
 
+
 /* Enhanced YouTube URL Section */
 .youtube-url-enhanced {
-  padding: 40px 20px;
-  background: rgba(255, 255, 255, 0.9);
-  margin: 20px;
-  border-radius: 30px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+  margin: 20px auto;
+  padding: 40px;
+  border-radius: 40px;
+  max-width: 700px;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(15px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
 .youtube-url-enhanced h2 {
+  background: var(--gradient-orange);
+  display: inline-block;
+  padding: 15px 30px;
+  border-radius: 25px;
+  color: white;
   font-size: 2.5em;
-  color: #333;
   margin-bottom: 20px;
 }
 
 .url-input-container {
   display: flex;
   justify-content: center;
-  align-items: center;
-  max-width: 700px;
-  margin: 0 auto;
-  flex-wrap: nowrap; /* Ensures items stay in one line */
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .youtube-url-enhanced input[type="text"] {
   padding: 15px;
   font-size: 1.2em;
-  border-radius: 25px;
+  border-radius: 15px;
+  background: white;
   border: 3px solid var(--primary-green);
-  width: 70%;
+  width: 65%;
   outline: none;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.youtube-url-enhanced input[type="text"]:focus {
-  border-color: #45a049;
-  box-shadow: 0 0 10px rgba(69, 160, 73, 0.5);
+  transition: all 0.3s ease;
 }
 
 .submit-btn {
@@ -199,12 +263,27 @@ main {
   border: none;
   color: white;
   cursor: pointer;
-  white-space: nowrap; 
+  transition: all 0.3s ease;
 }
 
 .submit-btn:hover {
-  background: var(--primary-green); 
+  transform: scale(1.05);
+  background: #45a049;
 }
+
+/* Animations */
+@keyframes bounceIn {
+  0% { transform: scale(0.95); opacity: 0; }
+  60% { transform: scale(1.02); opacity: 1; }
+  100% { transform: scale(1); }
+}
+
+@keyframes gradientFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
 
 /* Enhanced Grade Selection */
 .grade-selection-enhanced {
