@@ -26,33 +26,74 @@ function Home() {
   const scrollRight = () => videoCardsRef.current?.scrollBy({ left: 300, behavior: 'smooth' });
 
   async function validateYTURL() {
-    const urlValue = document.getElementById("youtubeUrl").value;
-    let data;
+    const urlValue = document.getElementById("youtubeUrl").value.trim();
+    setResponseData("Initializing content check...");
+
     try {
-      const response = await fetch("/validateYT_URL", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      // 1. First check if video is appropriate
+      setResponseData("Checking video content...");
+      const [isSafe, videoTitle] = await isVideoSafe({ src: urlValue });
+
+      if (!isSafe) {
+        throw new Error(`Video "${videoTitle}" was blocked for inappropriate content`);
+      }
+
+      // 2. Add to local state immediately (before processing)
+      addYoutubeUrl(urlValue, videoTitle);
+      setResponseData(`"${videoTitle}" approved - starting processing...`);
+
+      // 3. Start backend processing
+      const processResponse = await fetch('https://your-render-url/process', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: urlValue })
       });
-      const contentType = response.headers.get("content-type");
-      if (!response.ok) {
-        const errorData = contentType && contentType.includes("application/json")
-          ? await response.json()
-          : await response.text();
-        throw new Error(`${response.status}: ${JSON.stringify(errorData)}`);
+
+      const { video_id, status_url } = await processResponse.json();
+
+      // 4. Poll for processing status
+      const pollStatus = async () => {
+        const statusResponse = await fetch(`https://your-render-url${status_url}`);
+        const statusData = await statusResponse.json();
+
+        // Update status message
+        setResponseData(
+            `Processing "${videoTitle}": ${statusData.message} (${statusData.progress}%)`
+        );
+
+        if (statusData.status === 'complete') {
+          // Display final questions
+          const formattedQuestions = statusData.data.questions
+              .map((q, i) => `${i+1}. ${q.question} (at ${q.timestamp}s)`)
+              .join('\n');
+
+          setResponseData(
+              `Questions for "${videoTitle}":\n\n${formattedQuestions}`
+          );
+        }
+        else if (statusData.status === 'error') {
+          throw new Error(`Processing failed: ${statusData.message}`);
+        }
+        else {
+          setTimeout(pollStatus, 2000);
+        }
+      };
+
+      pollStatus();
+
+    } catch (error) {
+      setResponseData(`Error: ${error.message}`);
+      console.error("Video processing error:", error);
+
+      // Show user-friendly alerts for specific errors
+      if (error.message.includes('blocked for inappropriate')) {
+        alert(error.message);
+      } else if (error.message.includes('Invalid YouTube URL')) {
+        alert("Please enter a valid YouTube URL");
+      } else {
+        alert("Processing failed. Please try again later.");
       }
-      data = contentType && contentType.includes("application/json")
-        ? await response.json()
-        : await response.text();
-      console.log("Backend response data:", data);
-      if (typeof data === 'string') data = JSON.parse(data);
-      setResponseData(JSON.stringify(data, null, 2));
-    } catch (err) {
-      console.error("Error:", err);
-      setResponseData("Error: " + err.message);
-      return;
     }
-    addYoutubeUrl(data.url, null);
   }
 
   async function addYoutubeUrl(url, title) {
@@ -166,11 +207,23 @@ function Home() {
         <section className="youtube-url-enhanced">
           <h2>Add Your Own Learning Video</h2>
           <div className="url-input-container">
-            <input type="text" id="youtubeUrl" placeholder="Paste YouTube URL here..." />
-            </div>
-            <div>
+            <input type="text" id="youtubeUrl" placeholder="Paste YouTube URL here..."/>
+          </div>
+          <div>
             <button onClick={validateYTURL} className="submit-btn">Add Video</button>
-            </div>
+          </div>
+          <section className="processing-results">
+            {responseData && (
+                <div className="generated-questions">
+                  <h3>Generated Learning Questions:</h3>
+                  <div className="questions-list">
+                    {responseData.split('\n').map((q, i) => (
+                        <p key={i}>{q}</p>
+                    ))}
+                  </div>
+                </div>
+            )}
+          </section>
         </section>
       </main>
 
@@ -182,3 +235,35 @@ function Home() {
 }
 
 export default Home;
+
+/*
+  async function validateYTURL() {
+    const urlValue = document.getElementById("youtubeUrl").value;
+    let data;
+    try {
+      const response = await fetch("/validateYT_URL", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: urlValue })
+      });
+      const contentType = response.headers.get("content-type");
+      if (!response.ok) {
+        const errorData = contentType && contentType.includes("application/json")
+          ? await response.json()
+          : await response.text();
+        throw new Error(`${response.status}: ${JSON.stringify(errorData)}`);
+      }
+      data = contentType && contentType.includes("application/json")
+        ? await response.json()
+        : await response.text();
+      console.log("Backend response data:", data);
+      if (typeof data === 'string') data = JSON.parse(data);
+      setResponseData(JSON.stringify(data, null, 2));
+    } catch (err) {
+      console.error("Error:", err);
+      setResponseData("Error: " + err.message);
+      return;
+    }
+    addYoutubeUrl(data.url, null);
+  }
+  */

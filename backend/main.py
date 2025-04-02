@@ -3,7 +3,7 @@ from . import models, schemas, tools
 from sqlalchemy.orm import Session
 from .database import engine, get_db
 from .youtube import retreiveYoutubeMetaData
-from .routers import crud_test, authentication
+from .routers import crud_test, authentication, videos
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -11,6 +11,7 @@ app = FastAPI()
 
 app.include_router(crud_test.router)
 app.include_router(authentication.router)
+app.include_router(videos.router)
 
 
 # transition to use sqlalchemy
