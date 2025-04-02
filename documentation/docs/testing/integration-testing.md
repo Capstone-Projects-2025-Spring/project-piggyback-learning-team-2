@@ -15,6 +15,7 @@ Mock data will be preloaded into the database using Python scripts. This ensures
 
 ### Sample Python Script for Loading Data:
 
+```python
     from models import User  # Example model
     from database import SessionLocal
 
@@ -31,12 +32,14 @@ Mock data will be preloaded into the database using Python scripts. This ensures
     user = User(**mock_user)
     db.add(user)
     db.commit()
+```
 
 ### Backend Testing:
 FastAPI’s TestClient will be used to send HTTP requests to the API endpoints and validate the responses.
 
 #### Sample FastAPI Test Script:
 
+```javascript
     from fastapi.testclient import TestClient
     from main import app  # FastAPI app instance
 
@@ -51,12 +54,13 @@ FastAPI’s TestClient will be used to send HTTP requests to the API endpoints a
     
         assert response.status_code == 200
         assert response.json() == {"message": "Account created successfully"}
-
+```
 ### Frontend Testing with Jest:
 Jest will be used to test React components and user interactions. We will mock API responses to ensure the frontend behaves as expected when interacting with the backend.
 
 #### Example Jest Test Script:
 
+```javascript
     // Mocked API response for account creation
     jest.mock("axios"); // Mocking axios for API calls
     axios.post.mockResolvedValue({ data: { message: "Account created successfully" } });
@@ -80,7 +84,7 @@ Jest will be used to test React components and user interactions. We will mock A
         const successMessage = await screen.findByText("Account created successfully");
         expect(successMessage).toBeInTheDocument();
     });
-
+```
 ## Use Case 1 - Creating an Account
 *As a user, I want to be able to create an account in order to access videos and interact with them.*
 

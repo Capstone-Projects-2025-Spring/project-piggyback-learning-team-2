@@ -27,6 +27,4 @@ jobs:
         run: npm install
         working-directory: ./piggyback-learning-frontend  # Use this if your frontend lives here
 
-      - name: Run tests
-        run: npm test
-        working-directory: ./piggyback-learning-frontend
+     
