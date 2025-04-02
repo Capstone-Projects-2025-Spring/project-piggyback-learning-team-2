@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException, Depends, status
-from . import models, schemas, tools
+from . import db_models, schemas, tools
 from sqlalchemy.orm import Session
 from .database import engine, get_db
 from .youtube import retreiveYoutubeMetaData

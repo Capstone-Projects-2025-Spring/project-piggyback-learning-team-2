@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 
 # Load environment variables - moved to function to avoid loading on import
 def load_aws_credentials():
-    load_dotenv("../aws_storage_credentials.env")
+    load_dotenv("aws_storage_credentials.env")
 
     # AWS Configuration
     AWS_ACCESS_KEY = os.getenv('AWS_ACCESS_KEY_ID')
@@ -35,9 +35,9 @@ def ensure_clean_files():
         os.path.join(os.getcwd(), "updated_questions.txt")
     ]
 
-    if os.path.exists("../questions.txt"):
+    if os.path.exists("questions.txt"):
         try:
-            os.remove("../questions.txt")
+            os.remove("questions.txt")
             print(f"Removed existing questions.txt")
         except Exception as e:
             print(f"Failed to remove questions.txt: {str(e)}")
@@ -247,7 +247,6 @@ def transcribe_audio(audio_url, format_extension, s3_client, transcribe_client, 
         except Exception as e:
             print(f"Warning: Failed to clean up S3 object: {str(e)}")
 
-'''
 # Generates questions with timestamps from the transcribed text
 def generate_questions(transcript, bedrock_runtime):
     print("Generating questions using Claude 3.7 Sonnet...")
@@ -327,58 +326,6 @@ def generate_questions(transcript, bedrock_runtime):
     except Exception as e:
         raise RuntimeError(f"Question generation failed: {str(e)}")
 
-'''
-'''
-# Parse questions and timestamps from the generated text
-def parse_questions_and_timestamps(questions_text):
-    print("Parsing generated questions...")
-    print("Raw input text:\n", questions_text[:1000], "...")  # Debug
-
-    questions = []
-    timestamps = []
-
-    # Split into individual questions
-    question_blocks = re.split(r'(?=Q\d+\.)', questions_text)
-    question_blocks = [block.strip() for block in question_blocks if block.strip()]
-
-    for block in question_blocks:
-        try:
-            # Extract question
-            question_match = re.search(r'Q\d+\.(.+?)(?=\n[A-Z]\)|$)', block, re.DOTALL)
-            if not question_match:
-                continue
-
-            question = question_match.group(1).strip()
-
-            # Extract options
-            options = {}
-            for option in ['A', 'B', 'C', 'D']:
-                option_match = re.search(r'{}\)(.+?)(?=\n[A-Z]\)|$)'.format(option), block)
-                if option_match:
-                    options[option] = option_match.group(1).strip()
-
-            # Extract timestamp
-            timestamp_match = re.search(r'Timestamp:\s*(\d+)', block)
-            timestamp = int(timestamp_match.group(1)) if timestamp_match else 0
-
-            # Only add if we got all components
-            if question and len(options) == 4 and timestamp >= 0:
-                questions.append(question)
-                timestamps.append(timestamp)
-                print(f"Parsed question: {question[:50]}... at {timestamp}s")
-
-        except Exception as e:
-            print(f"Error parsing question block: {str(e)}")
-            continue
-
-    # Pair questions with timestamps
-    questions_with_timestamps = list(zip(questions, timestamps))
-    print(f"Successfully parsed {len(questions_with_timestamps)} questions")
-
-    return questions_with_timestamps
-'''
-
-'''
 def parse_questions_and_timestamps(questions_text):
 
     # At the start of the function:
@@ -436,6 +383,45 @@ def parse_questions_and_timestamps(questions_text):
     return list(zip(questions, timestamps))
 
 # Function to generate questions from a YouTube URL - combining all the steps
+
+def generate_questions_from_youtube(youtube_url):
+    ensure_clean_files()
+    print(f"Starting question generation process for: {youtube_url}")
+
+    # Load AWS credentials
+    s3_client, transcribe_client, bedrock_runtime, S3_AUDIO_BUCKET = load_aws_credentials()
+
+    try:
+        # Extract audio
+        print("Extracting audio from video...")
+        audio_source, format_extension = extract_video_audio(youtube_url)
+
+        # Transcribe audio
+        print("Starting audio transcription...")
+        transcript = transcribe_audio(audio_source, format_extension,
+                                    s3_client, transcribe_client, S3_AUDIO_BUCKET)
+
+        # Generate questions
+        print("Generating questions from transcript...")
+        questions_text = generate_questions(transcript, bedrock_runtime)
+
+        # Parsing questions and timestamps (COMMENT OUT OR REMOVE THIS LINE)
+        # print("Parsing questions and timestamps...")
+        # questions_with_timestamps = parse_questions_and_timestamps(questions_text)
+
+        # Save to file (KEEP THIS FOR POTENTIAL DEBUGGING LATER)
+        print("Writing raw questions to questions.txt...")
+        with open("questions.txt", "w") as file:
+            file.write(questions_text) # Save the raw text
+
+        print(f"Successfully generated questions (raw text saved to questions.txt)")
+        return questions_text # Return the raw Claude output
+
+    except Exception as e:
+        print(f"ERROR:__main__:Processing failed: {str(e)}")
+        raise
+
+'''
 def generate_questions_from_youtube(youtube_url):
     ensure_clean_files()
     print(f"Starting question generation process for: {youtube_url}")
@@ -463,7 +449,7 @@ def generate_questions_from_youtube(youtube_url):
 
         # Save to file
         print("Writing questions to questions.txt...")
-        with open("../questions.txt", "w") as file:
+        with open("questions.txt", "w") as file:
             for question, timestamp in questions_with_timestamps:
                 file.write(f"{question}\n\n")  # Write the full question block
             file.write("\nTimestamps:\n")
@@ -475,123 +461,4 @@ def generate_questions_from_youtube(youtube_url):
     except Exception as e:
         print(f"ERROR:__main__:Processing failed: {str(e)}")
         raise
-'''
-def generate_questions_from_youtube(youtube_url):
-    """Main function to generate questions from YouTube URL"""
-    ensure_clean_files()
-    print(f"Starting processing for: {youtube_url}")
-
-    try:
-        # Load AWS clients
-        s3_client, transcribe_client, bedrock_runtime, S3_AUDIO_BUCKET = load_aws_credentials()
-
-        # Extract and transcribe audio
-        audio_url, ext = extract_video_audio(youtube_url)
-        transcript = transcribe_audio(audio_url, ext, s3_client, transcribe_client, S3_AUDIO_BUCKET)
-
-        # Generate and parse questions
-        questions_text = generate_questions(transcript, bedrock_runtime)
-        return parse_questions_and_timestamps(questions_text)
-
-    except Exception as e:
-        print(f"Processing failed: {str(e)}")
-        raise
-
-def parse_questions_and_timestamps(questions_text):
-    """Parse generated questions into structured format"""
-    if not questions_text.strip():
-        return []
-
-    questions = []
-    question_blocks = re.split(r'(?=\d+\.\s)', questions_text)
-
-    for block in question_blocks:
-        try:
-            # Extract question
-            question_match = re.match(r'(\d+)\.\s+(.+?)(?=\n[A-D]\))', block, re.DOTALL)
-            if not question_match:
-                continue
-
-            # Extract options
-            options = {
-                opt: re.search(rf'{opt}\)\s*(.+?)(?=\n[A-D]\)|$)', block).group(1).strip()
-                for opt in ['A', 'B', 'C', 'D']
-            }
-
-            # Extract feedback
-            feedback_block = re.search(r'Feedback:(.*?)(?=\n\d+\.|\n*$)', block, re.DOTALL)
-            feedback = {
-                opt: re.search(rf'{opt}\)\s*(.+?)(?=\n[A-D]\)|$)', feedback_block.group(1)).group(1).strip()
-                for opt in ['A', 'B', 'C', 'D'] if feedback_block
-            }
-
-            # Extract timestamp
-            timestamp = int(re.search(r'Timestamp:\s*(\d+)', block).group(1))
-
-            questions.append((
-                f"{question_match.group(1)}. {question_match.group(2).strip()}",
-                timestamp,
-                options,
-                feedback
-            ))
-
-        except Exception as e:
-            print(f"Error parsing question block: {str(e)}")
-            continue
-
-    return questions
-
-def generate_questions(transcript, bedrock_runtime):
-    """Generate questions using Claude with structured JSON output"""
-    prompt = """Generate 3-5 educational questions in JSON format:
-    {
-        "questions": [
-            {
-                "text": "question text",
-                "options": {
-                    "A": "option A",
-                    "B": "option B",
-                    "C": "option C",
-                    "D": "option D"
-                },
-                "feedback": {
-                    "A": "feedback for A",
-                    "B": "feedback for B",
-                    "C": "feedback for C",
-                    "D": "feedback for D"
-                },
-                "timestamp": 45
-            }
-        ]
-    }
-    
-    Transcript: {transcript}""".format(transcript=transcript[:4000])
-
-    try:
-        response = bedrock_runtime.invoke_model(
-            modelId="anthropic.claude-v2",
-            body=json.dumps({
-                "prompt": prompt,
-                "max_tokens_to_sample": 2000
-            })
-        )
-        return json.loads(response['body'].read())['completion']
-    except Exception as e:
-        raise RuntimeError(f"Question generation failed: {str(e)}")
-    
-'''
-# This allows the script to be run directly or imported
-if __name__ == "__main__":
-    youtube_url = "https://www.youtube.com/watch?v=J20eXhZTHEo"
-    print(f"Running audio_scanning.py directly for URL: {youtube_url}")
-
-    # Always clean existing files when running directly
-    ensure_clean_files()
-
-    questions_with_timestamps = generate_questions_from_youtube(youtube_url)
-
-    print("\nGenerated Questions:")
-    for question, timestamp in questions_with_timestamps:
-        print(f"Question: {question}")
-        print(f"Timestamp: {timestamp}s")
 '''

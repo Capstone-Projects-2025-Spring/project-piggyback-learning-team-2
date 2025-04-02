@@ -1,2 +1,59 @@
+1. What is the wolf eel actually?
+A) A type of eel
+B) A really long fish
+C) A sea urchin
+D) A type of crab
+Feedback:
+A) Incorrect. Even though it's called an eel, it's not actually an eel.
+B) Correct! The transcript says "Even though it's called an eel, this is just a really long fish."
+C) Incorrect. Sea urchins are what wolf eels eat.
+D) Incorrect. Crabs are another food that wolf eels eat.
+Timestamp: 6
 
-Timestamps:
+2. How long can a wolf eel grow?
+A) 3 feet long
+B) 5 feet long
+C) 7 feet long
+D) 10 feet long
+Feedback:
+A) Incorrect. The wolf eel is longer than 3 feet.
+B) Incorrect. The wolf eel is longer than 5 feet.
+C) Correct! The transcript states that the wolf eel is "this 7 ft long fish."
+D) Incorrect. The transcript doesn't say wolf eels grow to 10 feet.
+Timestamp: 24
+
+3. What do wolf eels like to eat?
+A) Kelp and plants
+B) Sea urchins and crabs
+C) Other fish
+D) Rocks and sand
+Feedback:
+A) Incorrect. Wolf eels don't eat kelp - they actually help protect kelp by eating sea urchins.
+B) Correct! The transcript mentions they eat "sea urchins" and "crabs and other crunchy stuff too."
+C) Incorrect. The transcript doesn't mention wolf eels eating other fish.
+D) Incorrect. Wolf eels don't eat rocks and sand.
+Timestamp: 32
+
+4. Where do wolf eels like to live?
+A) In open ocean water
+B) In sandy beaches
+C) In rocky reefs and kelp forests
+D) In freshwater lakes
+Feedback:
+A) Incorrect. Wolf eels don't live in the open ocean.
+B) Incorrect. Wolf eels don't live on sandy beaches.
+C) Correct! The transcript says they live "mostly among rocky reefs and kelp forests."
+D) Incorrect. Wolf eels live in the ocean, not freshwater lakes.
+Timestamp: 15
+
+5. What is special about wolf eel couples?
+A) They fight a lot
+B) They are loyal and stay together for a long time
+C) They never meet each other
+D) They change partners every month
+Feedback:
+A) Incorrect. The transcript doesn't say wolf eels fight.
+B) Correct! The transcript says "A male and female wolffield are very loyal and often stay together for a long time."
+C) Incorrect. Wolf eels do meet and stay together.
+D) Incorrect. Wolf eels stay with the same partner for a long time.
+Timestamp: 70

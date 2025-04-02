@@ -5,7 +5,7 @@ from sqlalchemy import pool
 from alembic import context
 from pathlib import Path
 from dotenv import load_dotenv
-from backend.models import Base
+from backend.db_models import Base
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
