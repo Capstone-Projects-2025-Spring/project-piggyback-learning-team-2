@@ -1,4 +1,4 @@
-from .. import models
+from .. import db_models
 # from fastapi import FastAPI
 from fastapi import APIRouter, status, HTTPException, Response, Depends
 from sqlalchemy.orm import Session
@@ -16,8 +16,8 @@ def read_root():
 # testing get data fromn table
 @router.get("/validateYT_URL/{video_url:path}")
 def get_URL(video_url: str, db: Session = Depends(get_db)):
-    engagement = db.query(models.User_engagment).filter(
-        models.User_engagment.video_url == video_url
+    engagement = db.query(db_models.User_engagment).filter(
+        db_models.User_engagment.video_url == video_url
     ).first()
     if not engagement:
         raise HTTPException(
@@ -30,15 +30,15 @@ def get_URL(video_url: str, db: Session = Depends(get_db)):
 # testing adding data to table
 @router.post("/validateYT_URL")
 def add_URL(video: YouTubeVideo, db: Session = Depends(get_db)):
-    existing = db.query(models.User_engagment).filter(
-        models.User_engagment.video_url == str(video.url)
+    existing = db.query(db_models.User_engagment).filter(
+        db_models.User_engagment.video_url == str(video.url)
     ).first()
     if existing:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Video URL already exists"
         )
-    new_engagement = models.User_engagment(video_url=str(video.url))
+    new_engagement = db_models.User_engagment(video_url=str(video.url))
     db.add(new_engagement)
     db.commit()
     db.refresh(new_engagement)
@@ -50,8 +50,8 @@ def add_URL(video: YouTubeVideo, db: Session = Depends(get_db)):
 @router.delete("/validateYT_URL/{video_url:path}",
                status_code=status.HTTP_204_NO_CONTENT)
 def delete_URL(video_url: str, db: Session = Depends(get_db)):
-    engagement = db.query(models.User_engagment).filter(
-        models.User_engagment.video_url == video_url
+    engagement = db.query(db_models.User_engagment).filter(
+        db_models.User_engagment.video_url == video_url
     ).first()
     if not engagement:
         raise HTTPException(
@@ -67,8 +67,8 @@ def delete_URL(video_url: str, db: Session = Depends(get_db)):
 @router.put("/validateYT_URL/{video_url:path}")
 def update_URL(video_url: str, video: YouTubeVideo,
                db: Session = Depends(get_db)):
-    engagement = db.query(models.User_engagment).filter(
-        models.User_engagment.video_url == video_url
+    engagement = db.query(db_models.User_engagment).filter(
+        db_models.User_engagment.video_url == video_url
     ).first()
     if not engagement:
         raise HTTPException(
