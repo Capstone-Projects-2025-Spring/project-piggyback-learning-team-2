@@ -247,6 +247,7 @@ def transcribe_audio(audio_url, format_extension, s3_client, transcribe_client, 
         except Exception as e:
             print(f"Warning: Failed to clean up S3 object: {str(e)}")
 
+'''
 # Generates questions with timestamps from the transcribed text
 def generate_questions(transcript, bedrock_runtime):
     print("Generating questions using Claude 3.7 Sonnet...")
@@ -327,6 +328,7 @@ def generate_questions(transcript, bedrock_runtime):
         raise RuntimeError(f"Question generation failed: {str(e)}")
 
 '''
+'''
 # Parse questions and timestamps from the generated text
 def parse_questions_and_timestamps(questions_text):
     print("Parsing generated questions...")
@@ -374,6 +376,8 @@ def parse_questions_and_timestamps(questions_text):
     print(f"Successfully parsed {len(questions_with_timestamps)} questions")
 
     return questions_with_timestamps
+'''
+
 '''
 def parse_questions_and_timestamps(questions_text):
 
@@ -471,7 +475,110 @@ def generate_questions_from_youtube(youtube_url):
     except Exception as e:
         print(f"ERROR:__main__:Processing failed: {str(e)}")
         raise
+'''
+def generate_questions_from_youtube(youtube_url):
+    """Main function to generate questions from YouTube URL"""
+    ensure_clean_files()
+    print(f"Starting processing for: {youtube_url}")
 
+    try:
+        # Load AWS clients
+        s3_client, transcribe_client, bedrock_runtime, S3_AUDIO_BUCKET = load_aws_credentials()
+
+        # Extract and transcribe audio
+        audio_url, ext = extract_video_audio(youtube_url)
+        transcript = transcribe_audio(audio_url, ext, s3_client, transcribe_client, S3_AUDIO_BUCKET)
+
+        # Generate and parse questions
+        questions_text = generate_questions(transcript, bedrock_runtime)
+        return parse_questions_and_timestamps(questions_text)
+
+    except Exception as e:
+        print(f"Processing failed: {str(e)}")
+        raise
+
+def parse_questions_and_timestamps(questions_text):
+    """Parse generated questions into structured format"""
+    if not questions_text.strip():
+        return []
+
+    questions = []
+    question_blocks = re.split(r'(?=\d+\.\s)', questions_text)
+
+    for block in question_blocks:
+        try:
+            # Extract question
+            question_match = re.match(r'(\d+)\.\s+(.+?)(?=\n[A-D]\))', block, re.DOTALL)
+            if not question_match:
+                continue
+
+            # Extract options
+            options = {
+                opt: re.search(rf'{opt}\)\s*(.+?)(?=\n[A-D]\)|$)', block).group(1).strip()
+                for opt in ['A', 'B', 'C', 'D']
+            }
+
+            # Extract feedback
+            feedback_block = re.search(r'Feedback:(.*?)(?=\n\d+\.|\n*$)', block, re.DOTALL)
+            feedback = {
+                opt: re.search(rf'{opt}\)\s*(.+?)(?=\n[A-D]\)|$)', feedback_block.group(1)).group(1).strip()
+                for opt in ['A', 'B', 'C', 'D'] if feedback_block
+            }
+
+            # Extract timestamp
+            timestamp = int(re.search(r'Timestamp:\s*(\d+)', block).group(1))
+
+            questions.append((
+                f"{question_match.group(1)}. {question_match.group(2).strip()}",
+                timestamp,
+                options,
+                feedback
+            ))
+
+        except Exception as e:
+            print(f"Error parsing question block: {str(e)}")
+            continue
+
+    return questions
+
+def generate_questions(transcript, bedrock_runtime):
+    """Generate questions using Claude with structured JSON output"""
+    prompt = """Generate 3-5 educational questions in JSON format:
+    {
+        "questions": [
+            {
+                "text": "question text",
+                "options": {
+                    "A": "option A",
+                    "B": "option B",
+                    "C": "option C",
+                    "D": "option D"
+                },
+                "feedback": {
+                    "A": "feedback for A",
+                    "B": "feedback for B",
+                    "C": "feedback for C",
+                    "D": "feedback for D"
+                },
+                "timestamp": 45
+            }
+        ]
+    }
+    
+    Transcript: {transcript}""".format(transcript=transcript[:4000])
+
+    try:
+        response = bedrock_runtime.invoke_model(
+            modelId="anthropic.claude-v2",
+            body=json.dumps({
+                "prompt": prompt,
+                "max_tokens_to_sample": 2000
+            })
+        )
+        return json.loads(response['body'].read())['completion']
+    except Exception as e:
+        raise RuntimeError(f"Question generation failed: {str(e)}")
+    
 '''
 # This allows the script to be run directly or imported
 if __name__ == "__main__":

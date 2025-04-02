@@ -401,20 +401,47 @@ export default function App() {
       }
     }
   };
-  
+
+
+  //Simple text to speech function that works with pre-set questions. Will need to be scaled.
+  const speakText = (text) => {
+    if ('speechSynthesis' in window) {
+      const utterance = new SpeechSynthesisUtterance(text);
+      speechSynthesis.speak(utterance);
+    } else {
+      console.warn("Speech synthesis not supported");
+    }
+  };
+
+  // Speak the question only when overlayType updates
+  useEffect(() => {
+    const currentQuestion = questionsData.find(q => q.id === overlayType);
+    if (currentQuestion) {
+      let textToSpeak = currentQuestion.title;
+
+      if (currentQuestion.type === "multipleChoice") {
+        textToSpeak += " " + currentQuestion.options.map(opt => opt.label).join(", ");
+      }
+
+      speakText(textToSpeak);
+    }
+  }, [overlayType, questionsData]);
+
   // question data that is going to be refactored later for a database API call that fetches the data
-  
 
   const renderOverlayContent = () => {
-    // Find the current question based on overlayType
     const currentQuestion = questionsData.find(q => q.id === overlayType);
     if (!currentQuestion) return null;
-  
-    // Set up local variables for the submit handler and extra props.
+
     let onSubmit = null;
     let extraProps = {};
-  
-    // Decide the action functions based on the question id
+
+    // Speech synthesis function
+    const speakText = (text) => {
+      const utterance = new SpeechSynthesisUtterance(text);
+      speechSynthesis.speak(utterance);
+    };
+
     switch (currentQuestion.id) {
       case "question1":
         extraProps.src = questionImage;
@@ -432,84 +459,92 @@ export default function App() {
         break;
     }
 
-    // used https://react.dev/learn/rendering-lists and  https://dev.to/remejuan/dynamically-render-components-based-on-configuration-3l42 
-    // chatgpt search function carrying alot with reasoning fixing syntax and logic errors where those occured, especially as I had to refactor the code to not account for hard-coding.
-    // Render based on the type of question
     switch (currentQuestion.type) {
       case "image":
         return (
-          <div className="overlayImage">
-            <h1>{currentQuestion.title}</h1>
-            <img
-              src={extraProps.src}
-              alt="question"
-              className="questionImage"
-              onClick={extraProps.onClick}
-            />
-          </div>
+            <div className="overlayImage">
+              <h1>{currentQuestion.title}</h1>
+              <img
+                  src={extraProps.src}
+                  alt="question"
+                  className="questionImage"
+                  onClick={extraProps.onClick}
+              />
+              <button onClick={() => speakText(currentQuestion.title)}>🔊 Replay</button>
+            </div>
         );
+
       case "multipleChoice":
         return (
-          <div className="overlayImage">
-            <h1>{currentQuestion.title}</h1>
-            {currentQuestion.options.map(option => (
-              <React.Fragment key={option.value}>
-                <input
-                  type="radio"
-                  name={currentQuestion.id}
-                  id={`${currentQuestion.id}-${option.value}`}
-                  value={option.value}
-                  checked={answers[currentQuestion.id]?.answer === option.value}
-                  onChange={() => userAnswer(currentQuestion.id, option.value)}
-                />
-                <label htmlFor={`${currentQuestion.id}-${option.value}`}>
-                  {option.label}
-                </label>
-                <br />
-              </React.Fragment>
-            ))}
-            {/* <button className="button" onClick={onSubmit}> */}
-            <button className="button" onClick={() => videoReplayOnWrongAnswer(currentQuestion.id)}>
-              Submit
-            </button>
-          </div>
+            <div className="overlayImage">
+              <h1>{currentQuestion.title}</h1>
+              {currentQuestion.options.map(option => (
+                  <React.Fragment key={option.value}>
+                    <input
+                        type="radio"
+                        name={currentQuestion.id}
+                        id={`${currentQuestion.id}-${option.value}`}
+                        value={option.value}
+                        checked={answers[currentQuestion.id]?.answer === option.value}
+                        onChange={() => userAnswer(currentQuestion.id, option.value)}
+                    />
+                    <label htmlFor={`${currentQuestion.id}-${option.value}`}>
+                      {option.label}
+                    </label>
+                    <br/>
+                  </React.Fragment>
+              ))}
+              <button className="button" onClick={() => videoReplayOnWrongAnswer(currentQuestion.id)}>
+                Submit
+              </button>
+              <button
+                  onClick={() => {
+                    let textToSpeak = currentQuestion.title + " " +
+                        currentQuestion.options.map(opt => opt.label).join(", ");
+                    speakText(textToSpeak);
+                  }}
+              >
+                🔊 Replay
+              </button>
+            </div>
         );
+        //<button onClick={() => speakText(currentQuestion.title)}>🔊 Replay</button>
       case "end":
         return (
-          <div
-            style={{
-              height: 300,
-              overflowY: 'scroll',
-              border: '1px solid #ccc'
-            }}
-          >
-            <h2>{currentQuestion.title}</h2>
+            <div
+                style={{
+                  height: 300,
+                  overflowY: 'scroll',
+                  border: '1px solid #ccc'
+                }}
+            >
+              <h2>{currentQuestion.title}</h2>
 
-            <ul>
-              {questionsData
-                .filter(q => q.type !== "end")
-                .map(q => {
-                  const selectedAnswer = answers[q.id]?.answer;
-                  let displayAnswer = "Not answered";
-                  if (selectedAnswer && q.options) {
-                    const option = q.options.find(opt => opt.value === selectedAnswer);
-                    if (option) {
-                      displayAnswer = `(${selectedAnswer}) ${option.label}`;
-                    } else {
-                      displayAnswer = selectedAnswer;
-                    }
-                  }
-                  return (
-                    <li key={q.id}>
-                      <strong>{q.title}</strong>
-                      <div>Answer: {displayAnswer}</div>
-                      <div>Time Taken: {answers[q.id]?.timeTaken || "N/A"}</div>
-                      <div>Number of Retries: {answers[q.id]?.numRetry || "N/A"}</div>
-                    </li>
-                  );
-                })}
-            </ul>
-            {/* <ul>
+              <ul>
+                {questionsData
+                    .filter(q => q.type !== "end")
+                    .map(q => {
+                      const selectedAnswer = answers[q.id]?.answer;
+                      let displayAnswer = "Not answered";
+                      if (selectedAnswer && q.options) {
+                        const option = q.options.find(opt => opt.value === selectedAnswer);
+                        if (option) {
+                          displayAnswer = `(${selectedAnswer}) ${option.label}`;
+                        } else {
+                          displayAnswer = selectedAnswer;
+                        }
+                      }
+                      return (
+                          <li key={q.id}>
+                            <strong>{q.title}</strong>
+                            <div>Answer: {displayAnswer}</div>
+                            <div>Time Taken: {answers[q.id]?.timeTaken || "N/A"}</div>
+                            <div>Number of Retries: {answers[q.id]?.numRetry || "N/A"}</div>
+                          </li>
+                      );
+                    })}
+              </ul>
+              {/* <ul>
               {questionsData
                 .filter(q => q.type !== "end")
                 .map(q => (
@@ -521,22 +556,25 @@ export default function App() {
                   </li>
                 ))}
             </ul> */}
-            <button className="button" onClick={onSubmit}>
-              OK!
-            </button>
-          </div>
+              <button className="button" onClick={onSubmit}>
+                OK!
+              </button>
+            </div>
         );
       default:
         return null;
     }
   };
 
+
+
+
   return (
-    
-    <div>
+
       <div>
-      <header>
-        <div className="logo">
+        <div>
+          <header>
+            <div className="logo">
           <img src={logo} alt="Piggyback Learning Logo" />
         </div>
         <nav>
@@ -550,26 +588,26 @@ export default function App() {
       </header>
     </div>
       <div className="yvid">
-        <YouTube 
+        <YouTube
           videoId={someVideoEmbed} // we can add a variable here later when re-using this page
           opts={{
             height: "480",
             width: "854",
-            playerVars: {autoplay: 1,},}} 
-          onReady={_onReady} 
+            playerVars: {autoplay: 1,},}}
+          onReady={_onReady}
         />
       </div>
       <div className="bogos">
-      </div>      
+      </div>
       <div className="overlay">
-        <button className="overlay__close" onClick={() => togglePandOtogether()}>Open Overlay</button> 
+        <button className="overlay__close" onClick={() => togglePandOtogether()}>Open Overlay</button>
           <Overlay isOpen={isOpen} onClose={togglePandOtogether}>
             {renderOverlayContent()}
           </Overlay>
       </div>
       {/* <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
       <h2>Current Time: {currentTime.toFixed(2)}</h2>
-      <h3 onClick={() => alert("Test container clicked!")}>test container</h3> */}  
+      <h3 onClick={() => alert("Test container clicked!")}>test container</h3> */}
     </div>
   );
 }
