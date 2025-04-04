@@ -50,6 +50,9 @@ export default function App() {
 
   const [someVideoEmbed, setSomeVideoEmbed] = useState("9e5lcQycf2M");
 
+  const [counter, setCounter] = React.useState(0);
+  const [retry, setRetry] = React.useState(0);
+
   // store question data
   // this should be replaced with something that makes an API call to fill the array with content.
 
@@ -282,7 +285,18 @@ export default function App() {
 
   // //
 
+  // React.useEffect(() => {
+  //   setTimeout(() => setCounter(counter + 1), 1000);
+  // }, [counter]);
 
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setCounter(prevCounter => prevCounter + 1);
+    }, 1000);
+    
+    return () => clearTimeout(timer);
+  }, [counter]);
+  
   
 
 
@@ -331,6 +345,7 @@ export default function App() {
             setTriggerCount(triggerCount + 1);
             setIsPaused(true);
             setIsOpen(true);
+            setCounter(0);
             setOverlayType(currentQuestion.id);
           }
         } else {
@@ -368,8 +383,8 @@ export default function App() {
       alert(`thats right!`);
       togglePandOtogether(); 
     } else {
-      /// alert(`try again!`);
-      alert(`a Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`);
+      alert(`try again!`);
+      //alert(`a Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`);
     }
   };
 
@@ -470,11 +485,13 @@ export default function App() {
                   className="questionImage"
                   onClick={extraProps.onClick}
               />
+              <br/>
               <button onClick={() => speakText(currentQuestion.title)}>🔊 Replay</button>
             </div>
         );
 
       case "multipleChoice":
+        
         return (
             <div className="overlayImage">
               <h1>{currentQuestion.title}</h1>
@@ -486,7 +503,7 @@ export default function App() {
                         id={`${currentQuestion.id}-${option.value}`}
                         value={option.value}
                         checked={answers[currentQuestion.id]?.answer === option.value}
-                        onChange={() => userAnswer(currentQuestion.id, option.value)}
+                        onChange={() => userAnswer(currentQuestion.id, option.value, counter, retry)}
                     />
                     <label htmlFor={`${currentQuestion.id}-${option.value}`}>
                       {option.label}
@@ -494,9 +511,13 @@ export default function App() {
                     <br/>
                   </React.Fragment>
               ))}
+              <br/>
+              <br/>
               <button className="button" onClick={() => videoReplayOnWrongAnswer(currentQuestion.id)}>
                 Submit
               </button>
+              <br/>
+              <br/>
               <button
                   onClick={() => {
                     let textToSpeak = currentQuestion.title + " " +
@@ -511,6 +532,7 @@ export default function App() {
         //<button onClick={() => speakText(currentQuestion.title)}>🔊 Replay</button>
       case "end":
         return (
+          <div>
             <div
                 style={{
                   height: 300,
@@ -519,7 +541,6 @@ export default function App() {
                 }}
             >
               <h2>{currentQuestion.title}</h2>
-
               <ul>
                 {questionsData
                     .filter(q => q.type !== "end")
@@ -556,10 +577,12 @@ export default function App() {
                   </li>
                 ))}
             </ul> */}
-              <button className="button" onClick={onSubmit}>
-                OK!
-              </button>
+              
             </div>
+            <button className="button" onClick={onSubmit}>
+                OK!
+            </button>
+          </div>
         );
       default:
         return null;
@@ -605,9 +628,11 @@ export default function App() {
             {renderOverlayContent()}
           </Overlay>
       </div>
-      {/* <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
+
+      <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
       <h2>Current Time: {currentTime.toFixed(2)}</h2>
-      <h3 onClick={() => alert("Test container clicked!")}>test container</h3> */}
+      <h3 onClick={() => alert("Test container clicked!")}>test container</h3>
+      <h3>Countdown: {counter}</h3>
     </div>
   );
 }
