@@ -51,7 +51,7 @@ export default function App() {
   const [someVideoEmbed, setSomeVideoEmbed] = useState("9e5lcQycf2M");
 
   const [counter, setCounter] = React.useState(0);
-  const [retry, setRetry] = React.useState(0);
+  const [retry, setRetry] = React.useState(null);
 
   // store question data
   // this should be replaced with something that makes an API call to fill the array with content.
@@ -378,14 +378,29 @@ export default function App() {
     }));
   };
 
-  const checkMousePosition = () => {
+  const checkMousePosition = (questionId) => {
+    const currentData = questionsData.find(item => item.id === questionId);
     if (someMousePosition.x >= 1020 && someMousePosition.x <= 1120 && someMousePosition.y >= 480 && someMousePosition.y <= 580) {
       alert(`thats right!`);
       setRetry(0);
       togglePandOtogether(); 
     } else {
+
+      if (videoRef.current < 30) {
+        alert(`try again!`);
+        videoRef.current.seekTo(0, true);
+        // setTriggerCount(triggerCount-1)
+        // togglePandOtogether();
+      }
+      else{
+        alert(`try again!`);
+        videoRef.current.seekTo((currentTime-30), true);
+        // setTriggerCount(triggerCount-1)
+        // togglePandOtogether();
+      }
       setRetry(prev => prev + 1);
-      alert(`try again!`);
+      setTriggerCount(triggerCount-1)
+      togglePandOtogether();
       //alert(`a Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`);
     }
   };
@@ -565,8 +580,8 @@ export default function App() {
                           <li key={q.id}>
                             <strong>{q.title}</strong>
                             <div>Answer: {displayAnswer}</div>
-                            <div>Time Taken: {answers[q.id]?.timeTaken || "N/A"}</div>
-                            <div>Number of Retries: {answers[q.id]?.numRetry || "N/A"}</div>
+                            <div>Time Taken: {answers[q.id]?.timeTaken || "0"}</div>
+                            <div>Number of Retries: {answers[q.id]?.numRetry || "0"}</div>
                           </li>
                       );
                     })}
