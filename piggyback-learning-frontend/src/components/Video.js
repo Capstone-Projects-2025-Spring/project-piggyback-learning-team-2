@@ -381,8 +381,10 @@ export default function App() {
   const checkMousePosition = () => {
     if (someMousePosition.x >= 1020 && someMousePosition.x <= 1120 && someMousePosition.y >= 480 && someMousePosition.y <= 580) {
       alert(`thats right!`);
+      setRetry(0);
       togglePandOtogether(); 
     } else {
+      setRetry(prev => prev + 1);
       alert(`try again!`);
       //alert(`a Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`);
     }
@@ -402,18 +404,22 @@ export default function App() {
      
     } 
     else {
+      // setRetry(prev => prev + 1);
       if (videoRef.current < 30) {
         alert(`try again!`);
         videoRef.current.seekTo(0, true);
-        setTriggerCount(triggerCount-1)
-        togglePandOtogether();
+        // setTriggerCount(triggerCount-1)
+        // togglePandOtogether();
       }
       else{
         alert(`try again!`);
         videoRef.current.seekTo((currentTime-30), true);
-        setTriggerCount(triggerCount-1)
-        togglePandOtogether();
+        // setTriggerCount(triggerCount-1)
+        // togglePandOtogether();
       }
+      setRetry(prev => prev + 1);
+      setTriggerCount(triggerCount-1)
+      togglePandOtogether();
     }
   };
 
@@ -629,10 +635,11 @@ export default function App() {
           </Overlay>
       </div>
 
-      <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
+      {/* <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
       <h2>Current Time: {currentTime.toFixed(2)}</h2>
       <h3 onClick={() => alert("Test container clicked!")}>test container</h3>
       <h3>Countdown: {counter}</h3>
+      <h3>Retry: {retry}</h3> */}
     </div>
   );
 }
