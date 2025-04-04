@@ -50,6 +50,9 @@ export default function App() {
 
   const [someVideoEmbed, setSomeVideoEmbed] = useState("9e5lcQycf2M");
 
+  const [counter, setCounter] = React.useState(0);
+  const [retry, setRetry] = React.useState(null);
+
   // store question data
   // this should be replaced with something that makes an API call to fill the array with content.
 
@@ -282,7 +285,18 @@ export default function App() {
 
   // //
 
+  // React.useEffect(() => {
+  //   setTimeout(() => setCounter(counter + 1), 1000);
+  // }, [counter]);
 
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setCounter(prevCounter => prevCounter + 1);
+    }, 1000);
+    
+    return () => clearTimeout(timer);
+  }, [counter]);
+  
   
 
 
@@ -331,6 +345,7 @@ export default function App() {
             setTriggerCount(triggerCount + 1);
             setIsPaused(true);
             setIsOpen(true);
+            setCounter(0);
             setOverlayType(currentQuestion.id);
           }
         } else {
@@ -363,13 +378,30 @@ export default function App() {
     }));
   };
 
-  const checkMousePosition = () => {
+  const checkMousePosition = (questionId) => {
+    const currentData = questionsData.find(item => item.id === questionId);
     if (someMousePosition.x >= 1020 && someMousePosition.x <= 1120 && someMousePosition.y >= 480 && someMousePosition.y <= 580) {
       alert(`thats right!`);
+      setRetry(0);
       togglePandOtogether(); 
     } else {
-      /// alert(`try again!`);
-      alert(`a Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`);
+
+      if (videoRef.current < 30) {
+        alert(`try again!`);
+        videoRef.current.seekTo(0, true);
+        // setTriggerCount(triggerCount-1)
+        // togglePandOtogether();
+      }
+      else{
+        alert(`try again!`);
+        videoRef.current.seekTo((currentTime-30), true);
+        // setTriggerCount(triggerCount-1)
+        // togglePandOtogether();
+      }
+      setRetry(prev => prev + 1);
+      setTriggerCount(triggerCount-1)
+      togglePandOtogether();
+      //alert(`a Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`);
     }
   };
 
@@ -387,18 +419,22 @@ export default function App() {
      
     } 
     else {
+      // setRetry(prev => prev + 1);
       if (videoRef.current < 30) {
         alert(`try again!`);
         videoRef.current.seekTo(0, true);
-        setTriggerCount(triggerCount-1)
-        togglePandOtogether();
+        // setTriggerCount(triggerCount-1)
+        // togglePandOtogether();
       }
       else{
         alert(`try again!`);
         videoRef.current.seekTo((currentTime-30), true);
-        setTriggerCount(triggerCount-1)
-        togglePandOtogether();
+        // setTriggerCount(triggerCount-1)
+        // togglePandOtogether();
       }
+      setRetry(prev => prev + 1);
+      setTriggerCount(triggerCount-1)
+      togglePandOtogether();
     }
   };
 
@@ -470,11 +506,13 @@ export default function App() {
                   className="questionImage"
                   onClick={extraProps.onClick}
               />
+              <br/>
               <button onClick={() => speakText(currentQuestion.title)}>🔊 Replay</button>
             </div>
         );
 
       case "multipleChoice":
+        
         return (
             <div className="overlayImage">
               <h1>{currentQuestion.title}</h1>
@@ -486,7 +524,7 @@ export default function App() {
                         id={`${currentQuestion.id}-${option.value}`}
                         value={option.value}
                         checked={answers[currentQuestion.id]?.answer === option.value}
-                        onChange={() => userAnswer(currentQuestion.id, option.value)}
+                        onChange={() => userAnswer(currentQuestion.id, option.value, counter, retry)}
                     />
                     <label htmlFor={`${currentQuestion.id}-${option.value}`}>
                       {option.label}
@@ -494,9 +532,13 @@ export default function App() {
                     <br/>
                   </React.Fragment>
               ))}
+              <br/>
+              <br/>
               <button className="button" onClick={() => videoReplayOnWrongAnswer(currentQuestion.id)}>
                 Submit
               </button>
+              <br/>
+              <br/>
               <button
                   onClick={() => {
                     let textToSpeak = currentQuestion.title + " " +
@@ -511,6 +553,7 @@ export default function App() {
         //<button onClick={() => speakText(currentQuestion.title)}>🔊 Replay</button>
       case "end":
         return (
+          <div>
             <div
                 style={{
                   height: 300,
@@ -519,7 +562,6 @@ export default function App() {
                 }}
             >
               <h2>{currentQuestion.title}</h2>
-
               <ul>
                 {questionsData
                     .filter(q => q.type !== "end")
@@ -538,8 +580,8 @@ export default function App() {
                           <li key={q.id}>
                             <strong>{q.title}</strong>
                             <div>Answer: {displayAnswer}</div>
-                            <div>Time Taken: {answers[q.id]?.timeTaken || "N/A"}</div>
-                            <div>Number of Retries: {answers[q.id]?.numRetry || "N/A"}</div>
+                            <div>Time Taken: {answers[q.id]?.timeTaken || "0"}</div>
+                            <div>Number of Retries: {answers[q.id]?.numRetry || "0"}</div>
                           </li>
                       );
                     })}
@@ -556,10 +598,12 @@ export default function App() {
                   </li>
                 ))}
             </ul> */}
-              <button className="button" onClick={onSubmit}>
-                OK!
-              </button>
+              
             </div>
+            <button className="button" onClick={onSubmit}>
+                OK!
+            </button>
+          </div>
         );
       default:
         return null;
@@ -605,9 +649,12 @@ export default function App() {
             {renderOverlayContent()}
           </Overlay>
       </div>
+
       {/* <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
       <h2>Current Time: {currentTime.toFixed(2)}</h2>
-      <h3 onClick={() => alert("Test container clicked!")}>test container</h3> */}
+      <h3 onClick={() => alert("Test container clicked!")}>test container</h3>
+      <h3>Countdown: {counter}</h3>
+      <h3>Retry: {retry}</h3> */}
     </div>
   );
 }
