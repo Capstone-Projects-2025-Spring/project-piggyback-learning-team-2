@@ -15,7 +15,6 @@ const Signin = () => {
     setTimeout(() => setShowWelcome(true), 500);
   }, []);
 
-  //Handle email/password sign-in
   const handleEmailSignIn = async (e) => {
     e.preventDefault();
     setError('');
@@ -97,6 +96,8 @@ const Signin = () => {
     setError('Google sign-in failed. Please try again.');
     console.log('Google Login Failed');
   };
+ 
+  
 
   return (
     <GoogleOAuthProvider clientId="658379694414-nbdeeuc5kavcd9l0k1e034atul49cv80.apps.googleusercontent.com">
@@ -123,8 +124,9 @@ const Signin = () => {
             )}
             <h2 className={styles.formTitle}>Sign In</h2>
 
-            {error && <p className={styles.errorMessage}>{error}</p>}
-
+            {error && (
+                <p className={styles.highlightMessage}>{error}</p>
+              )}
             <form onSubmit={handleEmailSignIn}>
               <div className={styles.inputGroup}>
                 <label>Email:</label>
