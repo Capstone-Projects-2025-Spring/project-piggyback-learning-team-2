@@ -7,6 +7,7 @@ import Video from './components/Video';
 import PreKPage from './components/PreKPage';
 import MousePosition from './components/MousePosition';
 import UserProfile from './components/UserProfileDashboard';  
+import ResetPassword from './components/ResetPassword'; 
 
 function App() {
   return (
@@ -20,6 +21,8 @@ function App() {
         <Route path="/ms" element={<MousePosition />} />
         <Route path="/profile" element={<UserProfile />} />  
         <Route path="/contact" element={<div>Contact Us</div>} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+
         
 
         
