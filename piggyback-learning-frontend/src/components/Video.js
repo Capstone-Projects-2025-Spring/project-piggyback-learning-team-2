@@ -15,7 +15,7 @@ import questionImage from '../images/placeholderquestionImage.png';
 import '../styles/video.css';
 import {Overlay} from './Overlay'
 import "../styles/overlay.css";
-
+import { supabase } from './supabaseClient';
 
 const useMousePosition = () => {
   const [mousePosition, setMousePosition] = useState({ x: null, y: null });
@@ -52,6 +52,8 @@ export default function App() {
 
   const [counter, setCounter] = React.useState(0);
   const [retry, setRetry] = React.useState(null);
+
+  
 
   // store question data
   // this should be replaced with something that makes an API call to fill the array with content.
@@ -119,169 +121,26 @@ export default function App() {
     }
   ], []);
 
-  // // Water Cycle | How the Hydrologic Cycle Works     embed: al-do-HGuIk    link: https://youtu.be/al-do-HGuIk
-  // const questionsData = React.useMemo(() => [
-  //   {
-  //     id: "question1",
-  //     type: "multipleChoice",
-  //     title: "What is the process called when water vapor cools and turns back into liquid?",
-  //     options: [
-  //       { value: "A", label: "Evaporation" },
-  //       { value: "B", label: "Condensation" },
-  //       { value: "C", label: "Precipitation" },
-  //       { value: "D", label: "Collection" }
-  //     ],
-  //     otherTimeStamp: 30,
-  //     someTriggerCount: 0,
-  //     correctAnswer: "B"
-  //   },
-  //   {
-  //     id: "question2",
-  //     type: "multipleChoice",
-  //     title: "The sun is the primary source of energy driving the water cycle.",
-  //     options: [
-  //       { value: "A", label: "True" },
-  //       { value: "B", label: "False" }
-  //     ],
-  //     otherTimeStamp: 60,
-  //     someTriggerCount: 1,
-  //     correctAnswer: "A"
-  //   },
-  //   {
-  //     id: "question3",
-  //     type: "multipleChoice",
-  //     title: "Which stage of the water cycle involves water soaking into the ground?",
-  //     options: [
-  //       { value: "A", label: "Runoff" },
-  //       { value: "B", label: "Infiltration" },
-  //       { value: "C", label: "Transpiration" },
-  //       { value: "D", label: "Condensation" }
-  //     ],
-  //     otherTimeStamp: 90,
-  //     someTriggerCount: 2,
-  //     correctAnswer: "B"
-  //   },
-  //   {
-  //     id: "end",
-  //     type: "end",
-  //     title: "Here's How You Did!",
-  //     otherTimeStamp: 400,
-  //     someTriggerCount: 4,
-  //     correctAnswer: ""
-  //   }
-  // ], []);
-  
+
+  // New state to store API data from Supabase
+  const [apiData, setApiData] = useState([]);
+
+  // Fetch data from Supabase on mount
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data, error } = await supabase
+        .from('questions')
+        .select('*');
+      if (error) {
+        console.error('Error fetching data:', error);
+      } else {
+        setApiData(data);
+      }
+    };
+    fetchData();
+  }, []);
 
 
-
-
-  // // What Causes Thunder and Lightning? (SciShow Kids)     embed: fEiVi9TB_RQ     link: https://youtu.be/fEiVi9TB_RQ
-  // const questionsData = React.useMemo(() => [
-  //   {
-  //     id: "question1",
-  //     type: "multipleChoice",
-  //     title: "What causes the sound of thunder?",
-  //     options: [
-  //       { value: "A", label: "Clouds colliding" },
-  //       { value: "B", label: "Lightning heating the air rapidly" },
-  //       { value: "C", label: "Rain hitting the ground" },
-  //       { value: "D", label: "Wind speeds increasing" }
-  //     ],
-  //     otherTimeStamp: 40,
-  //     someTriggerCount: 0,
-  //     correctAnswer: "B"
-  //   },
-  //   {
-  //     id: "question2",
-  //     type: "multipleChoice",
-  //     title: "Lightning always strikes from the cloud to the ground.",
-  //     options: [
-  //       { value: "A", label: "True" },
-  //       { value: "B", label: "False" }
-  //     ],
-  //     otherTimeStamp: 80,
-  //     someTriggerCount: 1,
-  //     correctAnswer: "B"
-  //   },
-  //   {
-  //     id: "question3",
-  //     type: "multipleChoice",
-  //     title: "Which of the following is a type of lightning?",
-  //     options: [
-  //       { value: "A", label: "Sheet lightning" },
-  //       { value: "B", label: "Forked lightning" },
-  //       { value: "C", label: "Ball lightning" },
-  //       { value: "D", label: "All of the above" }
-  //     ],
-  //     otherTimeStamp: 120,
-  //     someTriggerCount: 2,
-  //     correctAnswer: "D"
-  //   },
-  //   {
-  //     id: "end",
-  //     type: "end",
-  //     title: "Here's How You Did!",
-  //     otherTimeStamp: 215,
-  //     someTriggerCount: 4,
-  //     correctAnswer: ""
-  //   }
-  // ], []);
-
-
-
-  
-  // // How Do Airplanes Fly?     embed: Gg0TXNXgz-w     link: https://youtu.be/Gg0TXNXgz-w
-
-  // const questionsData = React.useMemo(() => [
-  //   {
-  //     id: "question1",
-  //     type: "multipleChoice",
-  //     title: "What principle explains how airplane wings generate lift?",
-  //     options: [
-  //       { value: "A", label: "Newton's Third Law" },
-  //       { value: "B", label: "Bernoulli's Principle" },
-  //       { value: "C", label: "Pythagorean Theorem" },
-  //       { value: "D", label: "Archimedes' Principle" }
-  //     ],
-  //     otherTimeStamp: 35,
-  //     someTriggerCount: 0,
-  //     correctAnswer: "B"
-  //   },
-  //   {
-  //     id: "question2",
-  //     type: "multipleChoice",
-  //     title: "Flaps on the wings help airplanes to take off and land.",
-  //     options: [
-  //       { value: "A", label: "True" },
-  //       { value: "B", label: "False" }
-  //     ],
-  //     otherTimeStamp: 70,
-  //     someTriggerCount: 1,
-  //     correctAnswer: "A"
-  //   },
-  //   {
-  //     id: "question3",
-  //     type: "multipleChoice",
-  //     title: "Which factor does NOT affect the lift of an airplane?",
-  //     options: [
-  //       { value: "A", label: "Wing shape" },
-  //       { value: "B", label: "Air speed" },
-  //       { value: "C", label: "Engine power" },
-  //       { value: "D", label: "Air density" }
-  //     ],
-  //     otherTimeStamp: 110,
-  //     someTriggerCount: 2,
-  //     correctAnswer: "C"
-  //   },
-  //   {
-  //     id: "end",
-  //     type: "end",
-  //     title: "Here's How You Did!",
-  //     otherTimeStamp: 185,
-  //     someTriggerCount: 4,
-  //     correctAnswer: ""
-  //   }
-  // ], []);
 
   // //
 
@@ -296,6 +155,8 @@ export default function App() {
     
     return () => clearTimeout(timer);
   }, [counter]);
+
+
   
   
 
@@ -484,6 +345,7 @@ export default function App() {
         extraProps.onClick = checkMousePosition;
         break;
       case "question2":
+        // remove this when sure we can
         onSubmit = videoReplayOnWrongAnswer;
         break;
       case "question3":
@@ -512,7 +374,6 @@ export default function App() {
         );
 
       case "multipleChoice":
-        
         return (
             <div className="overlayImage">
               <h1>{currentQuestion.title}</h1>
@@ -650,11 +511,13 @@ export default function App() {
           </Overlay>
       </div>
 
-      {/* <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
+      <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
       <h2>Current Time: {currentTime.toFixed(2)}</h2>
       <h3 onClick={() => alert("Test container clicked!")}>test container</h3>
       <h3>Countdown: {counter}</h3>
-      <h3>Retry: {retry}</h3> */}
+      <h3>Retry: {retry}</h3> 
+
+      <h3>API info: {apiData.length > 0 ? apiData[0].title : "Loading..."}</h3>
     </div>
   );
 }
