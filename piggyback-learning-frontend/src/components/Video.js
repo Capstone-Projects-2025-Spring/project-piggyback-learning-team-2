@@ -342,7 +342,6 @@ export default function App() {
       const y = event.clientY - rect.top;
       const { xMin, xMax, yMin, yMax } = currentQuestion.correctAnswer;
       isCorrect = x >= xMin && x <= xMax && y >= yMin && y <= yMax;
-      console.log(`Click at: X=${x}, Y=${y} | Expected: ${xMin}-${xMax}, ${yMin}-${yMax}`); // Debugging
     } else if (currentQuestion.type === "multipleChoice") {
       isCorrect = userInput === currentQuestion.correctAnswer;
     }
