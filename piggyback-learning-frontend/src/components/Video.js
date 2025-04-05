@@ -1,12 +1,3 @@
-
-/*
-
-in researching how to implement the questions and have an end of video review I found this: https://react.dev/learn/updating-objects-in-state
-ill research the example given for the mouse pointer for a more accurate version and likely end up using it for the image interaction
-
-
-*/
-
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import YouTube from "react-youtube";
@@ -16,7 +7,6 @@ import '../styles/video.css';
 import {Overlay} from './Overlay'
 import "../styles/overlay.css";
 
-
 const useMousePosition = () => {
   const [mousePosition, setMousePosition] = useState({ x: null, y: null });
 
@@ -24,7 +14,6 @@ const useMousePosition = () => {
     const updateMousePosition = (ev) => {
       setMousePosition({ x: ev.clientX, y: ev.clientY });
     };
-
     window.addEventListener("mousemove", updateMousePosition);
     return () => window.removeEventListener("mousemove", updateMousePosition);
   }, []);
@@ -32,32 +21,20 @@ const useMousePosition = () => {
   return mousePosition;
 };
 
-// refactored https://codesandbox.io/p/sandbox/react-youtube-play-pause-video-using-an-external-button-c77o1v?file=%2Fsrc%2FApp.tsx%3A19%2C18 for the mouse cursor position code
-// but removed the typescript annotations using online resources as an aid
-
 export default function App() {
   const [isPaused, setIsPaused] = useState(false);
-  const someMousePosition = useMousePosition(); 
+  const someMousePosition = useMousePosition(); // Still useful for debugging
   const [currentTime, setCurrentTime] = useState(0); 
   const videoRef = useRef(null);
+  const imageRef = useRef(null); // Ref for the image element
   const [triggerCount, setTriggerCount] = useState(0);
-
-  // used this for reference for the overlay: https://www.youtube.com/watch?v=D9OJX6sSyYk  and https://github.com/unhingedmagikarp/medium-overlay.git 
   const [isOpen, setIsOpen] = useState(false);
   const [overlayType, setOverlayType] = useState(null);
-
-  const [answers, setAnswers] = useState({}); // stores answers for questions
-
-  const [someVideoEmbed, setSomeVideoEmbed] = useState("9e5lcQycf2M");
-
+  const [answers, setAnswers] = useState({});
+  const [someVideoEmbed] = useState("9e5lcQycf2M");
   const [counter, setCounter] = React.useState(0);
-  const [retry, setRetry] = React.useState(null);
+  const [retry, setRetry] = React.useState(0);
 
-  // store question data
-  // this should be replaced with something that makes an API call to fill the array with content.
-
-
-  //  Why Do We Get Hiccups? | Body Science for Kids     embed: 9e5lcQycf2M     link: https://youtu.be/9e5lcQycf2M
   const questionsData = React.useMemo(() => [
     {
       id: "question1",
@@ -65,8 +42,9 @@ export default function App() {
       title: "Who is Squeeks? (Click on the Image!)",
       otherTimeStamp: 20,
       someTriggerCount: 0,
-      correctAnswer: ""
+      correctAnswer: { xMin: 300, xMax: 400, yMin: 150, yMax: 250 } // Adjusted to include X=347.5, Y=192.14
     },
+    // ... (rest of the questions remain unchanged)
     {
       id: "question2",
       type: "multipleChoice",
@@ -118,194 +96,17 @@ export default function App() {
       correctAnswer: ""
     }
   ], []);
-
-  // // Water Cycle | How the Hydrologic Cycle Works     embed: al-do-HGuIk    link: https://youtu.be/al-do-HGuIk
-  // const questionsData = React.useMemo(() => [
-  //   {
-  //     id: "question1",
-  //     type: "multipleChoice",
-  //     title: "What is the process called when water vapor cools and turns back into liquid?",
-  //     options: [
-  //       { value: "A", label: "Evaporation" },
-  //       { value: "B", label: "Condensation" },
-  //       { value: "C", label: "Precipitation" },
-  //       { value: "D", label: "Collection" }
-  //     ],
-  //     otherTimeStamp: 30,
-  //     someTriggerCount: 0,
-  //     correctAnswer: "B"
-  //   },
-  //   {
-  //     id: "question2",
-  //     type: "multipleChoice",
-  //     title: "The sun is the primary source of energy driving the water cycle.",
-  //     options: [
-  //       { value: "A", label: "True" },
-  //       { value: "B", label: "False" }
-  //     ],
-  //     otherTimeStamp: 60,
-  //     someTriggerCount: 1,
-  //     correctAnswer: "A"
-  //   },
-  //   {
-  //     id: "question3",
-  //     type: "multipleChoice",
-  //     title: "Which stage of the water cycle involves water soaking into the ground?",
-  //     options: [
-  //       { value: "A", label: "Runoff" },
-  //       { value: "B", label: "Infiltration" },
-  //       { value: "C", label: "Transpiration" },
-  //       { value: "D", label: "Condensation" }
-  //     ],
-  //     otherTimeStamp: 90,
-  //     someTriggerCount: 2,
-  //     correctAnswer: "B"
-  //   },
-  //   {
-  //     id: "end",
-  //     type: "end",
-  //     title: "Here's How You Did!",
-  //     otherTimeStamp: 400,
-  //     someTriggerCount: 4,
-  //     correctAnswer: ""
-  //   }
-  // ], []);
   
-
-
-
-
-  // // What Causes Thunder and Lightning? (SciShow Kids)     embed: fEiVi9TB_RQ     link: https://youtu.be/fEiVi9TB_RQ
-  // const questionsData = React.useMemo(() => [
-  //   {
-  //     id: "question1",
-  //     type: "multipleChoice",
-  //     title: "What causes the sound of thunder?",
-  //     options: [
-  //       { value: "A", label: "Clouds colliding" },
-  //       { value: "B", label: "Lightning heating the air rapidly" },
-  //       { value: "C", label: "Rain hitting the ground" },
-  //       { value: "D", label: "Wind speeds increasing" }
-  //     ],
-  //     otherTimeStamp: 40,
-  //     someTriggerCount: 0,
-  //     correctAnswer: "B"
-  //   },
-  //   {
-  //     id: "question2",
-  //     type: "multipleChoice",
-  //     title: "Lightning always strikes from the cloud to the ground.",
-  //     options: [
-  //       { value: "A", label: "True" },
-  //       { value: "B", label: "False" }
-  //     ],
-  //     otherTimeStamp: 80,
-  //     someTriggerCount: 1,
-  //     correctAnswer: "B"
-  //   },
-  //   {
-  //     id: "question3",
-  //     type: "multipleChoice",
-  //     title: "Which of the following is a type of lightning?",
-  //     options: [
-  //       { value: "A", label: "Sheet lightning" },
-  //       { value: "B", label: "Forked lightning" },
-  //       { value: "C", label: "Ball lightning" },
-  //       { value: "D", label: "All of the above" }
-  //     ],
-  //     otherTimeStamp: 120,
-  //     someTriggerCount: 2,
-  //     correctAnswer: "D"
-  //   },
-  //   {
-  //     id: "end",
-  //     type: "end",
-  //     title: "Here's How You Did!",
-  //     otherTimeStamp: 215,
-  //     someTriggerCount: 4,
-  //     correctAnswer: ""
-  //   }
-  // ], []);
-
-
-
-  
-  // // How Do Airplanes Fly?     embed: Gg0TXNXgz-w     link: https://youtu.be/Gg0TXNXgz-w
-
-  // const questionsData = React.useMemo(() => [
-  //   {
-  //     id: "question1",
-  //     type: "multipleChoice",
-  //     title: "What principle explains how airplane wings generate lift?",
-  //     options: [
-  //       { value: "A", label: "Newton's Third Law" },
-  //       { value: "B", label: "Bernoulli's Principle" },
-  //       { value: "C", label: "Pythagorean Theorem" },
-  //       { value: "D", label: "Archimedes' Principle" }
-  //     ],
-  //     otherTimeStamp: 35,
-  //     someTriggerCount: 0,
-  //     correctAnswer: "B"
-  //   },
-  //   {
-  //     id: "question2",
-  //     type: "multipleChoice",
-  //     title: "Flaps on the wings help airplanes to take off and land.",
-  //     options: [
-  //       { value: "A", label: "True" },
-  //       { value: "B", label: "False" }
-  //     ],
-  //     otherTimeStamp: 70,
-  //     someTriggerCount: 1,
-  //     correctAnswer: "A"
-  //   },
-  //   {
-  //     id: "question3",
-  //     type: "multipleChoice",
-  //     title: "Which factor does NOT affect the lift of an airplane?",
-  //     options: [
-  //       { value: "A", label: "Wing shape" },
-  //       { value: "B", label: "Air speed" },
-  //       { value: "C", label: "Engine power" },
-  //       { value: "D", label: "Air density" }
-  //     ],
-  //     otherTimeStamp: 110,
-  //     someTriggerCount: 2,
-  //     correctAnswer: "C"
-  //   },
-  //   {
-  //     id: "end",
-  //     type: "end",
-  //     title: "Here's How You Did!",
-  //     otherTimeStamp: 185,
-  //     someTriggerCount: 4,
-  //     correctAnswer: ""
-  //   }
-  // ], []);
-
-  // //
-
-  // React.useEffect(() => {
-  //   setTimeout(() => setCounter(counter + 1), 1000);
-  // }, [counter]);
-
   React.useEffect(() => {
     const timer = setTimeout(() => {
       setCounter(prevCounter => prevCounter + 1);
     }, 1000);
-    
     return () => clearTimeout(timer);
   }, [counter]);
-  
-  
-
-
 
   const toggleOverlay = useCallback(() => {
     setIsOpen(prev => !prev);
   }, []);
-  
-
 
   const togglePause = () => {
     setIsPaused((prev) => !prev);
@@ -314,16 +115,10 @@ export default function App() {
   const togglePandOtogether = () => {
     toggleOverlay();
     togglePause();
-    // setIsPaused(true)
-    // setIsOpen(true)
   };
-  
-  
+
   useEffect(() => {
     if (videoRef.current) {
-      const elapsed_seconds = videoRef.current.getCurrentTime();
-      console.log(`Current time: ${elapsed_seconds}s`);
-
       if (isPaused) {
         videoRef.current.pauseVideo();
       } else {
@@ -332,40 +127,28 @@ export default function App() {
     }
   }, [isPaused]);
 
-
   useEffect(() => {
     const interval = setInterval(() => {
       if (videoRef.current && videoRef.current.getCurrentTime() > 0) {
         const someTime = videoRef.current.getCurrentTime();
         setCurrentTime(someTime);
-        
         const currentQuestion = questionsData[triggerCount];
-        if (currentQuestion) {
-          if (someTime >= currentQuestion.otherTimeStamp && triggerCount === currentQuestion.someTriggerCount) {
-            setTriggerCount(triggerCount + 1);
-            setIsPaused(true);
-            setIsOpen(true);
-            setCounter(0);
-            setOverlayType(currentQuestion.id);
-          }
-        } else {
-          console.log("No trigger defined for triggerCount:", triggerCount);
+        if (currentQuestion && someTime >= currentQuestion.otherTimeStamp && triggerCount === currentQuestion.someTriggerCount) {
+          setTriggerCount(triggerCount + 1);
+          setIsPaused(true);
+          setIsOpen(true);
+          setCounter(0);
+          setOverlayType(currentQuestion.id);
         }
-      } else {
-        console.log("Video not ready or getCurrentTime() <= 0");
       }
     }, 100);
     return () => clearInterval(interval);
   }, [triggerCount, currentTime, questionsData]);
 
-  
-
   const _onReady = (event) => {
     videoRef.current = event.target;
   };
 
-
-  // https://react.dev/learn/updating-objects-in-state  helped but refactored over multiple iterations
   const userAnswer = (questionId, selectedAnswer, someTimeTaken, someNumRetry) => {
     setAnswers(prevAnswers => ({
       ...prevAnswers,
@@ -378,68 +161,37 @@ export default function App() {
     }));
   };
 
-  const checkMousePosition = (questionId) => {
-    const currentData = questionsData.find(item => item.id === questionId);
-    if (someMousePosition.x >= 1020 && someMousePosition.x <= 1120 && someMousePosition.y >= 480 && someMousePosition.y <= 580) {
-      alert(`thats right!`);
-      setRetry(0);
-      togglePandOtogether(); 
+  const handleAnswerSubmission = (questionId, userInput, event) => {
+    const currentQuestion = questionsData.find(q => q.id === questionId);
+    if (!currentQuestion) return;
+
+    let isCorrect = false;
+
+    if (currentQuestion.type === "image" && event) {
+      const rect = imageRef.current.getBoundingClientRect();
+      const x = event.clientX - rect.left; // Relative to image
+      const y = event.clientY - rect.top;
+      const { xMin, xMax, yMin, yMax } = currentQuestion.correctAnswer;
+      isCorrect = x >= xMin && x <= xMax && y >= yMin && y <= yMax;
+      console.log(`Click at: X=${x}, Y=${y} | Expected: ${xMin}-${xMax}, ${yMin}-${yMax}`); // Debugging
+    } else if (currentQuestion.type === "multipleChoice") {
+      isCorrect = userInput === currentQuestion.correctAnswer;
+    }
+
+    if (isCorrect) {
+      alert("That's right!");
+      userAnswer(questionId, userInput || "correct", counter, retry);
+      togglePandOtogether();
     } else {
-
-      if (videoRef.current < 30) {
-        alert(`try again!`);
-        videoRef.current.seekTo(0, true);
-        // setTriggerCount(triggerCount-1)
-        // togglePandOtogether();
-      }
-      else{
-        alert(`try again!`);
-        videoRef.current.seekTo((currentTime-30), true);
-        // setTriggerCount(triggerCount-1)
-        // togglePandOtogether();
-      }
+      alert("Try again!");
+      const rewindTime = currentTime < 30 ? 0 : currentTime - 30;
+      videoRef.current.seekTo(rewindTime, true);
       setRetry(prev => prev + 1);
-      setTriggerCount(triggerCount-1)
-      togglePandOtogether();
-      //alert(`a Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`);
-    }
-  };
-
-  // im gonna need to refactor to account for multiple questions, probably gonna fold checkMousePosition into this using the list logic used in for the questions 
-  const videoReplayOnWrongAnswer = (questionId) => {
-
-    const currentData = questionsData.find(item => item.id === questionId);
-    if (!currentData) {
-      console.error("No data found for question:", questionId);
-      return;
-    }
-    if (answers[questionId]?.answer === currentData.correctAnswer) {
-      alert(`thats right!`);
-      togglePandOtogether();
-     
-    } 
-    else {
-      // setRetry(prev => prev + 1);
-      if (videoRef.current < 30) {
-        alert(`try again!`);
-        videoRef.current.seekTo(0, true);
-        // setTriggerCount(triggerCount-1)
-        // togglePandOtogether();
-      }
-      else{
-        alert(`try again!`);
-        videoRef.current.seekTo((currentTime-30), true);
-        // setTriggerCount(triggerCount-1)
-        // togglePandOtogether();
-      }
-      setRetry(prev => prev + 1);
-      setTriggerCount(triggerCount-1)
+      setTriggerCount(prev => prev - 1);
       togglePandOtogether();
     }
   };
 
-
-  //Simple text to speech function that works with pre-set questions. Will need to be scaled.
   const speakText = (text) => {
     if ('speechSynthesis' in window) {
       const utterance = new SpeechSynthesisUtterance(text);
@@ -449,176 +201,108 @@ export default function App() {
     }
   };
 
-  // Speak the question only when overlayType updates
   useEffect(() => {
     const currentQuestion = questionsData.find(q => q.id === overlayType);
     if (currentQuestion) {
       let textToSpeak = currentQuestion.title;
-
       if (currentQuestion.type === "multipleChoice") {
         textToSpeak += " " + currentQuestion.options.map(opt => opt.label).join(", ");
       }
-
       speakText(textToSpeak);
     }
   }, [overlayType, questionsData]);
-
-  // question data that is going to be refactored later for a database API call that fetches the data
 
   const renderOverlayContent = () => {
     const currentQuestion = questionsData.find(q => q.id === overlayType);
     if (!currentQuestion) return null;
 
-    let onSubmit = null;
-    let extraProps = {};
-
-    // Speech synthesis function
-    const speakText = (text) => {
-      const utterance = new SpeechSynthesisUtterance(text);
-      speechSynthesis.speak(utterance);
-    };
-
-    switch (currentQuestion.id) {
-      case "question1":
-        extraProps.src = questionImage;
-        extraProps.onClick = checkMousePosition;
-        break;
-      case "question2":
-        onSubmit = videoReplayOnWrongAnswer;
-        break;
-      case "question3":
-      case "question4":
-      case "end":
-        onSubmit = togglePandOtogether;
-        break;
-      default:
-        break;
-    }
-
     switch (currentQuestion.type) {
       case "image":
         return (
-            <div className="overlayImage">
-              <h1>{currentQuestion.title}</h1>
-              <img
-                  src={extraProps.src}
-                  alt="question"
-                  className="questionImage"
-                  onClick={extraProps.onClick}
-              />
-              <br/>
-              <button onClick={() => speakText(currentQuestion.title)}>🔊 Replay</button>
-            </div>
+          <div className="overlayImage">
+            <h1>{currentQuestion.title}</h1>
+            <img
+              ref={imageRef}
+              src={questionImage}
+              alt="question"
+              className="questionImage"
+              onClick={(e) => handleAnswerSubmission(currentQuestion.id, null, e)}
+            />
+            <br/>
+            <button onClick={() => speakText(currentQuestion.title)}>🔊 Replay</button>
+          </div>
         );
 
       case "multipleChoice":
-        
         return (
-            <div className="overlayImage">
-              <h1>{currentQuestion.title}</h1>
-              {currentQuestion.options.map(option => (
-                  <React.Fragment key={option.value}>
-                    <input
-                        type="radio"
-                        name={currentQuestion.id}
-                        id={`${currentQuestion.id}-${option.value}`}
-                        value={option.value}
-                        checked={answers[currentQuestion.id]?.answer === option.value}
-                        onChange={() => userAnswer(currentQuestion.id, option.value, counter, retry)}
-                    />
-                    <label htmlFor={`${currentQuestion.id}-${option.value}`}>
-                      {option.label}
-                    </label>
-                    <br/>
-                  </React.Fragment>
-              ))}
-              <br/>
-              <br/>
-              <button className="button" onClick={() => videoReplayOnWrongAnswer(currentQuestion.id)}>
-                Submit
-              </button>
-              <br/>
-              <br/>
-              <button
-                  onClick={() => {
-                    let textToSpeak = currentQuestion.title + " " +
-                        currentQuestion.options.map(opt => opt.label).join(", ");
-                    speakText(textToSpeak);
-                  }}
-              >
-                🔊 Replay
-              </button>
-            </div>
-        );
-        //<button onClick={() => speakText(currentQuestion.title)}>🔊 Replay</button>
-      case "end":
-        return (
-          <div>
-            <div
-                style={{
-                  height: 300,
-                  overflowY: 'scroll',
-                  border: '1px solid #ccc'
-                }}
-            >
-              <h2>{currentQuestion.title}</h2>
-              <ul>
-                {questionsData
-                    .filter(q => q.type !== "end")
-                    .map(q => {
-                      const selectedAnswer = answers[q.id]?.answer;
-                      let displayAnswer = "Not answered";
-                      if (selectedAnswer && q.options) {
-                        const option = q.options.find(opt => opt.value === selectedAnswer);
-                        if (option) {
-                          displayAnswer = `(${selectedAnswer}) ${option.label}`;
-                        } else {
-                          displayAnswer = selectedAnswer;
-                        }
-                      }
-                      return (
-                          <li key={q.id}>
-                            <strong>{q.title}</strong>
-                            <div>Answer: {displayAnswer}</div>
-                            <div>Time Taken: {answers[q.id]?.timeTaken || "0"}</div>
-                            <div>Number of Retries: {answers[q.id]?.numRetry || "0"}</div>
-                          </li>
-                      );
-                    })}
-              </ul>
-              {/* <ul>
-              {questionsData
-                .filter(q => q.type !== "end")
-                .map(q => (
-                  <li key={q.id}>
-                    <strong>{q.title}</strong>
-                    <div>Answer: {answers[q.id]?.answer || "Not answered"}</div>
-                    <div>Time Taken: {answers[q.id]?.timeTaken || "N/A"}</div>
-                    <div>Number of Retries: {answers[q.id]?.numRetry || "N/A"}</div>
-                  </li>
-                ))}
-            </ul> */}
-              
-            </div>
-            <button className="button" onClick={onSubmit}>
-                OK!
+          <div className="overlayImage">
+            <h1>{currentQuestion.title}</h1>
+            {currentQuestion.options.map(option => (
+              <React.Fragment key={option.value}>
+                <input
+                  type="radio"
+                  name={currentQuestion.id}
+                  id={`${currentQuestion.id}-${option.value}`}
+                  value={option.value}
+                  checked={answers[currentQuestion.id]?.answer === option.value}
+                  onChange={() => userAnswer(currentQuestion.id, option.value, counter, retry)}
+                />
+                <label htmlFor={`${currentQuestion.id}-${option.value}`}>
+                  {option.label}
+                </label>
+                <br/>
+              </React.Fragment>
+            ))}
+            <br/>
+            <button className="button" onClick={() => handleAnswerSubmission(currentQuestion.id, answers[currentQuestion.id]?.answer)}>
+              Submit
+            </button>
+            <br/>
+            <button onClick={() => speakText(currentQuestion.title + " " + currentQuestion.options.map(opt => opt.label).join(", "))}>
+              🔊 Replay
             </button>
           </div>
         );
+
+      case "end":
+        return (
+          <div>
+            <div style={{ height: 300, overflowY: 'scroll', border: '1px solid #ccc' }}>
+              <h2>{currentQuestion.title}</h2>
+              <ul>
+                {questionsData.filter(q => q.type !== "end").map(q => {
+                  const selectedAnswer = answers[q.id]?.answer;
+                  let displayAnswer = "Not answered";
+                  if (selectedAnswer && q.options) {
+                    const option = q.options.find(opt => opt.value === selectedAnswer);
+                    displayAnswer = option ? `(${selectedAnswer}) ${option.label}` : selectedAnswer;
+                  }
+                  return (
+                    <li key={q.id}>
+                      <strong>{q.title}</strong>
+                      <div>Answer: {displayAnswer}</div>
+                      <div>Time Taken: {answers[q.id]?.timeTaken || "0"}</div>
+                      <div>Number of Retries: {answers[q.id]?.numRetry || "0"}</div>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+            <button className="button" onClick={togglePandOtogether}>
+              OK!
+            </button>
+          </div>
+        );
+
       default:
         return null;
     }
   };
 
-
-
-
   return (
-
-      <div>
-        <div>
-          <header>
-            <div className="logo">
+    <div>
+      <header>
+        <div className="logo">
           <img src={logo} alt="Piggyback Learning Logo" />
         </div>
         <nav>
@@ -630,36 +314,21 @@ export default function App() {
           </ul>
         </nav>
       </header>
-    </div>
       <div className="yvid">
         <YouTube
-          videoId={someVideoEmbed} // we can add a variable here later when re-using this page
-          opts={{
-            height: "480",
-            width: "854",
-            playerVars: {autoplay: 1,},}}
+          videoId={someVideoEmbed}
+          opts={{ height: "480", width: "854", playerVars: { autoplay: 1 } }}
           onReady={_onReady}
         />
       </div>
-      <div className="bogos">
-      </div>
       <div className="overlay">
-        <button className="overlay__close" onClick={() => togglePandOtogether()}>Open Overlay</button>
-          <Overlay isOpen={isOpen} onClose={togglePandOtogether}>
-            {renderOverlayContent()}
-          </Overlay>
+        <button className="overlay__close" onClick={togglePandOtogether}>Open Overlay</button>
+        <Overlay isOpen={isOpen} onClose={togglePandOtogether}>
+          {renderOverlayContent()}
+        </Overlay>
       </div>
-
-      {/* <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
-      <h2>Current Time: {currentTime.toFixed(2)}</h2>
-      <h3 onClick={() => alert("Test container clicked!")}>test container</h3>
-      <h3>Countdown: {counter}</h3>
-      <h3>Retry: {retry}</h3> */}
+      {/* Uncomment for debugging */}
+      {/* <h2>Mouse Position: X={someMousePosition.x}, Y={someMousePosition.y}</h2> */}
     </div>
   );
 }
-
-
-
-
-
