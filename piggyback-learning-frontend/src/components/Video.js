@@ -42,9 +42,8 @@ export default function App() {
       title: "Who is Squeeks? (Click on the Image!)",
       otherTimeStamp: 20,
       someTriggerCount: 0,
-      correctAnswer: { xMin: 300, xMax: 400, yMin: 150, yMax: 250 } // Adjusted to include X=347.5, Y=192.14
+      correctAnswer: { xMin: 50, xMax: 150, yMin: 50, yMax: 150 } // Relative to image (adjust as needed)
     },
-    // ... (rest of the questions remain unchanged)
     {
       id: "question2",
       type: "multipleChoice",
@@ -266,7 +265,7 @@ export default function App() {
   // React.useEffect(() => {
   //   setTimeout(() => setCounter(counter + 1), 1000);
   // }, [counter]);
-  
+
   React.useEffect(() => {
     const timer = setTimeout(() => {
       setCounter(prevCounter => prevCounter + 1);
@@ -343,6 +342,7 @@ export default function App() {
       const y = event.clientY - rect.top;
       const { xMin, xMax, yMin, yMax } = currentQuestion.correctAnswer;
       isCorrect = x >= xMin && x <= xMax && y >= yMin && y <= yMax;
+      console.log(`Click at: X=${x}, Y=${y} | Expected: ${xMin}-${xMax}, ${yMin}-${yMax}`); // Debugging
     } else if (currentQuestion.type === "multipleChoice") {
       isCorrect = userInput === currentQuestion.correctAnswer;
     }
