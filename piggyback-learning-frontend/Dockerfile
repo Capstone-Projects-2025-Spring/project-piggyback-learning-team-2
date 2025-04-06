@@ -1,4 +1,4 @@
-FROM node:18.16.0-alpine3.18
+FROM node:alpine3.20
 
 WORKDIR /usr/src/app
 
@@ -8,5 +8,5 @@ RUN npm install
 
 COPY . .
 
-CMD ["npm", "start","--host", "0.0.0.0", "--port", "3000"]
+CMD ["npm", "start","--host", "0.0.0.0", "--port", "8080"]
 
