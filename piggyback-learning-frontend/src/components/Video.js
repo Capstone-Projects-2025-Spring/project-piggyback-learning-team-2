@@ -75,108 +75,85 @@ export default function App() {
 
 
 
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     const { data: questions, error: questionsError } = await supabase
+  //       .from('questions')
+  //       .select('*');
+  
+  //     const { data: options, error: optionsError } = await supabase
+  //       .from('question_options')
+  //       .select('*');
+  
+  //     if (questionsError) console.error('Error fetching questions:', questionsError);
+  //     if (optionsError) console.error('Error fetching options:', optionsError);
+  
+  //     if (questions) setApiData(questions);
+  //     if (options) setApiOptions(options);
+  //   };
+  
+  //   fetchData();
+  // }, []);
+
+
+
+  // https://supabase.com/docs/reference/javascript/typescript-support and https://supabase.com/docs/reference/javascript/select and fighting AI
   useEffect(() => {
     const fetchData = async () => {
+      // this makes sure we get video id from the database
+      const { data: videoData, error: videoError } = await supabase
+        .from('videos')
+        .select('id')
+        .eq('embed', currentVideoId)
+        .single(); // Get a single video entry
+  
+      if (videoError) {
+        console.error('Error fetching video:', videoError);
+        return;
+      }
+  
+      if (!videoData) {
+        console.error('No video found for the given embed URL');
+        return;
+      }
+  
+      const videoId = videoData.id;
+  
+      // this makes sure it gets the question data just for the video we want
       const { data: questions, error: questionsError } = await supabase
         .from('questions')
-        .select('*');
+        .select('*')
+        .eq('video_id', videoId);
   
+      // this gets the options for each question
       const { data: options, error: optionsError } = await supabase
         .from('question_options')
-        .select('*');
+        .select('*')
+        .in('question_id', questions.map((question) => question.id)); // Get options for the fetched questions
   
-      if (questionsError) console.error('Error fetching questions:', questionsError);
-      if (optionsError) console.error('Error fetching options:', optionsError);
+      if (questionsError) {
+        console.error('Error fetching questions:', questionsError);
+        return;
+      }
+      if (optionsError) {
+        console.error('Error fetching options:', optionsError);
+        return;
+      }
   
-      if (questions) setApiData(questions);
-      if (options) setApiOptions(options);
+      if (questions) {
+        // this sorts by timestamp. this saved it from working this sprint
+        const sortedQuestions = questions.sort((a, b) => a.timestamp - b.timestamp);
+        setApiData(sortedQuestions); // Store sorted questions
+      }
+  
+      if (options) {
+        setApiOptions(options); // store the question options (mostly for mc)
+      }
     };
   
     fetchData();
-  }, []);
-
+  }, [currentVideoId]);
   
-
-  // store question data
-  // this should be replaced with something that makes an API call to fill the array with content.
-
-
-  //  Why Do We Get Hiccups? | Body Science for Kids     embed: 9e5lcQycf2M     link: https://youtu.be/9e5lcQycf2M
-  // const questionsData = React.useMemo(() => [
-  //   {
-  //     id: "question1",
-  //     type: "image",
-  //     title: "Who is Squeeks? (Click on the Image!)",
-  //     otherTimeStamp: 20,
-  //     someTriggerCount: 0,
-  //     correctAnswer: ""
-  //   },
-  //   {
-  //     id: "question2",
-  //     type: "multipleChoice",
-  //     title: "What muscle is responsible for causing hiccups?",
-  //     options: [
-  //       { value: "A", label: "Heart" },
-  //       { value: "B", label: "Diaphragm" },
-  //       { value: "C", label: "Stomach" },
-  //       { value: "D", label: "Lungs" }
-  //     ],
-  //     otherTimeStamp: 80,
-  //     someTriggerCount: 1,
-  //     correctAnswer: "B"
-  //   },
-  //   {
-  //     id: "question3",
-  //     type: "multipleChoice",
-  //     title: "Which of the following is NOT a common cause of hiccups?",
-  //     options: [
-  //       { value: "A", label: "Eating too quickly" },
-  //       { value: "B", label: "Drinking carbonated beverages" },
-  //       { value: "C", label: "Holding your breath" },
-  //       { value: "D", label: "Sudden excitement" }
-  //     ],
-  //     otherTimeStamp: 90,
-  //     someTriggerCount: 2,
-  //     correctAnswer: "D"
-  //   },
-  //   {
-  //     id: "question4",
-  //     type: "multipleChoice",
-  //     title: 'Why do hiccups make a "hic" sound?',
-  //     options: [
-  //       { value: "A", label: "Air quickly rushes into the lungs" },
-  //       { value: "B", label: "The vocal cords suddenly close" },
-  //       { value: "C", label: "The stomach contracts" },
-  //       { value: "D", label: "The heart skips a beat" }
-  //     ],
-  //     otherTimeStamp: 118,
-  //     someTriggerCount: 3,
-  //     correctAnswer: "A"
-  //   },
-  //   {
-  //     id: "end",
-  //     type: "end",
-  //     title: "Here's How You Did!",
-  //     otherTimeStamp: 170,
-  //     someTriggerCount: 4,
-  //     correctAnswer: ""
-  //   }
-  // ], []);
-
-  // // this works
-  // const questionsData = React.useMemo(() => {
-  //   return questions.map(q => ({
-  //     id: `question${q.id}`,               // **Changes here!** Use new numeric id (prefixed with "question")
-  //     type: q.type,
-  //     title: q.title,
-  //     otherTimeStamp: q.timestamp,         // **Changes here!** Map "timestamp" to "otherTimeStamp"
-  //     someTriggerCount: q.trigger_count,     // **Changes here!** Map "trigger_count" to "someTriggerCount"
-  //     correctAnswer: q.correct_answer,       // **Changes here!** Map "correct_answer" to "correctAnswer"
-  //     ...(q.type === "multipleChoice" && {   // **Changes here!** Attach options if the question is multipleChoice
-  //       options: questionOptions.filter(opt => opt.question_id === q.id)
-  //     })
-  //   }));
-  // }, []);
 
   const questionsData = React.useMemo(() => {
     return apiData.map(q => ({
@@ -193,20 +170,20 @@ export default function App() {
   }, [apiData, apiOptions]);
 
 
-  // Fetch data from Supabase on mount
-  useEffect(() => {
-    const fetchData = async () => {
-      const { data, error } = await supabase
-        .from('questions')
-        .select('*');
-      if (error) {
-        console.error('Error fetching data:', error);
-      } else {
-        setApiData(data);
-      }
-    };
-    fetchData();
-  }, []);
+  // // Fetch data from Supabase on mount
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     const { data, error } = await supabase
+  //       .from('questions')
+  //       .select('*');
+  //     if (error) {
+  //       console.error('Error fetching data:', error);
+  //     } else {
+  //       setApiData(data);
+  //     }
+  //   };
+  //   fetchData();
+  // }, []);
 
 
 
@@ -223,12 +200,6 @@ export default function App() {
     
     return () => clearTimeout(timer);
   }, [counter]);
-
-
-  
-  
-
-
 
   const toggleOverlay = useCallback(() => {
     setIsOpen(prev => !prev);
@@ -262,37 +233,70 @@ export default function App() {
   }, [isPaused]);
 
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      if (videoRef.current && videoRef.current.getCurrentTime() > 0) {
-        const someTime = videoRef.current.getCurrentTime();
-        setCurrentTime(someTime);
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     if (videoRef.current && videoRef.current.getCurrentTime() > 0) {
+  //       const someTime = videoRef.current.getCurrentTime();
+  //       setCurrentTime(someTime);
         
-        const currentQuestion = questionsData[triggerCount];
-        // console.log("something", triggerCount);
-        console.log("currentQuestion", currentQuestion);
-        console.log("sometime", someTime);
-        // console.log("sometime", someTime);
-        console.log("currentQuestion.someTriggerCount", currentQuestion.someTriggerCount);
-        console.log("currentQuestion.otherTimeStamp", currentQuestion.otherTimeStamp);
-        if (currentQuestion) {
-          // if (someTime >= currentQuestion.otherTimeStamp && triggerCount === currentQuestion.someTriggerCount) {
-          if (someTime >= currentQuestion.otherTimeStamp ) {
-            setTriggerCount(triggerCount + 1);
-            setIsPaused(true);
-            setIsOpen(true);
-            setCounter(0);
-            setOverlayType(currentQuestion.id);
-          }
-        } else {
-          console.log("No trigger defined for triggerCount:", triggerCount);
-        }
-      } else {
-        console.log("Video not ready or getCurrentTime() <= 0");
+  //       const currentQuestion = questionsData[triggerCount];
+  //       // console.log("something", triggerCount);
+  //       console.log("currentQuestion", currentQuestion);
+  //       console.log("sometime", someTime);
+  //       // console.log("sometime", someTime);
+  //       console.log("currentQuestion.someTriggerCount", currentQuestion.someTriggerCount);
+  //       console.log("currentQuestion.otherTimeStamp", currentQuestion.otherTimeStamp);
+  //       if (currentQuestion) {
+  //         // if (someTime >= currentQuestion.otherTimeStamp && triggerCount === currentQuestion.someTriggerCount) {
+  //         if (someTime >= currentQuestion.otherTimeStamp ) {
+  //           setTriggerCount(triggerCount + 1);
+  //           setIsPaused(true);
+  //           setIsOpen(true);
+  //           setCounter(0);
+  //           setOverlayType(currentQuestion.id);
+  //         }
+  //       } else {
+  //         console.log("No trigger defined for triggerCount:", triggerCount);
+  //       }
+  //     } else {
+  //       console.log("Video not ready or getCurrentTime() <= 0");
+  //     }
+  //   }, 100);
+  //   return () => clearInterval(interval);
+  // }, [triggerCount, currentTime, questionsData]);
+
+  useEffect(() => {
+  const interval = setInterval(() => {
+    if (videoRef.current && videoRef.current.getCurrentTime() > 0) {
+      const someTime = videoRef.current.getCurrentTime();
+      setCurrentTime(someTime);
+      
+      const currentQuestion = questionsData[triggerCount];
+      if (!currentQuestion) {
+        console.log("No question found for triggerCount:", triggerCount);
+        return; 
       }
-    }, 100);
-    return () => clearInterval(interval);
-  }, [triggerCount, currentTime, questionsData]);
+
+      // console.log("currentQuestion", currentQuestion);
+      // console.log("sometime", someTime);
+      // console.log("currentQuestion.someTriggerCount", currentQuestion.someTriggerCount);
+      // console.log("currentQuestion.otherTimeStamp", currentQuestion.otherTimeStamp);
+
+      if (someTime >= currentQuestion.otherTimeStamp) {
+        setTriggerCount(prev => prev + 1);
+        setIsPaused(true);
+        setIsOpen(true);
+        setCounter(0);
+        setOverlayType(currentQuestion.id);
+      }
+    } else {
+      //console.log("Video not ready or getCurrentTime() <= 0");
+    }
+  }, 100);
+
+  return () => clearInterval(interval);
+}, [triggerCount, currentTime, questionsData]);
+
 
   
 
