@@ -7,6 +7,14 @@ ill research the example given for the mouse pointer for a more accurate version
 
 */
 
+
+
+
+/*
+
+THIS DOESN'T WORK, NEED TO MAKE SURE THAT IT ONLY GRABS DATA FOR THE CORRECT VIDEO
+
+*/ 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import YouTube from "react-youtube";
