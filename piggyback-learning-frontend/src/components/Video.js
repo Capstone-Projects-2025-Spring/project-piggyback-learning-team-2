@@ -285,35 +285,95 @@ export default function App() {
     }));
   };
 
-  const handleAnswerSubmission = (questionId, userInput, event) => {
-    const currentQuestion = questionsData.find(q => q.id === questionId);
-    if (!currentQuestion) return;
-
-    let isCorrect = false;
-
-    if (currentQuestion.type === "image" && event) {
-      const rect = imageRef.current.getBoundingClientRect();
-      const x = event.clientX - rect.left; // Relative to image
-      const y = event.clientY - rect.top;
-      const { xMin, xMax, yMin, yMax } = currentQuestion.correctAnswer;
-      isCorrect = x >= xMin && x <= xMax && y >= yMin && y <= yMax;
-    } else if (currentQuestion.type === "multipleChoice") {
-      isCorrect = userInput === currentQuestion.correctAnswer;
-    }
-
-    if (isCorrect) {
-      alert("That's right!");
-      userAnswer(questionId, userInput || "correct", counter, retry);
-      togglePandOtogether();
+  const checkMousePosition = (questionId) => {
+    const currentData = questionsData.find(item => item.id === questionId);
+    if (someMousePosition.x >= 1020 && someMousePosition.x <= 1120 && someMousePosition.y >= 480 && someMousePosition.y <= 580) {
+      alert(`thats right!`);
+      setRetry(0);
+      togglePandOtogether(); 
     } else {
-      alert("Try again!");
-      const rewindTime = currentTime < 30 ? 0 : currentTime - 30;
-      videoRef.current.seekTo(rewindTime, true);
+
+      if (videoRef.current < 30) {
+        alert(`try again!`);
+        videoRef.current.seekTo(0, true);
+        // setTriggerCount(triggerCount-1)
+        // togglePandOtogether();
+      }
+      else{
+        alert(`try again!`);
+        videoRef.current.seekTo((currentTime-30), true);
+        // setTriggerCount(triggerCount-1)
+        // togglePandOtogether();
+      }
       setRetry(prev => prev + 1);
-      setTriggerCount(prev => prev - 1);
+      setTriggerCount(triggerCount-1)
+      togglePandOtogether();
+      //alert(`a Mouse Position: X=${someMousePosition.x}, Y=${someMousePosition.y}`);
+    }
+  };
+
+  // im gonna need to refactor to account for multiple questions, probably gonna fold checkMousePosition into this using the list logic used in for the questions 
+  const videoReplayOnWrongAnswer = (questionId) => {
+
+    const currentData = questionsData.find(item => item.id === questionId);
+    if (!currentData) {
+      console.error("No data found for question:", questionId);
+      return;
+    }
+    if (answers[questionId]?.answer === currentData.correctAnswer) {
+      alert(`thats right!`);
+      togglePandOtogether();
+     
+    } 
+    else {
+      // setRetry(prev => prev + 1);
+      if (videoRef.current < 30) {
+        alert(`try again!`);
+        videoRef.current.seekTo(0, true);
+        // setTriggerCount(triggerCount-1)
+        // togglePandOtogether();
+      }
+      else{
+        alert(`try again!`);
+        videoRef.current.seekTo((currentTime-30), true);
+        // setTriggerCount(triggerCount-1)
+        // togglePandOtogether();
+      }
+      setRetry(prev => prev + 1);
+      setTriggerCount(triggerCount-1)
       togglePandOtogether();
     }
   };
+
+  // const handleAnswerSubmission = (questionId, userInput, event) => {
+  //   const currentQuestion = questionsData.find(q => q.id === questionId);
+  //   if (!currentQuestion) return;
+
+  //   let isCorrect = false;
+
+  //   if (currentQuestion.type === "image" && event) {
+  //     const rect = imageRef.current.getBoundingClientRect();
+  //     const x = event.clientX - rect.left; // Relative to image
+  //     const y = event.clientY - rect.top;
+  //     const { xMin, xMax, yMin, yMax } = currentQuestion.correctAnswer;
+  //     isCorrect = x >= xMin && x <= xMax && y >= yMin && y <= yMax;
+  //   } else if (currentQuestion.type === "multipleChoice") {
+  //     isCorrect = userInput === currentQuestion.correctAnswer;
+  //   }
+
+  //   if (isCorrect) {
+  //     alert("That's right!");
+  //     userAnswer(questionId, userInput || "correct", counter, retry);
+  //     togglePandOtogether();
+  //   } else {
+  //     alert("Try again!");
+  //     const rewindTime = currentTime < 30 ? 0 : currentTime - 30;
+  //     videoRef.current.seekTo(rewindTime, true);
+  //     setRetry(prev => prev + 1);
+  //     setTriggerCount(prev => prev - 1);
+  //     togglePandOtogether();
+  //   }
+  // };
 
   const speakText = (text) => {
     if ('speechSynthesis' in window) {
@@ -335,10 +395,10 @@ export default function App() {
     }
   }, [overlayType, questionsData]);
 
+
   const renderOverlayContent = () => {
     const currentQuestion = questionsData.find(q => q.id === overlayType);
     if (!currentQuestion) return null;
-
 
     let onSubmit = null;
     let extraProps = {};
@@ -367,89 +427,235 @@ export default function App() {
         break;
     }
 
-
     switch (currentQuestion.type) {
       case "image":
         return (
-          <div className="overlayImage">
-            <h1>{currentQuestion.title}</h1>
-            <img
-              ref={imageRef}
-              src={questionImage}
-              alt="question"
-              className="questionImage"
-              onClick={(e) => handleAnswerSubmission(currentQuestion.id, null, e)}
-            />
-            <br/>
-            <button onClick={() => speakText(currentQuestion.title)}>🔊 Replay</button>
-          </div>
+            <div className="overlayImage">
+              <h1>{currentQuestion.title}</h1>
+              <img
+                  src={extraProps.src}
+                  alt="question"
+                  className="questionImage"
+                  onClick={extraProps.onClick}
+              />
+              <br/>
+              <button onClick={() => speakText(currentQuestion.title)}>🔊 Replay</button>
+            </div>
         );
 
       case "multipleChoice":
         return (
-          <div className="overlayImage">
-            <h1>{currentQuestion.title}</h1>
-            {currentQuestion.options.map(option => (
-              <React.Fragment key={option.value}>
-                <input
-                  type="radio"
-                  name={currentQuestion.id}
-                  id={`${currentQuestion.id}-${option.value}`}
-                  value={option.value}
-                  checked={answers[currentQuestion.id]?.answer === option.value}
-                  onChange={() => userAnswer(currentQuestion.id, option.value, counter, retry)}
-                />
-                <label htmlFor={`${currentQuestion.id}-${option.value}`}>
-                  {option.label}
-                </label>
-                <br/>
-              </React.Fragment>
-            ))}
-            <br/>
-            <button className="button" onClick={() => handleAnswerSubmission(currentQuestion.id, answers[currentQuestion.id]?.answer)}>
-              Submit
-            </button>
-            <br/>
-            <button onClick={() => speakText(currentQuestion.title + " " + currentQuestion.options.map(opt => opt.label).join(", "))}>
-              🔊 Replay
-            </button>
-          </div>
+            <div className="overlayImage">
+              <h1>{currentQuestion.title}</h1>
+              {currentQuestion.options.map(option => (
+                  <React.Fragment key={option.value}>
+                    <input
+                        type="radio"
+                        name={currentQuestion.id}
+                        id={`${currentQuestion.id}-${option.value}`}
+                        value={option.value}
+                        checked={answers[currentQuestion.id]?.answer === option.value}
+                        onChange={() => userAnswer(currentQuestion.id, option.value, counter, retry)}
+                    />
+                    <label htmlFor={`${currentQuestion.id}-${option.value}`}>
+                      {option.label}
+                    </label>
+                    <br/>
+                  </React.Fragment>
+              ))}
+              <br/>
+              <br/>
+              <button className="button" onClick={() => videoReplayOnWrongAnswer(currentQuestion.id)}>
+                Submit
+              </button>
+              <br/>
+              <br/>
+              <button
+                  onClick={() => {
+                    let textToSpeak = currentQuestion.title + " " +
+                        currentQuestion.options.map(opt => opt.label).join(", ");
+                    speakText(textToSpeak);
+                  }}
+              >
+                🔊 Replay
+              </button>
+            </div>
         );
-
+        //<button onClick={() => speakText(currentQuestion.title)}>🔊 Replay</button>
       case "end":
         return (
           <div>
-            <div style={{ height: 300, overflowY: 'scroll', border: '1px solid #ccc' }}>
+            <div
+                style={{
+                  height: 300,
+                  overflowY: 'scroll',
+                  border: '1px solid #ccc'
+                }}
+            >
               <h2>{currentQuestion.title}</h2>
               <ul>
-                {questionsData.filter(q => q.type !== "end").map(q => {
-                  const selectedAnswer = answers[q.id]?.answer;
-                  let displayAnswer = "Not answered";
-                  if (selectedAnswer && q.options) {
-                    const option = q.options.find(opt => opt.value === selectedAnswer);
-                    displayAnswer = option ? `(${selectedAnswer}) ${option.label}` : selectedAnswer;
-                  }
-                  return (
-                    <li key={q.id}>
-                      <strong>{q.title}</strong>
-                      <div>Answer: {displayAnswer}</div>
-                      <div>Time Taken: {answers[q.id]?.timeTaken || "0"}</div>
-                      <div>Number of Retries: {answers[q.id]?.numRetry || "0"}</div>
-                    </li>
-                  );
-                })}
+                {questionsData
+                    .filter(q => q.type !== "end")
+                    .map(q => {
+                      const selectedAnswer = answers[q.id]?.answer;
+                      let displayAnswer = "Not answered";
+                      if (selectedAnswer && q.options) {
+                        const option = q.options.find(opt => opt.value === selectedAnswer);
+                        if (option) {
+                          displayAnswer = `(${selectedAnswer}) ${option.label}`;
+                        } else {
+                          displayAnswer = selectedAnswer;
+                        }
+                      }
+                      return (
+                          <li key={q.id}>
+                            <strong>{q.title}</strong>
+                            <div>Answer: {displayAnswer}</div>
+                            <div>Time Taken: {answers[q.id]?.timeTaken || "0"}</div>
+                            <div>Number of Retries: {answers[q.id]?.numRetry || "0"}</div>
+                          </li>
+                      );
+                    })}
               </ul>
+              {/* <ul>
+              {questionsData
+                .filter(q => q.type !== "end")
+                .map(q => (
+                  <li key={q.id}>
+                    <strong>{q.title}</strong>
+                    <div>Answer: {answers[q.id]?.answer || "Not answered"}</div>
+                    <div>Time Taken: {answers[q.id]?.timeTaken || "N/A"}</div>
+                    <div>Number of Retries: {answers[q.id]?.numRetry || "N/A"}</div>
+                  </li>
+                ))}
+            </ul> */}
+              
             </div>
-            <button className="button" onClick={togglePandOtogether}>
-              OK!
+            <button className="button" onClick={onSubmit}>
+                OK!
             </button>
           </div>
         );
-
       default:
         return null;
     }
   };
+
+  // const renderOverlayContent = () => {
+  //   const currentQuestion = questionsData.find(q => q.id === overlayType);
+  //   if (!currentQuestion) return null;
+
+
+  //   let onSubmit = null;
+  //   let extraProps = {};
+
+  //   // Speech synthesis function
+  //   const speakText = (text) => {
+  //     const utterance = new SpeechSynthesisUtterance(text);
+  //     speechSynthesis.speak(utterance);
+  //   };
+
+  //   console.log("currentQuestion.id", currentQuestion.id);
+
+  //   switch (currentQuestion.type) {
+  //     case "image":
+  //       extraProps.src = questionImage;
+  //       extraProps.onClick = checkMousePosition;
+  //       break;
+  //     case "multipleChoice":
+  //       // remove this when sure we can
+  //       onSubmit = videoReplayOnWrongAnswer;
+  //       break;
+  //     case "end":
+  //       onSubmit = togglePandOtogether;
+  //       break;
+  //     default:
+  //       break;
+  //   }
+
+
+  //   switch (currentQuestion.type) {
+  //     case "image":
+  //       return (
+  //         <div className="overlayImage">
+  //           <h1>{currentQuestion.title}</h1>
+  //           <img
+  //             ref={imageRef}
+  //             src={questionImage}
+  //             alt="question"
+  //             className="questionImage"
+  //             onClick={(e) => handleAnswerSubmission(currentQuestion.id, null, e)}
+  //           />
+  //           <br/>
+  //           <button onClick={() => speakText(currentQuestion.title)}>🔊 Replay</button>
+  //         </div>
+  //       );
+
+  //     case "multipleChoice":
+  //       return (
+  //         <div className="overlayImage">
+  //           <h1>{currentQuestion.title}</h1>
+  //           {currentQuestion.options.map(option => (
+  //             <React.Fragment key={option.value}>
+  //               <input
+  //                 type="radio"
+  //                 name={currentQuestion.id}
+  //                 id={`${currentQuestion.id}-${option.value}`}
+  //                 value={option.value}
+  //                 checked={answers[currentQuestion.id]?.answer === option.value}
+  //                 onChange={() => userAnswer(currentQuestion.id, option.value, counter, retry)}
+  //               />
+  //               <label htmlFor={`${currentQuestion.id}-${option.value}`}>
+  //                 {option.label}
+  //               </label>
+  //               <br/>
+  //             </React.Fragment>
+  //           ))}
+  //           <br/>
+  //           <button className="button" onClick={() => handleAnswerSubmission(currentQuestion.id, answers[currentQuestion.id]?.answer)}>
+  //             Submit
+  //           </button>
+  //           <br/>
+  //           <button onClick={() => speakText(currentQuestion.title + " " + currentQuestion.options.map(opt => opt.label).join(", "))}>
+  //             🔊 Replay
+  //           </button>
+  //         </div>
+  //       );
+
+  //     case "end":
+  //       return (
+  //         <div>
+  //           <div style={{ height: 300, overflowY: 'scroll', border: '1px solid #ccc' }}>
+  //             <h2>{currentQuestion.title}</h2>
+  //             <ul>
+  //               {questionsData.filter(q => q.type !== "end").map(q => {
+  //                 const selectedAnswer = answers[q.id]?.answer;
+  //                 let displayAnswer = "Not answered";
+  //                 if (selectedAnswer && q.options) {
+  //                   const option = q.options.find(opt => opt.value === selectedAnswer);
+  //                   displayAnswer = option ? `(${selectedAnswer}) ${option.label}` : selectedAnswer;
+  //                 }
+  //                 return (
+  //                   <li key={q.id}>
+  //                     <strong>{q.title}</strong>
+  //                     <div>Answer: {displayAnswer}</div>
+  //                     <div>Time Taken: {answers[q.id]?.timeTaken || "0"}</div>
+  //                     <div>Number of Retries: {answers[q.id]?.numRetry || "0"}</div>
+  //                   </li>
+  //                 );
+  //               })}
+  //             </ul>
+  //           </div>
+  //           <button className="button" onClick={togglePandOtogether}>
+  //             OK!
+  //           </button>
+  //         </div>
+  //       );
+
+  //     default:
+  //       return null;
+  //   }
+  // };
 
   return (
     <div>
