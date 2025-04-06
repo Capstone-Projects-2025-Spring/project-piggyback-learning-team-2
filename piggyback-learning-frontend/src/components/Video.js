@@ -6,6 +6,9 @@ import questionImage from '../images/placeholderquestionImage.png';
 import '../styles/video.css';
 import {Overlay} from './Overlay'
 import "../styles/overlay.css";
+import { supabase } from './supabaseClient';
+import { questions, questionOptions } from './data';
+
 
 const useMousePosition = () => {
   const [mousePosition, setMousePosition] = useState({ x: null, y: null });
@@ -33,232 +36,133 @@ export default function App() {
   const [answers, setAnswers] = useState({});
   const [someVideoEmbed] = useState("9e5lcQycf2M");
   const [counter, setCounter] = React.useState(0);
-  const [retry, setRetry] = React.useState(0);
+  const [retry, setRetry] = React.useState(null);
 
-  const questionsData = React.useMemo(() => [
-    {
-      id: "question1",
-      type: "image",
-      title: "Who is Squeeks? (Click on the Image!)",
-      otherTimeStamp: 20,
-      someTriggerCount: 0,
-      correctAnswer: { xMin: 50, xMax: 150, yMin: 50, yMax: 150 } // Relative to image (adjust as needed)
-    },
-    {
-      id: "question2",
-      type: "multipleChoice",
-      title: "What muscle is responsible for causing hiccups?",
-      options: [
-        { value: "A", label: "Heart" },
-        { value: "B", label: "Diaphragm" },
-        { value: "C", label: "Stomach" },
-        { value: "D", label: "Lungs" }
-      ],
-      otherTimeStamp: 80,
-      someTriggerCount: 1,
-      correctAnswer: "B"
-    },
-    {
-      id: "question3",
-      type: "multipleChoice",
-      title: "Which of the following is NOT a common cause of hiccups?",
-      options: [
-        { value: "A", label: "Eating too quickly" },
-        { value: "B", label: "Drinking carbonated beverages" },
-        { value: "C", label: "Holding your breath" },
-        { value: "D", label: "Sudden excitement" }
-      ],
-      otherTimeStamp: 90,
-      someTriggerCount: 2,
-      correctAnswer: "D"
-    },
-    {
-      id: "question4",
-      type: "multipleChoice",
-      title: 'Why do hiccups make a "hic" sound?',
-      options: [
-        { value: "A", label: "Air quickly rushes into the lungs" },
-        { value: "B", label: "The vocal cords suddenly close" },
-        { value: "C", label: "The stomach contracts" },
-        { value: "D", label: "The heart skips a beat" }
-      ],
-      otherTimeStamp: 118,
-      someTriggerCount: 3,
-      correctAnswer: "A"
-    },
-    {
-      id: "end",
-      type: "end",
-      title: "Here's How You Did!",
-      otherTimeStamp: 170,
-      someTriggerCount: 4,
-      correctAnswer: ""
-    }
-  ], []);
+  const [apiData, setApiData] = useState([]);
+  const [apiOptions, setApiOptions] = useState([]);
+  const [currentVideoId, setCurrentVideoId] = useState("9e5lcQycf2M");
 
-  // // Water Cycle | How the Hydrologic Cycle Works     embed: al-do-HGuIk    link: https://youtu.be/al-do-HGuIk
-  // const questionsData = React.useMemo(() => [
-  //   {
-  //     id: "question1",
-  //     type: "multipleChoice",
-  //     title: "What is the process called when water vapor cools and turns back into liquid?",
-  //     options: [
-  //       { value: "A", label: "Evaporation" },
-  //       { value: "B", label: "Condensation" },
-  //       { value: "C", label: "Precipitation" },
-  //       { value: "D", label: "Collection" }
-  //     ],
-  //     otherTimeStamp: 30,
-  //     someTriggerCount: 0,
-  //     correctAnswer: "B"
-  //   },
-  //   {
-  //     id: "question2",
-  //     type: "multipleChoice",
-  //     title: "The sun is the primary source of energy driving the water cycle.",
-  //     options: [
-  //       { value: "A", label: "True" },
-  //       { value: "B", label: "False" }
-  //     ],
-  //     otherTimeStamp: 60,
-  //     someTriggerCount: 1,
-  //     correctAnswer: "A"
-  //   },
-  //   {
-  //     id: "question3",
-  //     type: "multipleChoice",
-  //     title: "Which stage of the water cycle involves water soaking into the ground?",
-  //     options: [
-  //       { value: "A", label: "Runoff" },
-  //       { value: "B", label: "Infiltration" },
-  //       { value: "C", label: "Transpiration" },
-  //       { value: "D", label: "Condensation" }
-  //     ],
-  //     otherTimeStamp: 90,
-  //     someTriggerCount: 2,
-  //     correctAnswer: "B"
-  //   },
-  //   {
-  //     id: "end",
-  //     type: "end",
-  //     title: "Here's How You Did!",
-  //     otherTimeStamp: 400,
-  //     someTriggerCount: 4,
-  //     correctAnswer: ""
-  //   }
-  // ], []);
-  
-
-
-
-
-  // // What Causes Thunder and Lightning? (SciShow Kids)     embed: fEiVi9TB_RQ     link: https://youtu.be/fEiVi9TB_RQ
-  // const questionsData = React.useMemo(() => [
-  //   {
-  //     id: "question1",
-  //     type: "multipleChoice",
-  //     title: "What causes the sound of thunder?",
-  //     options: [
-  //       { value: "A", label: "Clouds colliding" },
-  //       { value: "B", label: "Lightning heating the air rapidly" },
-  //       { value: "C", label: "Rain hitting the ground" },
-  //       { value: "D", label: "Wind speeds increasing" }
-  //     ],
-  //     otherTimeStamp: 40,
-  //     someTriggerCount: 0,
-  //     correctAnswer: "B"
-  //   },
-  //   {
-  //     id: "question2",
-  //     type: "multipleChoice",
-  //     title: "Lightning always strikes from the cloud to the ground.",
-  //     options: [
-  //       { value: "A", label: "True" },
-  //       { value: "B", label: "False" }
-  //     ],
-  //     otherTimeStamp: 80,
-  //     someTriggerCount: 1,
-  //     correctAnswer: "B"
-  //   },
-  //   {
-  //     id: "question3",
-  //     type: "multipleChoice",
-  //     title: "Which of the following is a type of lightning?",
-  //     options: [
-  //       { value: "A", label: "Sheet lightning" },
-  //       { value: "B", label: "Forked lightning" },
-  //       { value: "C", label: "Ball lightning" },
-  //       { value: "D", label: "All of the above" }
-  //     ],
-  //     otherTimeStamp: 120,
-  //     someTriggerCount: 2,
-  //     correctAnswer: "D"
-  //   },
-  //   {
-  //     id: "end",
-  //     type: "end",
-  //     title: "Here's How You Did!",
-  //     otherTimeStamp: 215,
-  //     someTriggerCount: 4,
-  //     correctAnswer: ""
-  //   }
-  // ], []);
-
-
+  // const test1 = videoRef.current ? videoRef.current.getCurrentTime() : 0;  // Time of video playback
+  // const test2 = apiData[triggerCount];  // Questions data based on triggerCount
+  // const test3 = triggerCount;
 
   
-  // // How Do Airplanes Fly?     embed: Gg0TXNXgz-w     link: https://youtu.be/Gg0TXNXgz-w
 
-  // const questionsData = React.useMemo(() => [
-  //   {
-  //     id: "question1",
-  //     type: "multipleChoice",
-  //     title: "What principle explains how airplane wings generate lift?",
-  //     options: [
-  //       { value: "A", label: "Newton's Third Law" },
-  //       { value: "B", label: "Bernoulli's Principle" },
-  //       { value: "C", label: "Pythagorean Theorem" },
-  //       { value: "D", label: "Archimedes' Principle" }
-  //     ],
-  //     otherTimeStamp: 35,
-  //     someTriggerCount: 0,
-  //     correctAnswer: "B"
-  //   },
-  //   {
-  //     id: "question2",
-  //     type: "multipleChoice",
-  //     title: "Flaps on the wings help airplanes to take off and land.",
-  //     options: [
-  //       { value: "A", label: "True" },
-  //       { value: "B", label: "False" }
-  //     ],
-  //     otherTimeStamp: 70,
-  //     someTriggerCount: 1,
-  //     correctAnswer: "A"
-  //   },
-  //   {
-  //     id: "question3",
-  //     type: "multipleChoice",
-  //     title: "Which factor does NOT affect the lift of an airplane?",
-  //     options: [
-  //       { value: "A", label: "Wing shape" },
-  //       { value: "B", label: "Air speed" },
-  //       { value: "C", label: "Engine power" },
-  //       { value: "D", label: "Air density" }
-  //     ],
-  //     otherTimeStamp: 110,
-  //     someTriggerCount: 2,
-  //     correctAnswer: "C"
-  //   },
-  //   {
-  //     id: "end",
-  //     type: "end",
-  //     title: "Here's How You Did!",
-  //     otherTimeStamp: 185,
-  //     someTriggerCount: 4,
-  //     correctAnswer: ""
-  //   }
-  // ], []);
+
+
+
+
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     const { data: questions, error: questionsError } = await supabase
+  //       .from('questions')
+  //       .select('*');
+  
+  //     const { data: options, error: optionsError } = await supabase
+  //       .from('question_options')
+  //       .select('*');
+  
+  //     if (questionsError) console.error('Error fetching questions:', questionsError);
+  //     if (optionsError) console.error('Error fetching options:', optionsError);
+  
+  //     if (questions) setApiData(questions);
+  //     if (options) setApiOptions(options);
+  //   };
+  
+  //   fetchData();
+  // }, []);
+
+
+
+  // https://supabase.com/docs/reference/javascript/typescript-support and https://supabase.com/docs/reference/javascript/select and fighting AI
+  useEffect(() => {
+    const fetchData = async () => {
+      // this makes sure we get video id from the database
+      const { data: videoData, error: videoError } = await supabase
+        .from('videos')
+        .select('id')
+        .eq('embed', currentVideoId)
+        .single(); // Get a single video entry
+  
+      if (videoError) {
+        console.error('Error fetching video:', videoError);
+        return;
+      }
+  
+      if (!videoData) {
+        console.error('No video found for the given embed URL');
+        return;
+      }
+  
+      const videoId = videoData.id;
+  
+      // this makes sure it gets the question data just for the video we want
+      const { data: questions, error: questionsError } = await supabase
+        .from('questions')
+        .select('*')
+        .eq('video_id', videoId);
+  
+      // this gets the options for each question
+      const { data: options, error: optionsError } = await supabase
+        .from('question_options')
+        .select('*')
+        .in('question_id', questions.map((question) => question.id)); // Get options for the fetched questions
+  
+      if (questionsError) {
+        console.error('Error fetching questions:', questionsError);
+        return;
+      }
+      if (optionsError) {
+        console.error('Error fetching options:', optionsError);
+        return;
+      }
+  
+      if (questions) {
+        // this sorts by timestamp. this saved it from working this sprint
+        const sortedQuestions = questions.sort((a, b) => a.timestamp - b.timestamp);
+        setApiData(sortedQuestions); // Store sorted questions
+      }
+  
+      if (options) {
+        setApiOptions(options); // store the question options (mostly for mc)
+      }
+    };
+  
+    fetchData();
+  }, [currentVideoId]);
+  
+
+  const questionsData = React.useMemo(() => {
+    return apiData.map(q => ({
+      id: `question${q.id}`,
+      type: q.type,
+      title: q.title,
+      otherTimeStamp: q.timestamp,
+      someTriggerCount: q.trigger_count,
+      correctAnswer: q.correct_answer,
+      ...(q.type === "multipleChoice" && {
+        options: apiOptions.filter(opt => opt.question_id === q.id)
+      })
+    }));
+  }, [apiData, apiOptions]);
+
+
+  // // Fetch data from Supabase on mount
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     const { data, error } = await supabase
+  //       .from('questions')
+  //       .select('*');
+  //     if (error) {
+  //       console.error('Error fetching data:', error);
+  //     } else {
+  //       setApiData(data);
+  //     }
+  //   };
+  //   fetchData();
+  // }, []);
+
+
 
   // //
 
@@ -296,23 +200,74 @@ export default function App() {
     }
   }, [isPaused]);
 
+
+
+  // useEffect(() => {
+  //   const interval = setInterval(() => {
+  //     if (videoRef.current && videoRef.current.getCurrentTime() > 0) {
+  //       const someTime = videoRef.current.getCurrentTime();
+  //       setCurrentTime(someTime);
+        
+  //       const currentQuestion = questionsData[triggerCount];
+  //       // console.log("something", triggerCount);
+  //       console.log("currentQuestion", currentQuestion);
+  //       console.log("sometime", someTime);
+  //       // console.log("sometime", someTime);
+  //       console.log("currentQuestion.someTriggerCount", currentQuestion.someTriggerCount);
+  //       console.log("currentQuestion.otherTimeStamp", currentQuestion.otherTimeStamp);
+  //       if (currentQuestion) {
+  //         // if (someTime >= currentQuestion.otherTimeStamp && triggerCount === currentQuestion.someTriggerCount) {
+  //         if (someTime >= currentQuestion.otherTimeStamp ) {
+  //           setTriggerCount(triggerCount + 1);
+  //           setIsPaused(true);
+  //           setIsOpen(true);
+  //           setCounter(0);
+  //           setOverlayType(currentQuestion.id);
+  //         }
+  //       } else {
+  //         console.log("No trigger defined for triggerCount:", triggerCount);
+  //       }
+  //     } else {
+  //       console.log("Video not ready or getCurrentTime() <= 0");
+  //     }
+  //   }, 100);
+  //   return () => clearInterval(interval);
+  // }, [triggerCount, currentTime, questionsData]);
+
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (videoRef.current && videoRef.current.getCurrentTime() > 0) {
-        const someTime = videoRef.current.getCurrentTime();
-        setCurrentTime(someTime);
-        const currentQuestion = questionsData[triggerCount];
-        if (currentQuestion && someTime >= currentQuestion.otherTimeStamp && triggerCount === currentQuestion.someTriggerCount) {
-          setTriggerCount(triggerCount + 1);
-          setIsPaused(true);
-          setIsOpen(true);
-          setCounter(0);
-          setOverlayType(currentQuestion.id);
-        }
+  const interval = setInterval(() => {
+    if (videoRef.current && videoRef.current.getCurrentTime() > 0) {
+      const someTime = videoRef.current.getCurrentTime();
+      setCurrentTime(someTime);
+      
+      const currentQuestion = questionsData[triggerCount];
+      if (!currentQuestion) {
+        console.log("No question found for triggerCount:", triggerCount);
+        return; 
+
+
       }
-    }, 100);
-    return () => clearInterval(interval);
-  }, [triggerCount, currentTime, questionsData]);
+
+      // console.log("currentQuestion", currentQuestion);
+      // console.log("sometime", someTime);
+      // console.log("currentQuestion.someTriggerCount", currentQuestion.someTriggerCount);
+      // console.log("currentQuestion.otherTimeStamp", currentQuestion.otherTimeStamp);
+
+      if (someTime >= currentQuestion.otherTimeStamp) {
+        setTriggerCount(prev => prev + 1);
+        setIsPaused(true);
+        setIsOpen(true);
+        setCounter(0);
+        setOverlayType(currentQuestion.id);
+      }
+    } else {
+      //console.log("Video not ready or getCurrentTime() <= 0");
+    }
+  }, 100);
+
+  return () => clearInterval(interval);
+}, [triggerCount, currentTime, questionsData]);
+
 
   const _onReady = (event) => {
     videoRef.current = event.target;
@@ -383,6 +338,35 @@ export default function App() {
   const renderOverlayContent = () => {
     const currentQuestion = questionsData.find(q => q.id === overlayType);
     if (!currentQuestion) return null;
+
+
+    let onSubmit = null;
+    let extraProps = {};
+
+    // Speech synthesis function
+    const speakText = (text) => {
+      const utterance = new SpeechSynthesisUtterance(text);
+      speechSynthesis.speak(utterance);
+    };
+
+    console.log("currentQuestion.id", currentQuestion.id);
+
+    switch (currentQuestion.type) {
+      case "image":
+        extraProps.src = questionImage;
+        extraProps.onClick = checkMousePosition;
+        break;
+      case "multipleChoice":
+        // remove this when sure we can
+        onSubmit = videoReplayOnWrongAnswer;
+        break;
+      case "end":
+        onSubmit = togglePandOtogether;
+        break;
+      default:
+        break;
+    }
+
 
     switch (currentQuestion.type) {
       case "image":
@@ -495,8 +479,22 @@ export default function App() {
           {renderOverlayContent()}
         </Overlay>
       </div>
+      {/* <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
+      <h2>Current Time: {currentTime.toFixed(2)}</h2>
+      <h3 onClick={() => alert("Test container clicked!")}>test container</h3>
+      <h3>Countdown: {counter}</h3>
+      <h3>Retry: {retry}</h3> 
+
+      <h3>API info: {apiData.length > 0 ? apiData[0].title : "Loading..."}</h3>
+      <h3>Test 1: {test2 ? test2.title : "No question data"}</h3>
+      <h3>Test 2: {test2 ? test2.id : "No question data"}</h3>
+      <h3>triggerCount {test2 ? triggerCount : "No question data"}</h3>
+      <h3>Test 4: {test2 ? test2.type : "No question data"}</h3>
+      <h3>timestamp : {test2 ? test2.timestamp : "No question data"}</h3> */}
+
       {/* Uncomment for debugging */}
       {/* <h2>Mouse Position: X={someMousePosition.x}, Y={someMousePosition.y}</h2> */}
+
     </div>
   );
 }
