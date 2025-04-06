@@ -496,3 +496,83 @@ export const videos = [
     //   }
     // ], []);
   
+
+
+
+    // export const videos = [
+    //   {
+    //     id: 1,
+    //     title: "Why Do We Get Hiccups? | Body Science for Kids",
+    //     url: "https://youtu.be/9e5lcQycf2M",
+    //     embed: "9e5lcQycf2M"
+    //   }
+    // ];
+    
+    // export const questions = [
+    //   // Questions for "Why Do We Get Hiccups?"
+    //   {
+    //     id: 1,
+    //     type: "image",
+    //     title: "Who is Squeeks? (Click on the Image!)",
+    //     timestamp: 20,
+    //     trigger_count: 0,
+    //     correct_answer: "",
+    //     video_id: 1
+    //   },
+    //   {
+    //     id: 2,
+    //     type: "multipleChoice",
+    //     title: "What muscle is responsible for causing hiccups?",
+    //     timestamp: 80,
+    //     trigger_count: 1,
+    //     correct_answer: "B",
+    //     video_id: 1
+    //   },
+    //   {
+    //     id: 3,
+    //     type: "multipleChoice",
+    //     title: "Which of the following is NOT a common cause of hiccups?",
+    //     timestamp: 90,
+    //     trigger_count: 2,
+    //     correct_answer: "D",
+    //     video_id: 1
+    //   },
+    //   {
+    //     id: 4,
+    //     type: "multipleChoice",
+    //     title: 'Why do hiccups make a "hic" sound?',
+    //     timestamp: 118,
+    //     trigger_count: 3,
+    //     correct_answer: "A",
+    //     video_id: 1
+    //   },
+    //   {
+    //     id: 5,
+    //     type: "end",
+    //     title: "Here's How You Did!",
+    //     timestamp: 170,
+    //     trigger_count: 4,
+    //     correct_answer: "",
+    //     video_id: 1
+    //   }
+    // ];
+    
+    // export const questionOptions = [
+    //   // Options for "What muscle is responsible for causing hiccups?"
+    //   { question_id: 2, value: "A", label: "Heart" },
+    //   { question_id: 2, value: "B", label: "Diaphragm" },
+    //   { question_id: 2, value: "C", label: "Stomach" },
+    //   { question_id: 2, value: "D", label: "Lungs" },
+    
+    //   // Options for "Which of the following is NOT a common cause of hiccups?"
+    //   { question_id: 3, value: "A", label: "Eating too quickly" },
+    //   { question_id: 3, value: "B", label: "Drinking carbonated beverages" },
+    //   { question_id: 3, value: "C", label: "Holding your breath" },
+    //   { question_id: 3, value: "D", label: "Sudden excitement" },
+    
+    //   // Options for 'Why do hiccups make a "hic" sound?'
+    //   { question_id: 4, value: "A", label: "Air quickly rushes into the lungs" },
+    //   { question_id: 4, value: "B", label: "The vocal cords suddenly close" },
+    //   { question_id: 4, value: "C", label: "The stomach contracts" },
+    //   { question_id: 4, value: "D", label: "The heart skips a beat" }
+    // ];

@@ -16,6 +16,7 @@ import '../styles/video.css';
 import {Overlay} from './Overlay'
 import "../styles/overlay.css";
 import { supabase } from './supabaseClient';
+import { questions, questionOptions } from './data';
 
 const useMousePosition = () => {
   const [mousePosition, setMousePosition] = useState({ x: null, y: null });
@@ -53,6 +54,39 @@ export default function App() {
   const [counter, setCounter] = React.useState(0);
   const [retry, setRetry] = React.useState(null);
 
+  const [apiData, setApiData] = useState([]);
+  const [apiOptions, setApiOptions] = useState([]);
+  const [currentVideoId, setCurrentVideoId] = useState("9e5lcQycf2M");
+
+  const test1 = videoRef.current ? videoRef.current.getCurrentTime() : 0;  // Time of video playback
+  const test2 = apiData[triggerCount];  // Questions data based on triggerCount
+  const test3 = triggerCount;
+  
+
+
+
+
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data: questions, error: questionsError } = await supabase
+        .from('questions')
+        .select('*');
+  
+      const { data: options, error: optionsError } = await supabase
+        .from('question_options')
+        .select('*');
+  
+      if (questionsError) console.error('Error fetching questions:', questionsError);
+      if (optionsError) console.error('Error fetching options:', optionsError);
+  
+      if (questions) setApiData(questions);
+      if (options) setApiOptions(options);
+    };
+  
+    fetchData();
+  }, []);
+
   
 
   // store question data
@@ -60,70 +94,96 @@ export default function App() {
 
 
   //  Why Do We Get Hiccups? | Body Science for Kids     embed: 9e5lcQycf2M     link: https://youtu.be/9e5lcQycf2M
-  const questionsData = React.useMemo(() => [
-    {
-      id: "question1",
-      type: "image",
-      title: "Who is Squeeks? (Click on the Image!)",
-      otherTimeStamp: 20,
-      someTriggerCount: 0,
-      correctAnswer: ""
-    },
-    {
-      id: "question2",
-      type: "multipleChoice",
-      title: "What muscle is responsible for causing hiccups?",
-      options: [
-        { value: "A", label: "Heart" },
-        { value: "B", label: "Diaphragm" },
-        { value: "C", label: "Stomach" },
-        { value: "D", label: "Lungs" }
-      ],
-      otherTimeStamp: 80,
-      someTriggerCount: 1,
-      correctAnswer: "B"
-    },
-    {
-      id: "question3",
-      type: "multipleChoice",
-      title: "Which of the following is NOT a common cause of hiccups?",
-      options: [
-        { value: "A", label: "Eating too quickly" },
-        { value: "B", label: "Drinking carbonated beverages" },
-        { value: "C", label: "Holding your breath" },
-        { value: "D", label: "Sudden excitement" }
-      ],
-      otherTimeStamp: 90,
-      someTriggerCount: 2,
-      correctAnswer: "D"
-    },
-    {
-      id: "question4",
-      type: "multipleChoice",
-      title: 'Why do hiccups make a "hic" sound?',
-      options: [
-        { value: "A", label: "Air quickly rushes into the lungs" },
-        { value: "B", label: "The vocal cords suddenly close" },
-        { value: "C", label: "The stomach contracts" },
-        { value: "D", label: "The heart skips a beat" }
-      ],
-      otherTimeStamp: 118,
-      someTriggerCount: 3,
-      correctAnswer: "A"
-    },
-    {
-      id: "end",
-      type: "end",
-      title: "Here's How You Did!",
-      otherTimeStamp: 170,
-      someTriggerCount: 4,
-      correctAnswer: ""
-    }
-  ], []);
+  // const questionsData = React.useMemo(() => [
+  //   {
+  //     id: "question1",
+  //     type: "image",
+  //     title: "Who is Squeeks? (Click on the Image!)",
+  //     otherTimeStamp: 20,
+  //     someTriggerCount: 0,
+  //     correctAnswer: ""
+  //   },
+  //   {
+  //     id: "question2",
+  //     type: "multipleChoice",
+  //     title: "What muscle is responsible for causing hiccups?",
+  //     options: [
+  //       { value: "A", label: "Heart" },
+  //       { value: "B", label: "Diaphragm" },
+  //       { value: "C", label: "Stomach" },
+  //       { value: "D", label: "Lungs" }
+  //     ],
+  //     otherTimeStamp: 80,
+  //     someTriggerCount: 1,
+  //     correctAnswer: "B"
+  //   },
+  //   {
+  //     id: "question3",
+  //     type: "multipleChoice",
+  //     title: "Which of the following is NOT a common cause of hiccups?",
+  //     options: [
+  //       { value: "A", label: "Eating too quickly" },
+  //       { value: "B", label: "Drinking carbonated beverages" },
+  //       { value: "C", label: "Holding your breath" },
+  //       { value: "D", label: "Sudden excitement" }
+  //     ],
+  //     otherTimeStamp: 90,
+  //     someTriggerCount: 2,
+  //     correctAnswer: "D"
+  //   },
+  //   {
+  //     id: "question4",
+  //     type: "multipleChoice",
+  //     title: 'Why do hiccups make a "hic" sound?',
+  //     options: [
+  //       { value: "A", label: "Air quickly rushes into the lungs" },
+  //       { value: "B", label: "The vocal cords suddenly close" },
+  //       { value: "C", label: "The stomach contracts" },
+  //       { value: "D", label: "The heart skips a beat" }
+  //     ],
+  //     otherTimeStamp: 118,
+  //     someTriggerCount: 3,
+  //     correctAnswer: "A"
+  //   },
+  //   {
+  //     id: "end",
+  //     type: "end",
+  //     title: "Here's How You Did!",
+  //     otherTimeStamp: 170,
+  //     someTriggerCount: 4,
+  //     correctAnswer: ""
+  //   }
+  // ], []);
 
+  // // this works
+  // const questionsData = React.useMemo(() => {
+  //   return questions.map(q => ({
+  //     id: `question${q.id}`,               // **Changes here!** Use new numeric id (prefixed with "question")
+  //     type: q.type,
+  //     title: q.title,
+  //     otherTimeStamp: q.timestamp,         // **Changes here!** Map "timestamp" to "otherTimeStamp"
+  //     someTriggerCount: q.trigger_count,     // **Changes here!** Map "trigger_count" to "someTriggerCount"
+  //     correctAnswer: q.correct_answer,       // **Changes here!** Map "correct_answer" to "correctAnswer"
+  //     ...(q.type === "multipleChoice" && {   // **Changes here!** Attach options if the question is multipleChoice
+  //       options: questionOptions.filter(opt => opt.question_id === q.id)
+  //     })
+  //   }));
+  // }, []);
 
-  // New state to store API data from Supabase
-  const [apiData, setApiData] = useState([]);
+  const questionsData = React.useMemo(() => {
+    return apiData.map(q => ({
+      id: `question${q.id}`,
+      type: q.type,
+      title: q.title,
+      otherTimeStamp: q.timestamp,
+      someTriggerCount: q.trigger_count,
+      correctAnswer: q.correct_answer,
+      ...(q.type === "multipleChoice" && {
+        options: apiOptions.filter(opt => opt.question_id === q.id)
+      })
+    }));
+  }, [apiData, apiOptions]);
+
 
   // Fetch data from Supabase on mount
   useEffect(() => {
@@ -201,8 +261,15 @@ export default function App() {
         setCurrentTime(someTime);
         
         const currentQuestion = questionsData[triggerCount];
+        // console.log("something", triggerCount);
+        console.log("currentQuestion", currentQuestion);
+        console.log("sometime", someTime);
+        // console.log("sometime", someTime);
+        console.log("currentQuestion.someTriggerCount", currentQuestion.someTriggerCount);
+        console.log("currentQuestion.otherTimeStamp", currentQuestion.otherTimeStamp);
         if (currentQuestion) {
-          if (someTime >= currentQuestion.otherTimeStamp && triggerCount === currentQuestion.someTriggerCount) {
+          // if (someTime >= currentQuestion.otherTimeStamp && triggerCount === currentQuestion.someTriggerCount) {
+          if (someTime >= currentQuestion.otherTimeStamp ) {
             setTriggerCount(triggerCount + 1);
             setIsPaused(true);
             setIsOpen(true);
@@ -339,17 +406,17 @@ export default function App() {
       speechSynthesis.speak(utterance);
     };
 
-    switch (currentQuestion.id) {
-      case "question1":
+    console.log("currentQuestion.id", currentQuestion.id);
+
+    switch (currentQuestion.type) {
+      case "image":
         extraProps.src = questionImage;
         extraProps.onClick = checkMousePosition;
         break;
-      case "question2":
+      case "multipleChoice":
         // remove this when sure we can
         onSubmit = videoReplayOnWrongAnswer;
         break;
-      case "question3":
-      case "question4":
       case "end":
         onSubmit = togglePandOtogether;
         break;
@@ -511,13 +578,18 @@ export default function App() {
           </Overlay>
       </div>
 
-      <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
+      {/* <h2>Mouse Position: {JSON.stringify(someMousePosition)}</h2>
       <h2>Current Time: {currentTime.toFixed(2)}</h2>
       <h3 onClick={() => alert("Test container clicked!")}>test container</h3>
       <h3>Countdown: {counter}</h3>
       <h3>Retry: {retry}</h3> 
 
       <h3>API info: {apiData.length > 0 ? apiData[0].title : "Loading..."}</h3>
+      <h3>Test 1: {test2 ? test2.title : "No question data"}</h3>
+      <h3>Test 2: {test2 ? test2.id : "No question data"}</h3>
+      <h3>triggerCount {test2 ? triggerCount : "No question data"}</h3>
+      <h3>Test 4: {test2 ? test2.type : "No question data"}</h3>
+      <h3>timestamp : {test2 ? test2.timestamp : "No question data"}</h3> */}
     </div>
   );
 }
