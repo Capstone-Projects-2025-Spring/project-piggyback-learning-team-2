@@ -1,42 +1,66 @@
 .overlay__background {
-    background-color: rgba(0, 0, 0, 0.5);
-    width: 100vw;
-    height: 100vh;
-    position: fixed;
-    top: 0;
-    left: 0;
-    cursor: pointer;
-    z-index: 9;
-  }
-  
-  .overlay__container {
-    background-color: white;
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    margin: auto;
-    z-index: 10;
-    padding: 30px;
-    width: 50%;
-    height: 50%;
-  }
-  
-  .overlay__controls {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-  }
-  
-  .overlay__close:after {
-    display: inline-block;
-    content: "\00d7";
-  }
-  
-  .overlay__close {
-    border: none;
-    background-color: #4CAF50;
-    font-size: 36px;
-    cursor: pointer;
-  }
+  background-color: rgba(0, 0, 0, 0.7); /* Darker, more opaque backdrop */
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9;
+}
+
+.overlay__container {
+  background-color: #2d2d2d; /* Dark gray container */
+  color: #e0e0e0; /* Light gray text */
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* Centered */
+  z-index: 10;
+  padding: 25px;
+  width: 50%;
+  max-width: 600px; /* Slightly wider */
+  border-radius: 8px; /* Rounded corners */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.7); /* Deeper shadow */
+}
+
+.overlay__controls {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 15px;
+}
+
+.overlay__close {
+  background: none;
+  border: none;
+  color: #b0b0b0; /* Light gray */
+  font-size: 28px;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.overlay__close:hover {
+  color: #ffffff; /* White on hover */
+}
+
+.overlay__close:after {
+  content: "\00d7"; /* "×" symbol */
+}
+
+/* Radio Buttons and Labels */
+.overlay__container input[type="radio"] {
+  accent-color: #3b82f6; /* Blue for radio buttons */
+  margin-right: 8px;
+}
+
+.overlay__container label {
+  font-size: 1.1em;
+  cursor: pointer;
+}
+
+/* Scrollable End Summary */
+.overlay__container div[style*="overflow-y"] {
+  border: 1px solid #4b4b4b; /* Darker border */
+  padding: 10px;
+  max-height: 300px;
+  background-color: #333333; /* Slightly lighter background */
+}

@@ -1,15 +1,13 @@
-/* Signin.module.css */
-
 .signinPage {
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+    min-height: 100vh; /* Ensure the page takes up full viewport height */
     font-family: Arial, sans-serif;
     background-image: url('https://getwallpapers.com/wallpaper/full/3/3/0/1115244-amazing-kids-desktop-background-1920x1200-images.jpg'); 
     background-size: cover;
     background-position: center;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between; /* Push footer to bottom */
     padding: 0;
     margin: 0;
 }
@@ -46,7 +44,7 @@ nav a {
     box-shadow: 0 12px 30px rgba(76, 175, 80, 0.3);
     width: 90%;
     max-width: 450px;
-    margin-top: 120px;
+    margin: 0 auto;
     z-index: 2;
     text-align: center;
     border: 3px solid #81c784;
@@ -64,7 +62,6 @@ nav a {
     50% { transform: translateY(10px); }
     100% { transform: translateY(-10px); }
 }
-
 
 .welcomeBox {
     background-color: rgba(255, 255, 255, 0.95);
@@ -160,6 +157,7 @@ button {
 button:hover {
     background-color: #45a049;
 }
+
 .highlightMessage {
     color: #d32f2f;         
     background-color: #fff3cd; 
@@ -168,8 +166,7 @@ button:hover {
     font-weight: bold;
     margin-bottom: 10px;
     border: 1px solid #f5c6cb;
-  }
-  
+}
 
 .googleButton {
     background-color: white;
@@ -204,6 +201,5 @@ footer {
     padding: 10px 0;
     background-color: #1976D2;
     color: white;
-    position: absolute;
-    bottom: 0;
+    
 }
