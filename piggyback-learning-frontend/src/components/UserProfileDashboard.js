@@ -4,6 +4,11 @@ import { supabase } from './supabaseClient';
 import logo from '../images/Mob_Iron_Hog.png';
 import '../styles/UserProfileDashboard.css';
 
+// Chart.js
+import { Doughnut } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+ChartJS.register(ArcElement, Tooltip, Legend);
+
 function UserProfile() {
     const navigate = useNavigate();
     const [profile, setProfile] = useState(null);
@@ -21,6 +26,9 @@ function UserProfile() {
         { src: "https://www.youtube.com/embed/qhOTU8_1Af4", title: "Colors and Patterns" },
     ]);
 
+    const [videoHistory, setVideoHistory] = useState([]);
+    const [progressStats, setProgressStats] = useState({ saved: 0, watched: 0, percent: 0 });
+
     useEffect(() => {
         const fetchProfile = async () => {
             setLoading(true);
@@ -33,10 +41,10 @@ function UserProfile() {
 
             const user = authData.user;
             let { data: profileData, error: profileError } = await supabase
-  .from('profiles')
-  .select('id, first_name, last_name, email, avatar_url, bio')  
-  .eq('id', user.id)
-  .single();
+                .from('profiles')
+                .select('id, first_name, last_name, email, avatar_url, bio')
+                .eq('id', user.id)
+                .single();
 
             if (profileError) {
                 const { data: newProfile, error: insertError } = await supabase
@@ -61,7 +69,40 @@ function UserProfile() {
             }
 
             setProfile(profileData);
+            fetchVideoHistory(profileData.id);
+            calculateProgress(profileData.id);
             setLoading(false);
+        };
+
+        const fetchVideoHistory = async (userId) => {
+            const { data, error } = await supabase
+                .from('video_history')
+                .select('video_url, title, watched_at')
+                .eq('user_id', userId)
+                .order('watched_at', { ascending: false });
+
+            if (error) {
+                console.error("Error fetching history:", error.message);
+            } else {
+                setVideoHistory(data);
+            }
+        };
+
+        const calculateProgress = async (userId) => {
+            const { data: watched, error: watchErr } = await supabase
+                .from('video_history')
+                .select('video_url')
+                .eq('user_id', userId);
+
+            const watchedCount = watched?.length || 0;
+            const savedCount = youtubeUrls.length;
+            const percent = savedCount === 0 ? 0 : Math.round((watchedCount / savedCount) * 100);
+
+            setProgressStats({
+                saved: savedCount,
+                watched: watchedCount,
+                percent: percent
+            });
         };
 
         fetchProfile();
@@ -74,6 +115,18 @@ function UserProfile() {
         } else {
             navigate('/signin');
         }
+    };
+
+    const chartData = {
+        labels: ['Watched', 'Remaining'],
+        datasets: [
+            {
+                label: 'Video Progress',
+                data: [progressStats.watched, progressStats.saved - progressStats.watched],
+                backgroundColor: ['#4CAF50', '#E0E0E0'],
+                borderWidth: 1
+            }
+        ]
     };
 
     if (loading) return <div className="loading">Loading Profile...</div>;
@@ -135,8 +188,28 @@ function UserProfile() {
                             📜 Video History
                         </button>
                         {showHistory && (
-                            <div className="video-placeholder">
-                                <p>Video History will appear here (placeholder).</p>
+                            <div className="video-scroll-container">
+                                <div className="video-grid">
+                                    {videoHistory.length === 0 ? (
+                                        <p>No video history yet.</p>
+                                    ) : (
+                                        videoHistory.map((video, index) => (
+                                            <div key={index} className="video-box">
+                                                <iframe
+                                                    width="300"
+                                                    height="180"
+                                                    src={video.video_url}
+                                                    title={video.title}
+                                                    frameBorder="0"
+                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                    allowFullScreen
+                                                />
+                                                <p>{video.title}</p>
+                                                <small>Watched on: {new Date(video.watched_at).toLocaleDateString()}</small>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
                             </div>
                         )}
 
@@ -145,7 +218,13 @@ function UserProfile() {
                         </button>
                         {showProgress && (
                             <div className="video-placeholder">
-                                <p>Progress tracker section (placeholder).</p>
+                                <h4>📈 Progress Stats</h4>
+                                <p>Videos Saved: {progressStats.saved}</p>
+                                <p>Videos Watched: {progressStats.watched}</p>
+                                <p>Completion: {progressStats.percent}%</p>
+                                <div style={{ width: '300px', margin: '20px auto' }}>
+                                    <Doughnut data={chartData} />
+                                </div>
                             </div>
                         )}
                     </div>
