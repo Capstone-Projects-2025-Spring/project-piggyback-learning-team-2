@@ -68,6 +68,39 @@ body {
     color: #ffdd57;
 }
 
+.profile-header input,
+.profile-header textarea {
+    width: 100%;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    outline: none;
+    background-color: rgba(255, 255, 255, 0.15);
+    color: #fff;
+}
+
+.profile-header input:focus,
+.profile-header textarea:focus {
+    border-color: #4CAF50;
+    background-color: rgba(255, 255, 255, 0.25);
+}
+
+/* Dark mode adjustments */
+body.dark-mode .profile-header input,
+body.dark-mode .profile-header textarea {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid #444;
+    color: #eee;
+}
+
+body.dark-mode .profile-header input:focus,
+body.dark-mode .profile-header textarea:focus {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: #00e676;
+}
+
 /* Profile Card */
 .profile-page {
     min-height: 100vh;
