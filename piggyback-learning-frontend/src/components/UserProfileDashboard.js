@@ -4,7 +4,6 @@ import { supabase } from './supabaseClient';
 import logo from '../images/Mob_Iron_Hog.png';
 import '../styles/UserProfileDashboard.css';
 
-// Chart.js
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -28,6 +27,38 @@ function UserProfile() {
 
     const [videoHistory, setVideoHistory] = useState([]);
     const [progressStats, setProgressStats] = useState({ saved: 0, watched: 0, percent: 0 });
+
+    // ✅ Move these functions OUTSIDE useEffect
+    const fetchVideoHistory = async (userId) => {
+        const { data, error } = await supabase
+            .from('video_history')
+            .select('video_url, title, watched_at')
+            .eq('user_id', userId)
+            .order('watched_at', { ascending: false });
+
+        if (error) {
+            console.error("Error fetching history:", error.message);
+        } else {
+            setVideoHistory(data);
+        }
+    };
+
+    const calculateProgress = async (userId) => {
+        const { data: watched, error } = await supabase
+            .from('video_history')
+            .select('video_url')
+            .eq('user_id', userId);
+
+        const watchedCount = watched?.length || 0;
+        const savedCount = youtubeUrls.length;
+        const percent = savedCount === 0 ? 0 : Math.round((watchedCount / savedCount) * 100);
+
+        setProgressStats({
+            saved: savedCount,
+            watched: watchedCount,
+            percent: percent
+        });
+    };
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -72,37 +103,6 @@ function UserProfile() {
             fetchVideoHistory(profileData.id);
             calculateProgress(profileData.id);
             setLoading(false);
-        };
-
-        const fetchVideoHistory = async (userId) => {
-            const { data, error } = await supabase
-                .from('video_history')
-                .select('video_url, title, watched_at')
-                .eq('user_id', userId)
-                .order('watched_at', { ascending: false });
-
-            if (error) {
-                console.error("Error fetching history:", error.message);
-            } else {
-                setVideoHistory(data);
-            }
-        };
-
-        const calculateProgress = async (userId) => {
-            const { data: watched, error: watchErr } = await supabase
-                .from('video_history')
-                .select('video_url')
-                .eq('user_id', userId);
-
-            const watchedCount = watched?.length || 0;
-            const savedCount = youtubeUrls.length;
-            const percent = savedCount === 0 ? 0 : Math.round((watchedCount / savedCount) * 100);
-
-            setProgressStats({
-                saved: savedCount,
-                watched: watchedCount,
-                percent: percent
-            });
         };
 
         fetchProfile();
@@ -166,20 +166,66 @@ function UserProfile() {
                         {showSaved && (
                             <div className="video-scroll-container">
                                 <div className="video-grid">
-                                    {youtubeUrls.map((video, index) => (
-                                        <div key={index} className="video-box">
-                                            <iframe
-                                                width="300"
-                                                height="180"
-                                                src={video.src}
-                                                title={video.title}
-                                                frameBorder="0"
-                                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                                allowFullScreen
-                                            />
-                                            <p>{video.title}</p>
-                                        </div>
-                                    ))}
+                                    {youtubeUrls.map((video, index) => {
+                                        const isWatched = videoHistory.some(v => v.video_url === video.src);
+                                        return (
+                                            <div key={index} className="video-box">
+                                                <iframe
+                                                    width="300"
+                                                    height="180"
+                                                    src={video.src}
+                                                    title={video.title}
+                                                    frameBorder="0"
+                                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                                    allowFullScreen
+                                                />
+                                                <p>{video.title}</p>
+                                                {isWatched ? (
+                                                    <p>✅ Already Watched</p>
+                                                ) : (
+                                                    <button
+                                                        className="watch-button"
+                                                        onClick={async () => {
+                                                            const { data: userData } = await supabase.auth.getUser();
+                                                            const userId = userData?.user?.id;
+                                                            if (!userId) return;
+
+                                                            const { data: existing } = await supabase
+                                                                .from('video_history')
+                                                                .select('id')
+                                                                .eq('user_id', userId)
+                                                                .eq('video_url', video.src);
+
+                                                            if (existing.length > 0) {
+                                                                alert("Already marked as watched.");
+                                                                return;
+                                                            }
+
+                                                            const { error } = await supabase
+                                                                .from('video_history')
+                                                                .insert([{
+                                                                    user_id: userId,
+                                                                    video_url: video.src,
+                                                                    title: video.title,
+                                                                    watched_at: new Date().toISOString()
+                                                                }]);
+
+                                                            if (error) {
+                                                                alert("Error marking as watched");
+                                                                console.error(error);
+                                                            } else {
+                                                                alert("Marked as watched!");
+                                                                fetchVideoHistory(userId);
+                                                                calculateProgress(userId);
+                                                            }
+                                                        }}
+                                                    >
+                                                        ✅ Mark as Watched
+                                                    </button>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         )}
