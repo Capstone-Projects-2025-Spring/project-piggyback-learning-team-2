@@ -35,7 +35,6 @@ function UserProfile() {
     const [videoHistory, setVideoHistory] = useState([]);
     const [progressStats, setProgressStats] = useState({ saved: 0, watched: 0, percent: 0 });
 
-    // ✅ Move these functions OUTSIDE useEffect
     const fetchVideoHistory = async (userId) => {
         const { data, error } = await supabase
             .from('video_history')
@@ -211,44 +210,50 @@ function UserProfile() {
                                                     <p>✅ Already Watched</p>
                                                 ) : (
                                                     <button
-                                                        className="watch-button"
-                                                        onClick={async () => {
-                                                            const { data: userData } = await supabase.auth.getUser();
-                                                            const userId = userData?.user?.id;
-                                                            if (!userId) return;
-
-                                                            const { data: existing } = await supabase
-                                                                .from('video_history')
-                                                                .select('id')
-                                                                .eq('user_id', userId)
-                                                                .eq('video_url', video.src);
-
-                                                            if (existing.length > 0) {
-                                                                alert("Already marked as watched.");
-                                                                return;
-                                                            }
-
-                                                            const { error } = await supabase
-                                                                .from('video_history')
-                                                                .insert([{
-                                                                    user_id: userId,
-                                                                    video_url: video.src,
-                                                                    title: video.title,
-                                                                    watched_at: new Date().toISOString()
-                                                                }]);
-
-                                                            if (error) {
-                                                                alert("Error marking as watched");
-                                                                console.error(error);
-                                                            } else {
-                                                                alert("Marked as watched!");
-                                                                fetchVideoHistory(userId);
-                                                                calculateProgress(userId);
-                                                            }
-                                                        }}
-                                                    >
-                                                        ✅ Mark as Watched
-                                                    </button>
+                                                    className="watch-button"
+                                                    onClick={async () => {
+                                                      const { data: userData } = await supabase.auth.getUser();
+                                                      const userId = userData?.user?.id;
+                                                      if (!userId) return;
+                                                  
+                                                      const { data: existing, error: checkError } = await supabase
+                                                        .from('video_history')
+                                                        .select('id')
+                                                        .eq('user_id', userId)
+                                                        .eq('video_url', video.src);
+                                                  
+                                                      if (checkError) {
+                                                        console.error("Error checking watch history:", checkError);
+                                                        alert("Failed to check watch status.");
+                                                        return;
+                                                      }
+                                                  
+                                                      if (existing && existing.length > 0) {
+                                                        alert("Already marked as watched.");
+                                                        return;
+                                                      }
+                                                  
+                                                      const { error } = await supabase
+                                                        .from('video_history')
+                                                        .insert([{
+                                                          user_id: userId,
+                                                          video_url: video.src,
+                                                          title: video.title,
+                                                          watched_at: new Date().toISOString()
+                                                        }]);
+                                                  
+                                                      if (error) {
+                                                        alert("Error marking as watched");
+                                                        console.error(error);
+                                                      } else {
+                                                        alert("Marked as watched!");
+                                                        fetchVideoHistory(userId);
+                                                        calculateProgress(userId);
+                                                      }
+                                                    }}
+                                                  >
+                                                    ✅ Mark as Watched
+                                                  </button>                                                  
                                                     
                                                 )}
                                             </div>
