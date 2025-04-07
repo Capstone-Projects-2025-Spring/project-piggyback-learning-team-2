@@ -1,8 +1,15 @@
+//npm install react-icons
+// npm install chart.js react-chartjs-2
+// npm install @supabase/supabase-js
+// npm install react-router-dom
+
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import logo from '../images/Mob_Iron_Hog.png';
 import '../styles/UserProfileDashboard.css';
+import { FaMoon, FaLightbulb } from 'react-icons/fa';
+
 
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
@@ -140,19 +147,32 @@ function UserProfile() {
 
     return (
         <div className="profile-container">
-            <header className="profile-header-nav">
-                <div className="nav-logo">
-                    <img src={logo} alt="Piggyback Learning Logo" />
-                </div>
-                <nav className="nav-menu">
-                    <ul>
-                        <li><Link to="/">Home</Link></li>
-                        <li><Link to="/store">Store</Link></li>
-                        <li><Link to="/video">Video (placeholder)</Link></li>
-                    </ul>
-                </nav>
-            </header>
+          {/* Navigation Header */}
+          <header className="profile-header-nav">
+            <div className="nav-logo">
+              <img src={logo} alt="Piggyback Learning Logo" />
+            </div>
+            <nav className="nav-menu">
+              <ul>
+                <li><Link to="/">Home</Link></li>
+                <li><Link to="/store">Store</Link></li>
+                <li><Link to="/video">Video (placeholder)</Link></li>
+              </ul>
+            </nav>
+          </header>
+      
+          {/* 🌙 Dark Mode Toggle Button - Floating */}
+          <div className="dark-toggle-wrapper">
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              className="dark-mode-toggle"
+              title="Toggle Dark Mode"
+            >
+              {darkMode ? '💡' : '🌙'}
+            </button>
+          </div>
 
+            
             <div className="profile-page">
                 <div className="profile-card">
                     <div className="profile-header">
@@ -164,13 +184,7 @@ function UserProfile() {
                         <h2>{profile.first_name} {profile.last_name}</h2>
                         <p>{profile.bio}</p>
                     </div>
-                    <button
-  onClick={() => setDarkMode(!darkMode)}
-  className="dark-mode-toggle"
-  style={{ marginBottom: '10px' }}
->
-  {darkMode ? '🌞 Light Mode' : '🌙 Dark Mode'}
-</button>
+
 
                     <div className="profile-sections">
                         <button className="profile-section-btn" onClick={() => setShowSaved(!showSaved)}>
