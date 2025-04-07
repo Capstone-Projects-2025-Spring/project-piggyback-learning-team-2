@@ -129,6 +129,12 @@ function UserProfile() {
         ]
     };
 
+    const [darkMode, setDarkMode] = useState(false);
+
+    useEffect(() => {
+      document.body.classList.toggle('dark-mode', darkMode);
+    }, [darkMode]);
+    
     if (loading) return <div className="loading">Loading Profile...</div>;
     if (!profile) return <div className="error">Error loading profile.</div>;
 
@@ -158,6 +164,13 @@ function UserProfile() {
                         <h2>{profile.first_name} {profile.last_name}</h2>
                         <p>{profile.bio}</p>
                     </div>
+                    <button
+  onClick={() => setDarkMode(!darkMode)}
+  className="dark-mode-toggle"
+  style={{ marginBottom: '10px' }}
+>
+  {darkMode ? '🌞 Light Mode' : '🌙 Dark Mode'}
+</button>
 
                     <div className="profile-sections">
                         <button className="profile-section-btn" onClick={() => setShowSaved(!showSaved)}>
@@ -222,6 +235,7 @@ function UserProfile() {
                                                     >
                                                         ✅ Mark as Watched
                                                     </button>
+                                                    
                                                 )}
                                             </div>
                                         );
