@@ -158,6 +158,8 @@ main {
 .grade-selection-enhanced,
 .youtube-url-enhanced,
 .videos-enhanced {
+  position: relative;
+  overflow: hidden; /* Prevents overflow of scrolling content */
   padding: 20px;
   margin: 10px;
   background: rgba(255, 255, 255, 0.4);
@@ -227,22 +229,23 @@ main {
 .video-scroll-wrapper {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 15px;
+  justify-content: center; 
+  position: relative;
 }
 .video-cards-horizontal {
   display: flex;
   gap: 20px;
   overflow-x: auto;
   scroll-behavior: smooth;
-  padding: 15px 0;
+  padding: 15px 60px;  /* Extra horizontal padding makes room for the scroll buttons */
+  box-sizing: border-box;
   max-width: 100%;
 }
 .video-cards-horizontal::-webkit-scrollbar {
   display: none;
 }
 .video-card {
-  flex: 0 0 300px;
+  flex: 0 0 300px;  /* Fixed width for each video card */
   background: white;
   border-radius: 20px;
   padding: 10px;
@@ -252,14 +255,19 @@ main {
 .video-card:hover {
   transform: translateY(-8px);
 }
-.video-card iframe {
+
+/* didn't know you could do this, feels like python */
+.video-card iframe,
+.video-thumbnail {
   width: 100%;
-  height: 180px;
+  height: 200px;         
   border-radius: 12px;
+  object-fit: cover;     
 }
 .video-info {
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  align-items: center;
   padding: 6px 0;
 }
 .video-info p {

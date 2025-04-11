@@ -1,6 +1,11 @@
 import React, { useState, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import logo from '../images/Mob_Iron_Hog.png'; 
+import logo from '../images/Mob_Iron_Hog.png';
+import image1 from '../images/How_Do_Airplanes_Fly.jpg';
+import image2 from '../images/Learn_Colors.jpgg';
+import image3 from '../images/Water_Cycle.jpg';
+import image4 from '../images/What_Are_Thunder_And_Lightning.jpg';
+import image5 from '../images/Why_Do_We_Get_Hiccups.jpg';
 import '../styles/page.css';
 
 function Home() {
@@ -340,13 +345,14 @@ function Home() {
 
   const navLinks = [
     { label: "Home", path: "/" },
-    { label: "How to Join", path: "/how-to-join" },
-    { label: "Sign In", path: "/signin" },
+    // { label: "How to Join", path: "/how-to-join" },
     //{ label: "Sign Up", path: "/signup" },
-    { label: "Store", path: "/store" },
+    // { label: "Store", path: "/store" },
     { label: "Video", path: "/video" },
+    { label: "Sign In", path: "/signin" },
     { label: "Profile", path: "/profile" },
-    { label: "Contact Us", path: "/contact" },];
+    // { label: "Contact Us", path: "/contact" },
+  ];
   
   return (
     <div className="home-container">
@@ -374,7 +380,7 @@ function Home() {
             <Link to="/signup" className="cta-button pulse">Start Your Journey Free</Link>
         </section>
           
-        <section className="grade-selection-enhanced">
+        {/* <section className="grade-selection-enhanced">
           <h2>Choose Your Learning Path</h2>
           <div className="dropdown-container">
             <select value={selectedGrade} onChange={handleGradeChange} className="grade-dropdown">
@@ -384,18 +390,29 @@ function Home() {
               ))}
             </select>
           </div>
-</section>
+</section> */}
 
 {/* url input and video section */}
-<section className="youtube-url-enhanced">
-  <h2>Add Your Learning Video</h2>
-  <div className="url-input-container">
-    <input type="text" id="youtubeUrl" placeholder="Paste YouTube URL here..." />
-    <button onClick={validateYTURL} className="submit-btn">Add Video</button>
+<section className="videos-enhanced">
+  <h2>Explore Learning Videos</h2>
+  <div className="video-scroll-wrapper">
+    <button className="scroll-button left" onClick={scrollLeft}>←</button>
+    <div className="video-cards-horizontal" ref={videoCardsRef}>
+      {youtubeUrls.map((video, index) => (
+        <div className="video-card" key={index}>
+          <img src={video.thumbnail} alt={video.title} className="video-thumbnail" />
+          <div className="video-info">
+            <p>{video.title}</p>
+            <span className="play-icon">▶</span>
+          </div>
+        </div>
+      ))}
+    </div>
+    <button className="scroll-button right" onClick={scrollRight}>→</button>
   </div>
 </section>
 
-        <section className="videos-enhanced">
+        {/* <section className="videos-enhanced">
           <h2>Explore Learning Videos</h2>
           <div className="video-scroll-wrapper">
             <button className="scroll-button left" onClick={scrollLeft}>←</button>
@@ -412,7 +429,7 @@ function Home() {
             </div>
             <button className="scroll-button right" onClick={scrollRight}>→</button>
           </div>
-        </section>
+        </section> */}
         <section className="youtube-url-enhanced">
           <h2>Add Your Own Learning Video</h2>
           <div className="url-input-container">
