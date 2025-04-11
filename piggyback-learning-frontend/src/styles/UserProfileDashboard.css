@@ -68,8 +68,42 @@ body {
     color: #ffdd57;
 }
 
+.profile-header input,
+.profile-header textarea {
+    width: 100%;
+    padding: 8px 12px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    outline: none;
+    background-color: rgba(255, 255, 255, 0.15);
+    color: #fff;
+}
+
+.profile-header input:focus,
+.profile-header textarea:focus {
+    border-color: #4CAF50;
+    background-color: rgba(255, 255, 255, 0.25);
+}
+
+/* Dark mode adjustments */
+body.dark-mode .profile-header input,
+body.dark-mode .profile-header textarea {
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid #444;
+    color: #eee;
+}
+
+body.dark-mode .profile-header input:focus,
+body.dark-mode .profile-header textarea:focus {
+    background-color: rgba(255, 255, 255, 0.15);
+    border-color: #00e676;
+}
+
 /* Profile Card */
 .profile-page {
+    min-height: 100vh;
     display: flex;
     flex-direction: row;
     justify-content: center;
@@ -88,12 +122,12 @@ body {
 
 .profile-card {
     background: rgba(255, 255, 255, 0.1);
-    padding: 40px;
+    padding: 40px 40px;
     border-radius: 20px;
     backdrop-filter: blur(10px);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
     text-align: center;
-    max-width: 2000px;
+    max-width: 1500px;
     width: 100%;
     animation: fadeIn 1s ease-in-out;
 }
@@ -101,6 +135,10 @@ body {
 .profile-header {
     margin-bottom: 20px;
 }
+.profile-section-btn {
+    margin-bottom: 12px;
+  }
+  
 
 .profile-picture {
     width: 100px;
@@ -217,6 +255,90 @@ body {
 
 .signout-button:hover {
     background-color: #c0392b;
+}
+
+.watch-button {
+    margin-top: 8px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.watch-button:hover {
+    background-color: #45a049;
+    transform: scale(1.05);
+}
+
+/* 🌙 Floating Dark Mode Toggle */
+.dark-toggle-wrapper {
+    position: fixed;
+    top: 100px;
+    right: 30px;
+    z-index: 1000;
+}
+
+.dark-mode-toggle {
+    background: transparent;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    padding: 10px;
+    font-size: 20px;
+    color: #fff;
+    cursor: pointer;
+    transition: transform 0.3s ease, background 0.3s ease, color 0.3s ease;
+}
+
+.dark-mode-toggle:hover {
+    transform: scale(1.2);
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* 🌙 Dark Mode Theming */
+body.dark-mode {
+    background: #121212;
+    color: #eaeaea;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+body.dark-mode .profile-card {
+    background: rgba(30, 30, 30, 0.8);
+    color: #eaeaea;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+body.dark-mode .profile-section-btn,
+body.dark-mode .back-button,
+body.dark-mode .signout-button,
+body.dark-mode .watch-button {
+    background: rgba(255, 255, 255, 0.08);
+    color: #eee;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+body.dark-mode .profile-section-btn:hover,
+body.dark-mode .back-button:hover,
+body.dark-mode .signout-button:hover,
+body.dark-mode .watch-button:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+body.dark-mode .nav-menu ul li a {
+    color: #eee;
+    transition: color 0.3s ease;
+}
+
+body.dark-mode .nav-menu ul li a:hover {
+    color: #ffdd57;
+}
+
+body.dark-mode .video-box {
+    color: #ddd;
+    transition: color 0.3s ease;
 }
 
 
