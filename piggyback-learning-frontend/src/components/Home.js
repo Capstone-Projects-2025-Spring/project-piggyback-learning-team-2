@@ -1,11 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import logo from '../images/Mob_Iron_Hog.png';
-import image1 from '../images/How_Do_Airplanes_Fly.jpg';
-import image2 from '../images/Learn_Colors.jpgg';
-import image3 from '../images/Water_Cycle.jpg';
-import image4 from '../images/What_Are_Thunder_And_Lightning.jpg';
-import image5 from '../images/Why_Do_We_Get_Hiccups.jpg';
 import '../styles/page.css';
 
 function Home() {
@@ -14,21 +9,72 @@ function Home() {
   const videoCardsRef = useRef(null);
   const [responseData, setResponseData] = useState("");
   const [youtubeUrls, setYoutubeUrls] = useState([
-    { src: "https://www.youtube.com/embed/9e5lcQycf2M", title: " Why Do We Get Hiccups? | Body Science for Kids" },
-    { src: "https://www.youtube.com/embed/al-do-HGuIk", title: "Water Cycle | How the Hydrologic Cycle Works" },
-    { src: "https://www.youtube.com/embed/fEiVi9TB_RQ", title: "What Causes Thunder and Lightning? | Weather Science | SciShow Kids" },
-    { src: "https://www.youtube.com/embed/Gg0TXNXgz-w", title: "How Do Airplanes Fly?" },
-    { src: "https://www.youtube.com/embed/qhOTU8_1Af4", title: "Colors and Patterns" },
+    { src: "https://www.youtube.com/embed/9e5lcQycf2M", title: "Why Do We Get Hiccups? | Body Science for Kids", thumbnail: "" },
+    { src: "https://www.youtube.com/embed/al-do-HGuIk", title: "Water Cycle | How the Hydrologic Cycle Works", thumbnail: "" },
+    { src: "https://www.youtube.com/embed/fEiVi9TB_RQ", title: "What Causes Thunder and Lightning? | Weather Science | SciShow Kids", thumbnail: "" },
+    { src: "https://www.youtube.com/embed/Gg0TXNXgz-w", title: "How Do Airplanes Fly?", thumbnail: "" },
+    { src: "https://www.youtube.com/embed/X3uT89xoKuc", title: "Antarctica | Destination World", thumbnail: "" },
   ]);
 
-  const handleGradeChange = (event) => {
-    const selected = event.target.value;
-    setSelectedGrade(selected);
-    if (selected === "Pre-K") navigate("/prek");
+  useEffect(() => {
+    const fetchThumbnails = async () => {
+      const updatedVideos = await Promise.all(
+        youtubeUrls.map(async (video) => {
+          const videoId = getYouTubeVideoId(video.src); // Changes Here!
+          const thumbnailUrl = await getThumbnailUrl(videoId); // Changes Here!
+          return { ...video, thumbnail: thumbnailUrl };
+        })
+      );
+      setYoutubeUrls(updatedVideos);
+    };
+
+    fetchThumbnails();
+  }, []); 
+
+  const getYouTubeVideoId = (url) => {
+    const regex = /(?:https?:\/\/(?:www\.)?youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+    const match = url.match(regex);
+    return match ? match[1] : '';
+  };
+
+  const getThumbnailUrl = async (videoId) => {
+    if (!videoId) return '';
+
+    const apiKey = process.env.REACT_APP_YOUTUBE_API_KEY; 
+    if (!apiKey) {
+      console.error("YOUTUBE_API_KEY is not defined in your environment variables.");
+      return '';
+    }
+    
+    const apiUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${apiKey}`; // Changes Here!
+    
+    try {
+      const response = await fetch(apiUrl);
+      const data = await response.json();
+      if (data.items && data.items.length > 0) {
+        // Return the medium quality thumbnail URL // Changes Here!
+        return data.items[0].snippet.thumbnails.medium.url;
+      }
+    } catch (error) {
+      console.error('Error fetching thumbnail:', error);
+    }
+    return ''; 
   };
 
   const scrollLeft = () => videoCardsRef.current?.scrollBy({ left: -300, behavior: 'smooth' });
   const scrollRight = () => videoCardsRef.current?.scrollBy({ left: 300, behavior: 'smooth' });
+  
+
+  
+
+  // const handleGradeChange = (event) => {
+  //   const selected = event.target.value;
+  //   setSelectedGrade(selected);
+  //   if (selected === "Pre-K") navigate("/prek");
+  // };
+
+  // const scrollLeft = () => videoCardsRef.current?.scrollBy({ left: -300, behavior: 'smooth' });
+  // const scrollRight = () => videoCardsRef.current?.scrollBy({ left: 300, behavior: 'smooth' });
 
   async function validateYTURL() {
     const urlValue = document.getElementById("youtubeUrl").value.trim();
@@ -393,24 +439,30 @@ function Home() {
 </section> */}
 
 {/* url input and video section */}
-<section className="videos-enhanced">
-  <h2>Explore Learning Videos</h2>
-  <div className="video-scroll-wrapper">
-    <button className="scroll-button left" onClick={scrollLeft}>←</button>
-    <div className="video-cards-horizontal" ref={videoCardsRef}>
-      {youtubeUrls.map((video, index) => (
-        <div className="video-card" key={index}>
-          <img src={video.thumbnail} alt={video.title} className="video-thumbnail" />
-          <div className="video-info">
-            <p>{video.title}</p>
-            <span className="play-icon">▶</span>
+    <section className="videos-enhanced">
+      <h2>Explore Learning Videos</h2>
+      <div className="video-scroll-wrapper">
+        <button className="scroll-button left" onClick={scrollLeft}>←</button>
+        <div className="video-gallery-container">
+          <div className="video-cards-horizontal" ref={videoCardsRef}>
+            {youtubeUrls.map((video, index) => (
+              <div className="video-card" key={index}>
+                <img
+                  src={video.thumbnail || `${process.env.PUBLIC_URL}/logo192.png`}
+                  alt={video.title}
+                  className="video-thumbnail"
+                />
+                <div className="video-info">
+                  <p>{video.title}</p>
+                  <span className="play-icon">▶</span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-      ))}
-    </div>
-    <button className="scroll-button right" onClick={scrollRight}>→</button>
-  </div>
-</section>
+        <button className="scroll-button right" onClick={scrollRight}>→</button>
+      </div>
+    </section>
 
         {/* <section className="videos-enhanced">
           <h2>Explore Learning Videos</h2>
