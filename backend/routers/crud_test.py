@@ -12,6 +12,12 @@ router = APIRouter()
 def read_root():
     return {"message": "Welcome"}
 
+# transition to use sqlalchemy
+@router.get("/sqlalchemy")
+def test_url(db: Session = Depends(get_db)):
+    engagement = db.query(db_models.User_engagment).all()
+    return {"data": engagement}
+
 
 # testing get data fromn table
 @router.get("/validateYT_URL/{video_url:path}")
