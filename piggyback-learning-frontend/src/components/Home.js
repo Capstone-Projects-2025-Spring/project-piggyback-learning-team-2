@@ -451,11 +451,11 @@ function Home() {
   }
 
   const navLinks = [
-    { label: "Home", path: "/" },
+    //{ label: "Home", path: "/" },
     // { label: "How to Join", path: "/how-to-join" },
     //{ label: "Sign Up", path: "/signup" },
     // { label: "Store", path: "/store" },
-    { label: "Video", path: "/video" },
+    // { label: "Video", path: "/video" },
     { label: "Sign In", path: "/signin" },
     { label: "Profile", path: "/profile" },
     // { label: "Contact Us", path: "/contact" },
