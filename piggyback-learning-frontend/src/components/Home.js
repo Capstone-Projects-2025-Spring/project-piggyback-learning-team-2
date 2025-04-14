@@ -31,10 +31,22 @@ function Home() {
     fetchThumbnails();
   }, []); 
 
+  // const getYouTubeVideoId = (url) => {
+  //   const regex = /(?:https?:\/\/(?:www\.)?youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+  //   const match = url.match(regex);
+  //   return match ? match[1] : '';
+  // };
+
   const getYouTubeVideoId = (url) => {
-    const regex = /(?:https?:\/\/(?:www\.)?youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
-    const match = url.match(regex);
-    return match ? match[1] : '';
+    const watchMatch = url.match(/[?&]v=([^&]+)/);
+    const embedMatch = url.match(/\/embed\/([^?&]+)/);
+    const shortMatch = url.match(/youtu\.be\/([^?&]+)/); // optional: handle short links
+  
+    if (watchMatch) return watchMatch[1];
+    if (embedMatch) return embedMatch[1];
+    if (shortMatch) return shortMatch[1];
+  
+    return null;
   };
 
   const getThumbnailUrl = async (videoId) => {
@@ -64,6 +76,25 @@ function Home() {
   const scrollLeft = () => videoCardsRef.current?.scrollBy({ left: -300, behavior: 'smooth' });
   const scrollRight = () => videoCardsRef.current?.scrollBy({ left: 300, behavior: 'smooth' });
   
+
+  // const getYouTubeVideoId = (url) => {
+  //   const watchMatch = url.match(/[?&]v=([^&]+)/);
+  //   const embedMatch = url.match(/\/embed\/([^?&]+)/);
+  //   const shortMatch = url.match(/youtu\.be\/([^?&]+)/); // optional: handle short links
+  
+  //   if (watchMatch) return watchMatch[1];
+  //   if (embedMatch) return embedMatch[1];
+  //   if (shortMatch) return shortMatch[1];
+  
+  //   return null;
+  // };
+
+  const handleVideoClick = (videoUrl) => {
+
+    const videoId = getYouTubeVideoId(videoUrl);
+
+    navigate('/video', { state: { videoId } });
+  };
 
   
 
@@ -446,7 +477,7 @@ function Home() {
         <div className="video-gallery-container">
           <div className="video-cards-horizontal" ref={videoCardsRef}>
             {youtubeUrls.map((video, index) => (
-              <div className="video-card" key={index}>
+              <div className="video-card" key={index} onClick={() => handleVideoClick(video.src)}>
                 <img
                   src={video.thumbnail || `${process.env.PUBLIC_URL}/logo192.png`}
                   alt={video.title}
