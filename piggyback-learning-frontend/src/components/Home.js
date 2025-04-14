@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import logo from '../images/Mob_Iron_Hog.png';
 import '../styles/page.css';
+import { supabase } from './supabaseClient';
 
 function Home() {
   const [selectedGrade, setSelectedGrade] = useState("");
@@ -20,8 +21,8 @@ function Home() {
     const fetchThumbnails = async () => {
       const updatedVideos = await Promise.all(
         youtubeUrls.map(async (video) => {
-          const videoId = getYouTubeVideoId(video.src); // Changes Here!
-          const thumbnailUrl = await getThumbnailUrl(videoId); // Changes Here!
+          const videoId = getYouTubeVideoId(video.src); 
+          const thumbnailUrl = await getThumbnailUrl(videoId); 
           return { ...video, thumbnail: thumbnailUrl };
         })
       );
@@ -37,10 +38,11 @@ function Home() {
   //   return match ? match[1] : '';
   // };
 
+  // this is a better/clear-er version of stripping any youtube URLs regex is good and fun, but maybe don't use chatGPT to correct something you just learned in CIS1051
   const getYouTubeVideoId = (url) => {
     const watchMatch = url.match(/[?&]v=([^&]+)/);
     const embedMatch = url.match(/\/embed\/([^?&]+)/);
-    const shortMatch = url.match(/youtu\.be\/([^?&]+)/); // optional: handle short links
+    const shortMatch = url.match(/youtu\.be\/([^?&]+)/); 
   
     if (watchMatch) return watchMatch[1];
     if (embedMatch) return embedMatch[1];
@@ -58,13 +60,12 @@ function Home() {
       return '';
     }
     
-    const apiUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${apiKey}`; // Changes Here!
+    const apiUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${apiKey}`; 
     
     try {
       const response = await fetch(apiUrl);
       const data = await response.json();
-      if (data.items && data.items.length > 0) {
-        // Return the medium quality thumbnail URL // Changes Here!
+      if (data.items && data.items.length > 0) { 
         return data.items[0].snippet.thumbnails.medium.url;
       }
     } catch (error) {
@@ -73,28 +74,57 @@ function Home() {
     return ''; 
   };
 
-  const scrollLeft = () => videoCardsRef.current?.scrollBy({ left: -300, behavior: 'smooth' });
-  const scrollRight = () => videoCardsRef.current?.scrollBy({ left: 300, behavior: 'smooth' });
-  
-
-  // const getYouTubeVideoId = (url) => {
-  //   const watchMatch = url.match(/[?&]v=([^&]+)/);
-  //   const embedMatch = url.match(/\/embed\/([^?&]+)/);
-  //   const shortMatch = url.match(/youtu\.be\/([^?&]+)/); // optional: handle short links
-  
-  //   if (watchMatch) return watchMatch[1];
-  //   if (embedMatch) return embedMatch[1];
-  //   if (shortMatch) return shortMatch[1];
-  
-  //   return null;
-  // };
-
   const handleVideoClick = (videoUrl) => {
 
     const videoId = getYouTubeVideoId(videoUrl);
 
     navigate('/video', { state: { videoId } });
   };
+
+  async function checkYTVideoInDatabase() {
+    const urlValue = document.getElementById("youtubeUrl").value.trim();
+    setResponseData("Checking video in the database...");
+  
+    if (!urlValue) {
+      setResponseData("Please enter a YouTube URL");
+      return;
+    }
+  
+    const videoId = getYouTubeVideoId(urlValue);
+    if (!videoId) {
+      setResponseData("Could not extract video ID from the URL.");
+      return;
+    }
+  
+    const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+  
+    const { data: videoData, error } = await supabase
+      .from('videos')
+      .select('*')
+      .eq('embed', embedUrl)
+      
+  
+    if (error) {
+      console.error('Error searching for video:', error);
+      setResponseData("Error: " + error.message);
+      return;
+    }
+    
+    if (videoData) {
+      setResponseData(`Video exists in our database: ${videoData.title || embedUrl}`);
+      handleVideoClick(embedUrl)
+
+    } else {
+      setResponseData("Video not found in the database. You can add it.");
+    }
+  }
+
+  
+
+  const scrollLeft = () => videoCardsRef.current?.scrollBy({ left: -300, behavior: 'smooth' });
+  const scrollRight = () => videoCardsRef.current?.scrollBy({ left: 300, behavior: 'smooth' });
+
+  
 
   
 
@@ -456,6 +486,28 @@ function Home() {
 
             <Link to="/signup" className="cta-button pulse">Start Your Journey Free</Link>
         </section>
+
+        <section className="youtube-url-enhanced">
+    <h2>Add Your Own Learning Video</h2>
+    <div className="url-input-container">
+      <input type="text" id="youtubeUrl" placeholder="Paste YouTube URL here..." />
+    </div>
+    <div>
+      <button onClick={checkYTVideoInDatabase} className="submit-btn">Add Video</button>
+    </div>
+    <section className="processing-results">
+      {responseData && (
+        <div className="generated-questions">
+          <h3>Generated Learning Questions:</h3>
+          <div className="questions-list">
+            {responseData.split('\n').map((q, i) => (
+              <p key={i}>{q}</p>
+            ))}
+          </div>
+        </div>
+      )}
+    </section>
+  </section>
           
         {/* <section className="grade-selection-enhanced">
           <h2>Choose Your Learning Path</h2>
