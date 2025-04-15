@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import YouTube from "react-youtube";
 import logo from '../images/Mob_Iron_Hog.png'; 
 import questionImage from '../images/placeholderquestionImage.png'; 
@@ -34,13 +34,15 @@ export default function App() {
   const [isOpen, setIsOpen] = useState(false);
   const [overlayType, setOverlayType] = useState(null);
   const [answers, setAnswers] = useState({});
-  const [someVideoEmbed] = useState("9e5lcQycf2M");
+  const location = useLocation();
+  const { videoId } = location.state || {};
+  const [someVideoEmbed] = useState(videoId);
   const [counter, setCounter] = React.useState(0);
   const [retry, setRetry] = React.useState(null);
 
   const [apiData, setApiData] = useState([]);
   const [apiOptions, setApiOptions] = useState([]);
-  const [currentVideoId, setCurrentVideoId] = useState("9e5lcQycf2M");
+  const [currentVideoId, setCurrentVideoId] = useState(videoId);
 
   // const test1 = videoRef.current ? videoRef.current.getCurrentTime() : 0;  // Time of video playback
   // const test2 = apiData[triggerCount];  // Questions data based on triggerCount
@@ -666,9 +668,7 @@ export default function App() {
         <nav>
           <ul>
             <li><Link to="/">Home</Link></li>
-            <li><Link to="/how-to-join">How to Join</Link></li>
             <li><Link to="/signin">Sign In</Link></li>
-            <li><Link to="/store">Store</Link></li>
           </ul>
         </nav>
       </header>
