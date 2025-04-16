@@ -153,14 +153,17 @@ export default function InteractiveVideoQuiz() {
     return () => video.removeEventListener("timeupdate", handleTimeUpdate);
   }, [lastQuestionTime, question, captureFrame]);
 
-  // 5s interval scan if video is ready
   useEffect(() => {
     if (!videoReady || question) return;
     const interval = setInterval(() => {
-      captureFrame();
-    }, 5000);
+      const now = getCurrentTime();
+      if (now - lastQuestionTime >= 20) {
+        setLastQuestionTime(now);
+        captureFrame();
+      }
+    }, 1000); // check every second, ask only after 20s
     return () => clearInterval(interval);
-  }, [videoReady, question, captureFrame]);
+  }, [videoReady, question, lastQuestionTime]);
 
   // Auto-detect if enabled
   useEffect(() => {
