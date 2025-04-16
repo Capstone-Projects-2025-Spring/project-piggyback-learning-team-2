@@ -23,7 +23,6 @@ export default function InteractiveVideoQuiz() {
   const [lastQuestionTime, setLastQuestionTime] = useState(0);
   const [videoReady, setVideoReady] = useState(false);
   const [retryOption, setRetryOption] = useState(false);
-  const [showRetryOptions, setShowRetryOptions] = useState(false);
 
 
   const pauseVideo = useCallback(() => {
@@ -163,8 +162,8 @@ export default function InteractiveVideoQuiz() {
       }
     }, 1000); // check every second, ask only after 20s
     return () => clearInterval(interval);
-  }, [videoReady, question, lastQuestionTime]);
-
+  }, [lastQuestionTime, question, captureFrame, getCurrentTime, videoReady]);
+  
   // Auto-detect if enabled
   useEffect(() => {
     if (!autoDetect) return;
