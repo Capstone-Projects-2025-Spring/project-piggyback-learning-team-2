@@ -1,3 +1,4 @@
+/* Base container */
 .video-watch-container {
   font-family: 'Comic Sans MS', cursive, sans-serif;
   background: url('https://getwallpapers.com/wallpaper/full/3/3/0/1115244-amazing-kids-desktop-background-1920x1200-images.jpg') center/cover no-repeat;
@@ -66,39 +67,68 @@
   max-width: 900px;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
+
 .video-watch-content h2 {
   margin-bottom: 20px;
   font-size: 2.1rem;
   color: #4a148c;
 }
 
-/* Video */
-.video-wrapper {
-  position: relative;
-  display: block;
-  width: fit-content;
-  margin: 0 auto;
+/* Question Box */
+.question-box {
+  background: linear-gradient(135deg, #fff3e0, #fce4ec);
+  border: 4px dashed #ffb74d;
+  border-radius: 20px;
+  padding: 25px;
+  margin: 30px auto;
+  max-width: 700px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+  animation: floatIn 0.8s ease-out;
 }
 
-video {
-  max-width: 100%;
-  height: auto;
+/* Option Buttons */
+.option-button {
+  background: linear-gradient(90deg, #81d4fa, #a5d6a7);
+  border: none;
+  color: #1b1b1b;
+  font-size: 1.1rem;
+  padding: 12px 18px;
+  margin: 10px auto;
   display: block;
-}
-
-.bounding-box {
-  position: absolute;
-  border: 3px dashed #ff4081;
-  color: #000;
-  font-size: 0.9rem;
-  font-weight: bold;
-  background-color: rgba(255, 255, 255, 0.7);
-  text-align: center;
+  border-radius: 12px;
   cursor: pointer;
-  pointer-events: auto;
+  width: 80%;
+  max-width: 400px;
+  font-weight: bold;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, background 0.3s ease;
 }
 
-/* Button */
+.option-button:hover {
+  transform: scale(1.05);
+  background: linear-gradient(90deg, #4fc3f7, #81c784);
+}
+
+/* Skip Button */
+.skip-button {
+  background: #ff8a65;
+  border: none;
+  color: white;
+  font-size: 1rem;
+  padding: 10px 20px;
+  margin-top: 15px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  transition: background 0.3s ease;
+}
+
+.skip-button:hover {
+  background: #e64a19;
+}
+
+/* Detect Button */
 .video-watch-detect-button {
   margin-top: 20px;
   background: #4CAF50;
@@ -119,11 +149,46 @@ video {
   transform: scale(1.05);
 }
 
+/* Bounding box (detection) */
+.bounding-box {
+  position: absolute;
+  border: 3px dashed #ff4081;
+  color: #000;
+  font-size: 0.9rem;
+  font-weight: bold;
+  background-color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  cursor: pointer;
+  pointer-events: auto;
+  z-index: 10;
+}
+
+/* Video */
+.video-wrapper {
+  position: relative;
+  display: block;
+  width: fit-content;
+  margin: 0 auto;
+}
+
+video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
 /* Feedback */
 .feedback {
   font-size: 1.2rem;
   margin-top: 15px;
   font-weight: bold;
+  color: #d84315;
+  background-color: #fff8e1;
+  padding: 10px;
+  border-radius: 8px;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* Footer */
@@ -135,4 +200,16 @@ video {
   border-top-left-radius: 30px;
   border-top-right-radius: 30px;
   text-align: center;
+}
+
+/* Animation */
+@keyframes floatIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

@@ -36,19 +36,23 @@ function UserProfile() {
 
   const [youtubeUrls] = useState([
     {
-      src: "/videos/counting_1_10.mp4",
+      src: "https://youtu.be/DR-cfDsHCGA", // YouTube link
+      //src: "/videos/counting_1_10.mp4",
       title: "Counting 1-10 (Interactive)"
     },
     {
+      //src: "https://youtu.be/a2rIL8VLWuk", // YouTube link
       src: "/videos/Animal_learning.mp4",
-      title: "Animal Adventure (Interactive)"
-    },
+    title: "Animal Adventure (Interactive)"
+    }
+    ,
     {
       src: "https://jhjwdzfcsodthaszqvcv.supabase.co/storage/v1/object/public/videos//Vehicle_Names.mp4",
       title: "Vehicles for Kids (Interactive)"
     }
   ]);
   
+
 
 
   const [videoHistory, setVideoHistory] = useState([]);

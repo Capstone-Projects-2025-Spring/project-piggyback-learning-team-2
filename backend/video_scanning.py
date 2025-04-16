@@ -1,6 +1,5 @@
-import time
-import os
 import sys
+import os  
 import logging
 import numpy as np
 import json
@@ -11,15 +10,21 @@ import re
 import yt_dlp
 from dotenv import load_dotenv
 import threading
-
-# Import functions from audio_scanning.py
-from audio_Scanning import generate_questions_from_youtube, validate_youtube_url
-
+import time
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 
+# Add yolov7 to sys.path (only once, and correctly)
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+yolov7_path = os.path.join(project_root, 'yolov7')
+sys.path.insert(0, yolov7_path)
+
+from utils.general import non_max_suppression
+from utils.torch_utils import select_device
+
+from backend.audio_Scanning import generate_questions_from_youtube, validate_youtube_url
+
 app = Flask(__name__)
-# Configure CORS properly
 CORS(app, resources={
     r"/health": {"origins": "*"},
     r"/verify_url": {"origins": "*"},
@@ -38,14 +43,8 @@ def health_check():
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
     return response
 
-app.config['UPLOAD_FOLDER'] = ('frames')
-# Add the yolov7 directory to the Python path
-yolov7_path = os.path.join(os.path.dirname(__file__), "yolov7")
-sys.path.append(yolov7_path)
-
-from yolov7.models.experimental import attempt_load
-from yolov7.utils.general import non_max_suppression
-from yolov7.utils.torch_utils import select_device
+# Upload folder config
+app.config['UPLOAD_FOLDER'] = 'frames'
 
 # Load environment variables
 load_dotenv("aws_storage_credentials.env")
@@ -62,7 +61,14 @@ S3_TIMESTAMPS_PREFIX = os.getenv('S3_TIMESTAMPS_PREFIX', 'timestamps/')
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Path to YOLOv7 weights
 WEIGHTS_PATH = 'yolov7.pt'
+
+class VideoProcessor:
+    def __init__(self):
+        pass  # Add your initialization logic here
+    
+
 
 # Function to ensure clean files before processing
 def ensure_clean_files():
@@ -785,10 +791,10 @@ def get_status(video_id):
     })
 
     if status['status'] == 'complete':
-        result = supabase.table('video_results') \
-            .select('*') \
-            .eq('video_id', video_id) \
-            .single() \
+        result = supabase.table('video_results')
+            .select('*') 
+            .eq('video_id', video_id) 
+            .single() 
             .execute()
 
         if result.data:

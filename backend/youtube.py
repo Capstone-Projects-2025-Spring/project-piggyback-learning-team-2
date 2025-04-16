@@ -3,15 +3,20 @@ from fastapi import HTTPException
 from dotenv import load_dotenv
 import os
 from pathlib import Path
+import re
+from youtube_transcript_api import YouTubeTranscriptApi
+from youtube_transcript_api._errors import TranscriptsDisabled, VideoUnavailable
+
+# Load environment variables
 load_dotenv(dotenv_path=Path(__file__).parent / ".env")
+
+# YouTube API key
 YOUTUBE_API_KEY = os.getenv("YOUTUBE_API_KEY")
 
-
+# Function to retrieve YouTube video metadata
 def retreiveYoutubeMetaData(video_id):
-    # 1) Build the YouTube Data API client
     youtube = build("youtube", "v3", developerKey=YOUTUBE_API_KEY)
 
-    # 2) Call videos().list to get snippet, contentDetails, status, etc.
     request = youtube.videos().list(
         part="snippet,contentDetails,status",
         id=video_id
@@ -30,7 +35,6 @@ def retreiveYoutubeMetaData(video_id):
     content_details = video_data.get("contentDetails", {})
     status = video_data.get("status", {})
 
-    # 3) Construct a simple metadata response
     metadata_response = {
         "video_id": video_id,
         "title": snippet.get("title"),
@@ -46,10 +50,31 @@ def retreiveYoutubeMetaData(video_id):
         "definition": content_details.get("definition"),
         "caption": content_details.get("caption"),
         "licensed_content": content_details.get("licensedContent"),
-        "age_restricted": (content_details.get("contentRating", {})
-                           .get("ytRating") == "ytAgeRestricted"),
+        "age_restricted": (content_details.get("contentRating", {}).get("ytRating") == "ytAgeRestricted"),
         "privacy_status": status.get("privacyStatus"),
         "made_for_kids": status.get("madeForKids"),
     }
 
     return metadata_response
+
+# Helper function to extract video ID from URL
+def extract_video_id(url):
+    match = re.search(r"(?:v=|\/)([0-9A-Za-z_-]{11}).*", url)
+    if match:
+        return match.group(1)
+    raise ValueError("Invalid YouTube URL")
+
+# Function to retrieve YouTube transcript text
+def retreiveYoutubeTranscript(youtube_url):
+    try:
+        video_id = extract_video_id(youtube_url)
+        transcript_list = YouTubeTranscriptApi.get_transcript(video_id)
+        transcript_text = " ".join([entry['text'] for entry in transcript_list])
+        return transcript_text
+
+    except VideoUnavailable:
+        raise HTTPException(status_code=404, detail="YouTube video is unavailable.")
+    except TranscriptsDisabled:
+        raise HTTPException(status_code=404, detail="Transcript is disabled for this video.")
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Transcript fetch failed: {str(e)}")
