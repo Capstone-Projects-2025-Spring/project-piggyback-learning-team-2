@@ -1,1 +1,4 @@
 
+[submodule "backend/yolov7"]
+	path = backend/yolov7
+	url = https://github.com/Lara-Fernandes-60730/yolov7.git
