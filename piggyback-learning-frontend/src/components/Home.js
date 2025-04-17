@@ -115,7 +115,7 @@ function Home() {
       setResponseData("Error: " + error.message);
       return;
     }
-    console.log(`video title: ${videoData[0]?.title} `);
+    // console.log(`video title: ${videoData[0]?.title} `);
     if (videoData && videoData[0]?.title.length >0) {
       setResponseData(`Video exists in our database: ${videoData[0]?.title || embedUrl}`);
       handleVideoClick(embedUrl)
