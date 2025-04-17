@@ -1,7 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import logo from '../images/Mob_Iron_Hog.png'; 
+import logo from '../images/Mob_Iron_Hog.png';
 import '../styles/page.css';
+import { supabase } from './supabaseClient';
 
 function Home() {
   const [selectedGrade, setSelectedGrade] = useState("");
@@ -9,21 +10,138 @@ function Home() {
   const videoCardsRef = useRef(null);
   const [responseData, setResponseData] = useState("");
   const [youtubeUrls, setYoutubeUrls] = useState([
-    { src: "https://www.youtube.com/embed/9e5lcQycf2M", title: " Why Do We Get Hiccups? | Body Science for Kids" },
-    { src: "https://www.youtube.com/embed/al-do-HGuIk", title: "Water Cycle | How the Hydrologic Cycle Works" },
-    { src: "https://www.youtube.com/embed/fEiVi9TB_RQ", title: "What Causes Thunder and Lightning? | Weather Science | SciShow Kids" },
-    { src: "https://www.youtube.com/embed/Gg0TXNXgz-w", title: "How Do Airplanes Fly?" },
-    { src: "https://www.youtube.com/embed/qhOTU8_1Af4", title: "Colors and Patterns" },
+    { src: "https://www.youtube.com/embed/9e5lcQycf2M", title: "Why Do We Get Hiccups? | Body Science for Kids", thumbnail: "" },
+    { src: "https://www.youtube.com/embed/al-do-HGuIk", title: "Water Cycle | How the Hydrologic Cycle Works", thumbnail: "" },
+    { src: "https://www.youtube.com/embed/fEiVi9TB_RQ", title: "What Causes Thunder and Lightning? | Weather Science | SciShow Kids", thumbnail: "" },
+    { src: "https://www.youtube.com/embed/Gg0TXNXgz-w", title: "How Do Airplanes Fly?", thumbnail: "" },
+    { src: "https://www.youtube.com/embed/X3uT89xoKuc", title: "Antarctica | Destination World", thumbnail: "" },
   ]);
 
-  const handleGradeChange = (event) => {
-    const selected = event.target.value;
-    setSelectedGrade(selected);
-    if (selected === "Pre-K") navigate("/prek");
+  useEffect(() => {
+    const fetchThumbnails = async () => {
+      const updatedVideos = await Promise.all(
+        youtubeUrls.map(async (video) => {
+          const videoId = getYouTubeVideoId(video.src); 
+          const thumbnailUrl = await getThumbnailUrl(videoId); 
+          return { ...video, thumbnail: thumbnailUrl };
+        })
+      );
+      setYoutubeUrls(updatedVideos);
+    };
+
+    fetchThumbnails();
+  }, []); 
+
+  // const getYouTubeVideoId = (url) => {
+  //   const regex = /(?:https?:\/\/(?:www\.)?youtube\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+  //   const match = url.match(regex);
+  //   return match ? match[1] : '';
+  // };
+
+  // this is a better/clear-er version of stripping any youtube URLs regex is good and fun, but maybe don't use chatGPT to correct something you just learned in CIS1051
+  const getYouTubeVideoId = (url) => {
+    const watchMatch = url.match(/[?&]v=([^&]+)/);
+    const embedMatch = url.match(/\/embed\/([^?&]+)/);
+    const shortMatch = url.match(/youtu\.be\/([^?&]+)/); 
+  
+    if (watchMatch) return watchMatch[1];
+    if (embedMatch) return embedMatch[1];
+    if (shortMatch) return shortMatch[1];
+  
+    return null;
   };
+
+  const getThumbnailUrl = async (videoId) => {
+    if (!videoId) return '';
+
+    const apiKey = process.env.REACT_APP_YOUTUBE_API_KEY; 
+    if (!apiKey) {
+      console.error("YOUTUBE_API_KEY is not defined in your environment variables.");
+      return '';
+    }
+    
+    const apiUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${apiKey}`; 
+    
+    try {
+      const response = await fetch(apiUrl);
+      const data = await response.json();
+      if (data.items && data.items.length > 0) { 
+        return data.items[0].snippet.thumbnails.medium.url;
+      }
+    } catch (error) {
+      console.error('Error fetching thumbnail:', error);
+    }
+    return ''; 
+  };
+
+  const handleVideoClick = (videoUrl) => {
+
+    const videoId = getYouTubeVideoId(videoUrl);
+
+    navigate('/video', { state: { videoId } });
+  };
+
+  async function checkYTVideoInDatabase() {
+    const urlValue = document.getElementById("youtubeUrl").value.trim();
+    setResponseData("Checking video in the database...");
+  
+    if (!urlValue) {
+      setResponseData("Please enter a YouTube URL");
+      return;
+    }
+  
+    const videoId = getYouTubeVideoId(urlValue);
+    if (!videoId) {
+      setResponseData("Could not extract video ID from the URL.");
+      return;
+    }
+  
+    // const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+  
+    // const { data: videoData, error } = await supabase
+    //   .from('videos')
+    //   .select('*')
+    //   .eq('embed', embedUrl)
+    const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+  
+    const { data: videoData, error } = await supabase
+      .from('videos')
+      .select('*')
+      .eq('embed', videoId)
+      
+  
+    if (error) {
+      console.error('Error searching for video:', error);
+      setResponseData("Error: " + error.message);
+      return;
+    }
+    // console.log(`video title: ${videoData[0]?.title} `);
+    if (videoData && videoData[0]?.title.length >0) {
+      setResponseData(`Video exists in our database: ${videoData[0]?.title || embedUrl}`);
+      handleVideoClick(embedUrl)
+
+    } else {
+      setResponseData("Video not found in the database. You can add it.");
+    }
+  }
+
+  
 
   const scrollLeft = () => videoCardsRef.current?.scrollBy({ left: -300, behavior: 'smooth' });
   const scrollRight = () => videoCardsRef.current?.scrollBy({ left: 300, behavior: 'smooth' });
+
+  
+
+  
+
+  // const handleGradeChange = (event) => {
+  //   const selected = event.target.value;
+  //   setSelectedGrade(selected);
+  //   if (selected === "Pre-K") navigate("/prek");
+  // };
+
+  // const scrollLeft = () => videoCardsRef.current?.scrollBy({ left: -300, behavior: 'smooth' });
+  // const scrollRight = () => videoCardsRef.current?.scrollBy({ left: 300, behavior: 'smooth' });
 
   async function validateYTURL() {
     const urlValue = document.getElementById("youtubeUrl").value.trim();
@@ -339,14 +457,15 @@ function Home() {
   }
 
   const navLinks = [
-    { label: "Home", path: "/" },
-    { label: "How to Join", path: "/how-to-join" },
-    { label: "Sign In", path: "/signin" },
+    //{ label: "Home", path: "/" },
+    // { label: "How to Join", path: "/how-to-join" },
     //{ label: "Sign Up", path: "/signup" },
-    { label: "Store", path: "/store" },
-    { label: "Video", path: "/video" },
+    // { label: "Store", path: "/store" },
+    // { label: "Video", path: "/video" },
+    { label: "Sign In", path: "/signin" },
     { label: "Profile", path: "/profile" },
-    { label: "Contact Us", path: "/contact" },];
+    // { label: "Contact Us", path: "/contact" },
+  ];
   
   return (
     <div className="home-container">
@@ -373,8 +492,30 @@ function Home() {
 
             <Link to="/signup" className="cta-button pulse">Start Your Journey Free</Link>
         </section>
+
+        <section className="youtube-url-enhanced">
+    <h2>Add Your Own Learning Video</h2>
+    <div className="url-input-container">
+      <input type="text" id="youtubeUrl" placeholder="Paste YouTube URL here..." />
+    </div>
+    <div>
+      <button onClick={checkYTVideoInDatabase} className="submit-btn">Add Video</button>
+    </div>
+    <section className="processing-results">
+      {responseData && (
+        <div className="generated-questions">
+          <h3>Generated Learning Questions:</h3>
+          <div className="questions-list">
+            {responseData.split('\n').map((q, i) => (
+              <p key={i}>{q}</p>
+            ))}
+          </div>
+        </div>
+      )}
+    </section>
+  </section>
           
-        <section className="grade-selection-enhanced">
+        {/* <section className="grade-selection-enhanced">
           <h2>Choose Your Learning Path</h2>
           <div className="dropdown-container">
             <select value={selectedGrade} onChange={handleGradeChange} className="grade-dropdown">
@@ -384,18 +525,35 @@ function Home() {
               ))}
             </select>
           </div>
-</section>
+</section> */}
 
 {/* url input and video section */}
-<section className="youtube-url-enhanced">
-  <h2>Add Your Learning Video</h2>
-  <div className="url-input-container">
-    <input type="text" id="youtubeUrl" placeholder="Paste YouTube URL here..." />
-    <button onClick={validateYTURL} className="submit-btn">Add Video</button>
-  </div>
-</section>
+    <section className="videos-enhanced">
+      <h2>Explore Learning Videos</h2>
+      <div className="video-scroll-wrapper">
+        <button className="scroll-button left" onClick={scrollLeft}>←</button>
+        <div className="video-gallery-container">
+          <div className="video-cards-horizontal" ref={videoCardsRef}>
+            {youtubeUrls.map((video, index) => (
+              <div className="video-card" key={index} onClick={() => handleVideoClick(video.src)}>
+                <img
+                  src={video.thumbnail || `${process.env.PUBLIC_URL}/logo192.png`}
+                  alt={video.title}
+                  className="video-thumbnail"
+                />
+                <div className="video-info">
+                  <p>{video.title}</p>
+                  <span className="play-icon">▶</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <button className="scroll-button right" onClick={scrollRight}>→</button>
+      </div>
+    </section>
 
-        <section className="videos-enhanced">
+        {/* <section className="videos-enhanced">
           <h2>Explore Learning Videos</h2>
           <div className="video-scroll-wrapper">
             <button className="scroll-button left" onClick={scrollLeft}>←</button>
@@ -412,7 +570,7 @@ function Home() {
             </div>
             <button className="scroll-button right" onClick={scrollRight}>→</button>
           </div>
-        </section>
+        </section> */}
         <section className="youtube-url-enhanced">
           <h2>Add Your Own Learning Video</h2>
           <div className="url-input-container">

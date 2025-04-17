@@ -12,23 +12,25 @@ from backend.yolo_detect import router as yolo_router
 # Initialize FastAPI app
 app = FastAPI()
 
-app.include_router(yolo_router)
+# Register database models
+db_models.Base.metadata.create_all(bind=engine)
 
-# Enable CORS for frontend access
+# Enable CORS for frontend access (development)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  
+    allow_origins=["*"],  # You can later restrict this in production
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-db_models.Base.metadata.create_all(bind=engine)
 
 # Include routers
 app.include_router(crud_test.router)
 app.include_router(authentication.router)
 app.include_router(video_router)
+app.include_router(yolo_router)
 
+# SQLAlchemy test route
 @app.get("/sqlalchemy")
 def test_url(db: Session = Depends(get_db)):
     engagement = db.query(db_models.User_engagment).all()
@@ -53,7 +55,7 @@ def get_youtube_metadata(video: schemas.YouTubeVideo):
     metadata = retreiveYoutubeMetaData(video_id)
     return {"metadata": metadata}
 
-# Register user route (already included above if needed)
+# User registration route
 @app.post("/register", status_code=status.HTTP_201_CREATED, response_model=schemas.UserResponse)
 def register_user(user: schemas.UserCredentials, db: Session = Depends(get_db)):
     existing_user = db.query(db_models.User_Login).filter(db_models.User_Login.email == user.email).first()
@@ -68,10 +70,12 @@ def register_user(user: schemas.UserCredentials, db: Session = Depends(get_db)):
     db.refresh(new_user)
     return new_user
 
+# Root welcome route
 @app.get("/")
 def read_root():
     return {"message": "👋 Welcome to Piggyback Learning API!"}
 
+# App lifecycle events
 @app.on_event("startup")
 async def startup_message():
     print("🚀 FastAPI is running!")
@@ -79,5 +83,3 @@ async def startup_message():
 @app.on_event("shutdown")
 async def shutdown_message():
     print("🛑 FastAPI is shutting down...")
-
-
