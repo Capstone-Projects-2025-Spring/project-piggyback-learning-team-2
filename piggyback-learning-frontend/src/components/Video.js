@@ -432,6 +432,7 @@ export default function App() {
     switch (currentQuestion.type) {
       case "image":
         return (
+
             <div className="overlayImage">
               <h1>{currentQuestion.title}</h1>
               <img

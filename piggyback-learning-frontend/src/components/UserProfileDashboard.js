@@ -1,6 +1,6 @@
 // npm install react-icons chart.js react-chartjs-2 @supabase/supabase-js react-router-dom
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import logo from '../images/Mob_Iron_Hog.png';
@@ -9,13 +9,18 @@ import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { FaMoon, FaLightbulb } from 'react-icons/fa';
 
+
+
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 function UserProfile() {
+
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
+  const [quizStats, setQuizStats] = useState({ total: 0, correct: 0, accuracy: 0 });
+  const [quizHistory, setQuizHistory] = useState([]);
 
   const [showSaved, setShowSaved] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
@@ -30,12 +35,25 @@ function UserProfile() {
   });
 
   const [youtubeUrls] = useState([
-    { src: "https://www.youtube.com/embed/DR-cfDsHCGA", title: "Introduction to Numbers" },
-    { src: "https://www.youtube.com/embed/Yt8GFgxlITs", title: "Counting 1-10" },
-    { src: "https://www.youtube.com/embed/tVHOBVAFjUw", title: "Basic Addition" },
-    { src: "https://www.youtube.com/embed/o-6OKWU99Co", title: "Learning Shapes" },
-    { src: "https://www.youtube.com/embed/qhOTU8_1Af4", title: "Colors and Patterns" },
+    {
+      src: "https://youtu.be/DR-cfDsHCGA", // YouTube link
+      //src: "/videos/counting_1_10.mp4",
+      title: "Counting 1-10 (Interactive)"
+    },
+    {
+      //src: "https://youtu.be/a2rIL8VLWuk", // YouTube link
+      src: "/videos/Animal_learning.mp4",
+    title: "Animal Adventure (Interactive)"
+    }
+    ,
+    {
+      src: "https://jhjwdzfcsodthaszqvcv.supabase.co/storage/v1/object/public/videos//Vehicle_Names.mp4",
+      title: "Vehicles for Kids (Interactive)"
+    }
   ]);
+  
+
+
 
   const [videoHistory, setVideoHistory] = useState([]);
   const [progressStats, setProgressStats] = useState({ saved: 0, watched: 0, percent: 0 });
@@ -54,6 +72,7 @@ function UserProfile() {
     if (!error) setVideoHistory(data);
   };
 
+
   const calculateProgress = async (userId) => {
     const { data: watched } = await supabase
       .from('video_history')
@@ -66,6 +85,32 @@ function UserProfile() {
 
     setProgressStats({ saved: savedCount, watched: watchedCount, percent });
   };
+
+  const fetchQuizStats = async (userId) => {
+    const { data, error } = await supabase
+      .from('quiz_history')
+      .select('correct')
+      .eq('user_id', userId);
+
+    if (error) return;
+
+    const total = data.length;
+    const correct = data.filter(q => q.correct).length;
+    const accuracy = total === 0 ? 0 : Math.round((correct / total) * 100);
+
+    setQuizStats({ total, correct, accuracy });
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data: authData } = await supabase.auth.getUser();
+      const user = authData?.user;
+      if (user) {
+        await fetchQuizStats(user.id);
+      }
+    };
+    fetchData();
+  }, []);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -150,6 +195,11 @@ function UserProfile() {
     }]
   };
 
+
+const handleWatchClick = (video) => {
+  navigate("/watch", { state: video });
+};
+
   if (loading) return <div className="loading">Loading Profile...</div>;
   if (!profile) return <div className="error">Error loading profile.</div>;
 
@@ -162,7 +212,6 @@ function UserProfile() {
         <nav className="nav-menu">
           <ul>
             <li><Link to="/">Home</Link></li>
-            <li><Link to="/store">Store</Link></li>
             <li><Link to="/video">Video (placeholder)</Link></li>
           </ul>
         </nav>
@@ -205,107 +254,181 @@ function UserProfile() {
             )}
           </div>
 
-          {/* Saved Videos */}
-          <div className="profile-sections">
-            <button className="profile-section-btn" onClick={() => setShowSaved(!showSaved)}>
-              📁 Saved Videos
-            </button>
-            {showSaved && (
-              <div className="video-scroll-container">
-                <div className="video-grid">
-                  {youtubeUrls.map((video, index) => {
-                    const isWatched = videoHistory.some(v => v.video_url === video.src);
-                    return (
-                      <div key={index} className="video-box">
-                        <iframe width="300" height="180" src={video.src} title={video.title} frameBorder="0" allowFullScreen />
-                        <p>{video.title}</p>
-                        {isWatched ? (
-                          <p>✅ Already Watched</p>
-                        ) : (
-                          <button className="watch-button" onClick={async () => {
-                            const { data: userData } = await supabase.auth.getUser();
-                            const userId = userData?.user?.id;
-                            if (!userId) return;
+         {/* Saved Videos */}
+<div className="profile-sections">
+  <button className="profile-section-btn" onClick={() => setShowSaved(!showSaved)}>
+    📁 Saved Videos
+  </button>
 
-                            const { data: existing, error: checkError } = await supabase
-                              .from('video_history')
-                              .select('id')
-                              .eq('user_id', userId)
-                              .eq('video_url', video.src);
+  {showSaved && (
+    <div className="video-scroll-container">
+      <div className="video-grid">
+        {youtubeUrls.map((video, index) => {
+          const isWatched = videoHistory.some(v => v.video_url === video.src);
+          const isYouTube = video.src.includes("youtube.com");
+          const videoId = isYouTube ? video.src.split("/embed/")[1] : null;
 
-                            if (checkError) {
-                              alert("Failed to check watch status.");
-                              return;
-                            }
+          return (
+            <div key={index} className="video-box">
+              {/* Navigate to /watch with video and title */}
+              <Link to={`/watch?video=${encodeURIComponent(video.src)}&title=${encodeURIComponent(video.title)}`}>
+                <img
+                  src={
+                    isYouTube
+                      ? `https://img.youtube.com/vi/${videoId}/0.jpg`
+                      : "https://img.icons8.com/color/480/video.png" // fallback thumbnail
+                  }
+                  alt={video.title}
+                  width="300"
+                  height="180"
+                  style={{ borderRadius: "12px", cursor: "pointer", objectFit: "cover" }}
+                />
+                <p>{video.title}</p>
+                <p style={{ fontSize: "14px", color: "#ccc" }}>▶️ Click to Watch & Learn</p>
+              </Link>
 
-                            if (existing.length > 0) {
-                              alert("Already marked as watched.");
-                              return;
-                            }
+              {/* Mark as Watched Button */}
+              {isWatched ? (
+                <p>✅ Already Watched</p>
+              ) : (
+                <button
+                  className="watch-button"
+                  onClick={async () => {
+                    const { data: userData } = await supabase.auth.getUser();
+                    const userId = userData?.user?.id;
+                    if (!userId) return;
 
-                            const { error } = await supabase
-                              .from('video_history')
-                              .insert([{
-                                user_id: userId,
-                                video_url: video.src,
-                                title: video.title,
-                                watched_at: new Date().toISOString()
-                              }]);
+                    const { data: existing, error: checkError } = await supabase
+                      .from('video_history')
+                      .select('id')
+                      .eq('user_id', userId)
+                      .eq('video_url', video.src);
 
-                            if (error) {
-                              alert("Error marking as watched");
-                            } else {
-                              alert("Marked as watched!");
-                              fetchVideoHistory(userId);
-                              calculateProgress(userId);
-                            }
-                          }}>✅ Mark as Watched</button>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+                    if (checkError) {
+                      alert("Failed to check watch status.");
+                      return;
+                    }
+
+                    if (existing.length > 0) {
+                      alert("Already marked as watched.");
+                      return;
+                    }
+
+                    const { error } = await supabase
+                      .from('video_history')
+                      .insert([{
+                        user_id: userId,
+                        video_url: video.src,
+                        title: video.title,
+                        watched_at: new Date().toISOString()
+                      }]);
+
+                    if (error) {
+                      alert("Error marking as watched");
+                    } else {
+                      alert("Marked as watched!");
+                      fetchVideoHistory(userId);
+                      calculateProgress(userId);
+                    }
+                  }}
+                >
+                  ✅ Mark as Watched
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  )}
+
 
             {/* Video History */}
-            <button className="profile-section-btn" onClick={() => setShowHistory(!showHistory)}>
-              📜 Video History
-            </button>
-            {showHistory && (
-              <div className="video-scroll-container">
-                <div className="video-grid">
-                  {videoHistory.length === 0 ? (
-                    <p>No video history yet.</p>
-                  ) : (
-                    videoHistory.map((video, index) => (
-                      <div key={index} className="video-box">
-                        <iframe width="300" height="180" src={video.video_url} title={video.title} frameBorder="0" allowFullScreen />
-                        <p>{video.title}</p>
-                        <small>Watched on: {new Date(video.watched_at).toLocaleDateString()}</small>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Progress Section */}
-            <button className="profile-section-btn" onClick={() => setShowProgress(!showProgress)}>
-              📊 Progress
-            </button>
-            {showProgress && (
-              <div className="video-placeholder">
-                <h4>📈 Progress Stats</h4>
-                <p>Videos Saved: {progressStats.saved}</p>
-                <p>Videos Watched: {progressStats.watched}</p>
-                <p>Completion: {progressStats.percent}%</p>
-                <div style={{ width: '300px', margin: '20px auto' }}>
-                  <Doughnut data={chartData} />
-                </div>
-              </div>
-            )}
+<button className="profile-section-btn" onClick={() => setShowHistory(!showHistory)}>
+  📜 Video History
+</button>
+{showHistory && (
+  <div className="video-scroll-container">
+    <div className="video-grid">
+      {videoHistory.length === 0 ? (
+        <p>No video history yet.</p>
+      ) : (
+        videoHistory.map((video, index) => (
+          <div key={index} className="video-box">
+            <iframe
+              width="300"
+              height="180"
+              src={video.video_url}
+              title={video.title}
+              frameBorder="0"
+              allowFullScreen
+            />
+            <p>{video.title}</p>
+            <small>Watched on: {new Date(video.watched_at).toLocaleDateString()}</small>
           </div>
+        ))
+      )}
+    </div>
+  </div>
+)}
+
+{/* 📊 Progress Section */}
+<button className="profile-section-btn" onClick={() => setShowProgress(!showProgress)}>
+  📊 Progress
+</button>
+
+{showProgress && (
+  <div className="video-placeholder">
+    <h4>📈 Video Stats</h4>
+    <p><strong>Videos Saved:</strong> {progressStats.saved}</p>
+    <p><strong>Videos Watched:</strong> {progressStats.watched}</p>
+    <p><strong>Completion:</strong> {progressStats.percent}%</p>
+    <div style={{ width: '300px', margin: '20px auto' }}>
+      <Doughnut data={{
+        labels: ['Watched', 'Remaining'],
+        datasets: [{
+          data: [progressStats.watched, progressStats.saved - progressStats.watched],
+          backgroundColor: ['#4CAF50', '#E0E0E0'],
+          borderWidth: 1
+        }]
+      }} />
+    </div>
+
+    <h4 style={{ marginTop: '30px' }}>🧠 Quiz Stats</h4>
+    <p><strong>Total Questions Answered:</strong> {quizStats.total}</p>
+    <p><strong>Correct Answers:</strong> {quizStats.correct}</p>
+    <p><strong>Accuracy:</strong> {quizStats.accuracy}%</p>
+    <div style={{ width: '300px', margin: '20px auto' }}>
+      <Doughnut data={{
+        labels: ['Correct', 'Incorrect'],
+        datasets: [{
+          data: [quizStats.correct, quizStats.total - quizStats.correct],
+          backgroundColor: ['#4CAF50', '#FF6384'],
+          borderWidth: 1
+        }]
+      }} />
+    </div>
+
+    {/* 📝 Recent Quiz Log */}
+    {quizHistory.length > 0 && (
+      <div className="quiz-log-box" style={{ marginTop: "30px" }}>
+        <h4>📝 Recent Quiz Attempts</h4>
+        <ul style={{ textAlign: 'left', paddingLeft: '20px' }}>
+          {quizHistory.slice(0, 5).map((entry, i) => (
+            <li key={i} style={{ marginBottom: "10px" }}>
+              <strong>{entry.video_title}</strong><br />
+              ❓ {entry.question_text}<br />
+              📝 You chose: <b>{entry.selected}</b> – {entry.correct ? '✅ Correct' : '❌ Wrong'}
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+  </div>
+)}
+
+
+
 
           <button className="back-button" onClick={() => navigate('/')}>
             ⬅️ Back to Home
@@ -316,8 +439,9 @@ function UserProfile() {
           </button>
         </div>
       </div>
+      </div>
     </div>
   );
-}
+};
 
 export default UserProfile;
