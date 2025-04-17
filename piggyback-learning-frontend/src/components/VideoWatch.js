@@ -198,6 +198,7 @@ export default function InteractiveVideoQuiz() {
   
       if (result.correct) {
         setFeedback("✅ Correct!");
+        setDetections([]);
         setTimeout(() => {
           setFeedback("");
           setQuestion(null);
@@ -224,11 +225,14 @@ export default function InteractiveVideoQuiz() {
       console.error("❌ Error submitting answer:", error);
       setFeedback("⚠️ Could not check your answer.");
     }
+    
   };
   
 
   const skipQuestion = () => {
     setFeedback("⏭️ Skipped question.");
+    setDetections([]);
+
     setQuestion(null);
     playVideo();
   };
@@ -328,45 +332,74 @@ export default function InteractiveVideoQuiz() {
                 />
               )}
   
-              {videoReady && detections.map((det, i) => {
-                const video = videoRef.current;
-                const wrapper = videoWrapperRef.current;
-  
-                if (!video || !wrapper || !video.videoWidth || !video.videoHeight) return null;
-  
-                const scaleX = wrapper.offsetWidth / video.videoWidth;
-                const scaleY = wrapper.offsetHeight / video.videoHeight;
-                const [x1, y1, x2, y2] = det.box;
-                if (x2 - x1 <= 0 || y2 - y1 <= 0) return null;
-  
-                const style = {
-                  position: "absolute",
-                  border: "2px dashed #ff4081",
-                  backgroundColor: "rgba(255, 255, 255, 0.2)",
-                  color: "#000",
-                  fontWeight: "bold",
-                  fontSize: "14px",
-                  padding: "2px",
-                  left: `${x1 * scaleX}px`,
-                  top: `${y1 * scaleY}px`,
-                  width: `${(x2 - x1) * scaleX}px`,
-                  height: `${(y2 - y1) * scaleY}px`,
-                  pointerEvents: "auto",
-                  zIndex: 10,
-                };
-  
-                return (
-                  <div
-                    key={i}
-                    onClick={() => handleClick(det.label)}
-                    className="bounding-box"
-                    style={style}
-                  >
-                    {det.label}
-                  </div>
-                );
-              })}
-  
+  {videoReady && detections.map((det, i) => {
+  const video = videoRef.current;
+  const wrapper = videoWrapperRef.current;
+
+  if (!video || !wrapper || !video.videoWidth || !video.videoHeight) return null;
+
+  const [x1, y1, x2, y2] = det.box;
+
+  const intrinsicWidth = video.videoWidth;
+  const intrinsicHeight = video.videoHeight;
+  const displayedWidth = wrapper.clientWidth;
+  const displayedHeight = wrapper.clientHeight;
+
+  const videoAspect = intrinsicWidth / intrinsicHeight;
+  const wrapperAspect = displayedWidth / displayedHeight;
+
+  let scaleX, scaleY, offsetX = 0, offsetY = 0;
+
+  if (wrapperAspect > videoAspect) {
+    const scaledHeight = displayedHeight;
+    const scaledWidth = scaledHeight * videoAspect;
+    scaleX = scaleY = scaledWidth / intrinsicWidth;
+    offsetX = (displayedWidth - scaledWidth) / 5;
+  } else {
+    const scaledWidth = displayedWidth;
+    const scaledHeight = scaledWidth / videoAspect;
+    scaleX = scaleY = scaledWidth / intrinsicWidth;
+    offsetY = (displayedHeight - scaledHeight) / 5;
+  }
+
+  const originalWidth = (x2 - x1) * scaleX;
+  const originalHeight = (y2 - y1) * scaleY;
+
+  const scaleFactor = 2;
+  const width = originalWidth * scaleFactor;
+  const height = originalHeight * scaleFactor;
+
+  const centerX = x1 * scaleX + offsetX + originalWidth / 0.3;
+  const centerY = y1 * scaleY + offsetY + originalHeight / 1;
+  const left = centerX - width / 1.5;
+  const top = centerY - height / 2;
+
+  const boxStyle = {
+    position: "absolute",
+    left: `${left}px`,
+    top: `${top}px`,
+    width: `${width}px`,
+    height: `${height}px`,
+    border: "2px solid limegreen",
+    backgroundColor: "rgba(0, 255, 0, 0.25)",
+    color: "#fff",
+    fontSize: "14px",
+    fontWeight: "bold",
+    zIndex: 10,
+    pointerEvents: "auto",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+  };
+
+  return (
+    <div key={i} style={boxStyle} onClick={() => handleClick(det.label)}>
+      {det.label}
+    </div>
+  );
+})}
+
+
               <canvas ref={canvasRef} style={{ display: "none" }} />
             </div>
   
