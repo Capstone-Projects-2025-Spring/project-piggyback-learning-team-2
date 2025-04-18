@@ -2,7 +2,7 @@ from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
-from backend.yolov7 import db_models, schemas, tools
+from .yolov7 import db_models, schemas, tools
 from backend.database import engine, get_db
 from backend.routers import crud_test, authentication
 from backend.routers.videos import router as video_router  
