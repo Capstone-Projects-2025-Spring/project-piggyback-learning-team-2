@@ -96,12 +96,18 @@ function Home() {
       return;
     }
   
+    // const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+  
+    // const { data: videoData, error } = await supabase
+    //   .from('videos')
+    //   .select('*')
+    //   .eq('embed', embedUrl)
     const embedUrl = `https://www.youtube.com/embed/${videoId}`;
   
     const { data: videoData, error } = await supabase
       .from('videos')
       .select('*')
-      .eq('embed', embedUrl)
+      .eq('embed', videoId)
       
   
     if (error) {
@@ -109,9 +115,9 @@ function Home() {
       setResponseData("Error: " + error.message);
       return;
     }
-    
-    if (videoData) {
-      setResponseData(`Video exists in our database: ${videoData.title || embedUrl}`);
+    // console.log(`video title: ${videoData[0]?.title} `);
+    if (videoData && videoData[0]?.title.length >0) {
+      setResponseData(`Video exists in our database: ${videoData[0]?.title || embedUrl}`);
       handleVideoClick(embedUrl)
 
     } else {

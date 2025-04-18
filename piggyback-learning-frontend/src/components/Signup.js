@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { supabase } from './supabaseClient'; // Import Supabase client
-import styles from '../styles/signup.modules.css';
-
+import '../styles/signup.css';
 const Signup = () => {
   const [showWelcome, setShowWelcome] = useState(false);
   const [formData, setFormData] = useState({
@@ -12,7 +11,9 @@ const Signup = () => {
     email: '',
     password: '',
   });
-  const [error, setError] = useState('');
+  
+  //  const [error, setError] = useState('');
+  const [, setError] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -93,7 +94,7 @@ const Signup = () => {
 
   return (
     <GoogleOAuthProvider clientId="658379694414-nbdeeuc5kavcd9l0k1e034atul49cv80.apps.googleusercontent.com">
-      <div className={styles.signupPage}>
+      <div className="signup-page-background">
         <header>
           <h1>Piggyback Learning</h1>
           <nav>
@@ -105,70 +106,69 @@ const Signup = () => {
             </ul>
           </nav>
         </header>
-
-      <main>
-        <div className="form-container">
-          {showWelcome && (
-            <div className="welcome-box">
-              <h2>Welcome to Piggyback Learning!</h2>
-              <p>Join us for fun learning adventures.</p>
-            </div>
-          )}
-
-          <h2 className="form-title">Sign Up</h2>
-
-          <form onSubmit={handleSubmit}>
-            <div className="input-group">
-              <label>First Name:</label>
-              <input
-                type="text"
-                name="firstName"
-                value={formData.firstName}
-                onChange={handleInputChange}
-                required
-                placeholder="Enter your first name"
-              />
-            </div>
-            <div className="input-group">
-              <label>Last Name:</label>
-              <input
-                type="text"
-                name="lastName"
-                value={formData.lastName}
-                onChange={handleInputChange}
-                required
-                placeholder="Enter your last name"
-              />
-            </div>
-            <div className="input-group">
-              <label>Email:</label>
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleInputChange}
-                required
-                placeholder="Enter your email"
-              />
-            </div>
-            <div className="input-group">
-              <label>Password:</label>
-              <input
-                type="password"
-                name="password"
-                value={formData.password}
-                onChange={handleInputChange}
-                required
-                placeholder="Create a password"
-              />
-            </div>
-            <button type="submit">Sign Up</button>
-          </form>
-
-          <p>Already have an account? <Link to="/signin">Sign In</Link></p>
-
-              {/* Google Sign-In Button */}
-            <div className={styles.googleSignIn}>
+  
+        <main>
+          <div className="form-container">
+            {showWelcome && (
+              <div className="welcome-box">
+                <h2>Welcome to Piggyback Learning!</h2>
+                <p>Join us for fun learning adventures.</p>
+              </div>
+            )}
+  
+            <h2 className="form-title">Sign Up</h2>
+  
+            <form onSubmit={handleSubmit}>
+              <div className="input-group">
+                <label>First Name:</label>
+                <input
+                  type="text"
+                  name="firstName"
+                  value={formData.firstName}
+                  onChange={handleInputChange}
+                  required
+                  placeholder="Enter your first name"
+                />
+              </div>
+              <div className="input-group">
+                <label>Last Name:</label>
+                <input
+                  type="text"
+                  name="lastName"
+                  value={formData.lastName}
+                  onChange={handleInputChange}
+                  required
+                  placeholder="Enter your last name"
+                />
+              </div>
+              <div className="input-group">
+                <label>Email:</label>
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleInputChange}
+                  required
+                  placeholder="Enter your email"
+                />
+              </div>
+              <div className="input-group">
+                <label>Password:</label>
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleInputChange}
+                  required
+                  placeholder="Create a password"
+                />
+              </div>
+              <button type="submit">Sign Up</button>
+            </form>
+  
+            <p>Already have an account? <Link to="/signin">Sign In</Link></p>
+  
+            <div className="googleSignIn">
               <GoogleLogin
                 onSuccess={handleGoogleLoginSuccess}
                 onError={handleGoogleLoginError}
@@ -176,7 +176,7 @@ const Signup = () => {
                   <button
                     onClick={renderProps.onClick}
                     disabled={renderProps.disabled}
-                    className={styles.googleButton}
+                    className="googleButton"
                   >
                     <img
                       src="https://upload.wikimedia.org/wikipedia/commons/5/53/Google_%22G%22_Logo.svg"
@@ -187,17 +187,15 @@ const Signup = () => {
                 )}
               />
             </div>
-
-
-        </div>
-      </main>
-
-      <footer>
-        <p>&copy; 2025 Piggyback Learning. All Rights Reserved.</p>
-      </footer>
-    </div>
+          </div>
+        </main>
+  
+        <footer>
+          <p>&copy; 2025 Piggyback Learning. All Rights Reserved.</p>
+        </footer>
+      </div>
     </GoogleOAuthProvider>
   );
 };
-
+  
 export default Signup;
