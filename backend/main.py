@@ -1,8 +1,11 @@
 from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
+import time
 
-from backend.yolov7 import db_models, schemas, tools
+
+from . import db_models, schemas, tools
 from backend.database import engine, get_db
 from backend.routers import crud_test, authentication
 from backend.routers.videos import router as video_router  
@@ -29,6 +32,17 @@ app.include_router(crud_test.router)
 app.include_router(authentication.router)
 app.include_router(video_router)
 app.include_router(yolo_router)
+
+# General backend connectivity health check route
+@app.get("/health")
+def health_check():
+    response = {
+        "status": "healthy",
+        "version": "1.0",
+        "timestamp": time.time()
+    }
+    headers = {"Access-Control-Allow-Headers": "Content-Type"}
+    return JSONResponse(content=response, headers=headers)
 
 # SQLAlchemy test route
 @app.get("/sqlalchemy")
@@ -83,3 +97,4 @@ async def startup_message():
 @app.on_event("shutdown")
 async def shutdown_message():
     print("🛑 FastAPI is shutting down...")
+

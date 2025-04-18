@@ -19,10 +19,11 @@ project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 yolov7_path = os.path.join(project_root, 'yolov7')
 sys.path.insert(0, yolov7_path)
 
-from utils.general import non_max_suppression
-from utils.torch_utils import select_device
+from yolov7.utils.general import non_max_suppression
+from yolov7.utils.torch_utils import select_device
+from yolov7.models.experimental import attempt_load
 
-from backend.audio_Scanning import generate_questions_from_youtube, validate_youtube_url
+from .audio_Scanning import generate_questions_from_youtube, validate_youtube_url
 
 app = Flask(__name__)
 CORS(app, resources={

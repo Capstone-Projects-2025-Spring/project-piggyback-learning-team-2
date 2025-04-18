@@ -81,7 +81,152 @@ function Home() {
     navigate('/video', { state: { videoId } });
   };
 
-  async function checkYTVideoInDatabase() {
+  async function handleYoutubeVideo() {
+    const urlInput = document.getElementById("youtubeUrl");
+    const urlValue = urlInput.value.trim();
+    setResponseData("Processing video...");
+
+    if (!urlValue) {
+      setResponseData("Please enter a YouTube URL");
+      return;
+    }
+
+    // Extract video ID
+    const videoId = getYouTubeVideoId(urlValue);
+    if (!videoId) {
+      setResponseData("Could not extract video ID from the URL.");
+      return;
+    }
+
+    // First check if video exists in database
+    try {
+      const { data: videoData, error } = await supabase
+          .from('videos')
+          .select('*')
+          .eq('embed', videoId);
+
+      if (error) {
+        console.error('Error searching for video:', error);
+        setResponseData("Error: " + error.message);
+        return;
+      }
+
+      // If video exists in database, navigate to it
+      if (videoData && videoData.length > 0 && videoData[0]?.title) {
+        setResponseData(`Found video in database: ${videoData[0].title}`);
+        const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+        handleVideoClick(embedUrl);
+        return;
+      }
+
+      // If video doesn't exist, process it through backend
+      setResponseData("Video not found in database. Processing new video...");
+      await processNewVideo(urlValue, videoId);
+
+    } catch (error) {
+      setResponseData(`Error: ${error.message}`);
+      console.error("Processing error:", error);
+    }
+  }
+
+// Helper function to process new videos through the backend
+  async function processNewVideo(urlValue, videoId) {
+    try {
+      // Use the correct backend URL based on environment
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
+
+      // 1. Check backend health
+      const healthResponse = await fetch(`${backendUrl}/health`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        }
+      });
+
+      if (!healthResponse.ok) {
+        throw new Error(`Backend returned status ${healthResponse.status}`);
+      }
+
+      // 2. Start processing
+      const processResponse = await fetch(`${backendUrl}/video/process/${videoId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ url: urlValue })
+      });
+
+      if (!processResponse.ok) {
+        const error = await processResponse.json();
+        throw new Error(error.message || "Failed to start processing");
+      }
+
+      // 3. Poll for results
+      let attempts = 0;
+      const maxAttempts = 12; // 1 minute timeout (5s * 12)
+
+      const checkResults = async () => {
+        attempts++;
+        setResponseData(`Processing video (attempt ${attempts}/${maxAttempts})...`);
+
+        const resultsResponse = await fetch(`${backendUrl}/video/results${videoId}`);
+        const resultsData = await resultsResponse.json();
+
+        if (resultsData.status === 'complete') {
+          if (resultsData.questions && resultsData.questions.trim().length > 0) {
+            setResponseData(resultsData.questions);
+
+            // Optional: Add the video to the database now that it's processed
+            try {
+              const { error } = await supabase.from('videos').insert([
+                {
+                  embed: videoId,
+                  title: resultsData.title || "Processed Video",
+                  questions: resultsData.questions
+                }
+              ]);
+
+              if (!error) {
+                console.log("Video added to database successfully");
+              }
+            } catch (dbError) {
+              console.error("Error adding video to database:", dbError);
+            }
+          } else {
+            throw new Error("Received empty questions");
+          }
+        }
+        else if (resultsData.status === 'error') {
+          throw new Error(resultsData.error || "Processing error");
+        }
+        else if (attempts >= maxAttempts) {
+          throw new Error("Processing timed out");
+        }
+        else {
+          setTimeout(checkResults, 5000); // Check again in 5 seconds
+        }
+      };
+
+      checkResults();
+
+    } catch (error) {
+      let errorMessage = error.message;
+
+      // Enhanced error messages
+      if (error.message.includes('Failed to fetch')) {
+        errorMessage = `Connection failed. Please ensure:
+              1. The backend service is running
+              2. No firewall is blocking the connection
+              3. You're using the correct URL`;
+      }
+
+      setResponseData(`Error: ${errorMessage}`);
+      console.error("Processing error:", error);
+    }
+  }
+  /*async function checkYTVideoInDatabase() {
     const urlValue = document.getElementById("youtubeUrl").value.trim();
     setResponseData("Checking video in the database...");
   
@@ -124,8 +269,7 @@ function Home() {
       setResponseData("Video not found in the database. You can add it.");
     }
   }
-
-  
+  */
 
   const scrollLeft = () => videoCardsRef.current?.scrollBy({ left: -300, behavior: 'smooth' });
   const scrollRight = () => videoCardsRef.current?.scrollBy({ left: 300, behavior: 'smooth' });
@@ -143,6 +287,7 @@ function Home() {
   // const scrollLeft = () => videoCardsRef.current?.scrollBy({ left: -300, behavior: 'smooth' });
   // const scrollRight = () => videoCardsRef.current?.scrollBy({ left: 300, behavior: 'smooth' });
 
+  /*
   async function validateYTURL() {
     const urlValue = document.getElementById("youtubeUrl").value.trim();
     setResponseData("Initializing...");
@@ -251,177 +396,7 @@ function Home() {
       console.error("Processing error:", error);
     }
   }
-  /*async function validateYTURL() {
-    const urlValue = document.getElementById("youtubeUrl").value.trim();
-    setResponseData("Initializing content check...");
-
-    try {
-      /*
-      // 1. First check if video is appropriate
-      setResponseData("Checking video content...");
-      const [isSafe, videoTitle] = await isVideoSafe({ src: urlValue });
-
-
-      if (!isSafe) {
-        throw new Error(`Video "${videoTitle}" was blocked for inappropriate content`);
-      }
-
-       // 2. Add to local state immediately (before processing)
-      addYoutubeUrl(urlValue, videoTitle);
-      setResponseData(`"${videoTitle}" approved - starting processing...`);
-
-      // 3. Start backend processing - using correct local URL
-      const processResponse = await fetch('http://localhost:8000/process', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: urlValue })
-      });
-
-      if (!processResponse.ok) {
-        //throw new Error(`Server error: ${processResponse.status} ${processResponse.statusText}`);
-        try {
-          const errorData = await processResponse.json();
-          const errorMessage = errorData.error || `Server error: ${processResponse.status} ${processResponse.statusText}`;
-          setResponseData(`Error: ${errorMessage}`);
-          console.error("Video processing error:", errorMessage);
-          if (errorMessage.includes('Invalid YouTube URL')) {
-            alert("Please enter a valid YouTube URL");
-          } else {
-            alert("Processing failed. Please try again later.");
-          }
-        } catch (parseError) {
-          setResponseData(`Error: Could not parse server error response. Status: ${processResponse.status}`);
-          console.error("Error parsing server error:", parseError);
-          alert("Processing failed due to a server error. Check the console for details.");
-        }
-        return; // Stop further processing on error
-      }
-
-      const { video_id, status_url } = await processResponse.json();
-
-      // 4. Poll for processing status
-      const pollStatus = async () => {
-        const statusResponse = await fetch(`http://localhost:8000${status_url}`);
-
-        if (!statusResponse.ok) {
-          throw new Error(`Status check failed: ${statusResponse.status}`);
-        }
-
-        const statusData = await statusResponse.json();
-
-        // Update status message
-        setResponseData(
-            `Processing "${videoTitle}": ${statusData.message} (${statusData.progress}%)`
-        );
-
-        if (statusData.status === 'complete') {
-          // Display final questions
-          const formattedQuestions = statusData.data.questions
-              .map((q, i) => `${i+1}. ${q.question} (at ${q.timestamp}s)`)
-              .join('\n');
-
-          setResponseData(
-              `Questions for "${videoTitle}":\n\n${formattedQuestions}`
-          );
-        }
-        else if (statusData.status === 'error') {
-          //throw new Error(`Processing failed: ${statusData.message}`);
-          setResponseData(`Processing failed: ${statusData.message}`);
-          console.error("Processing failed:", statusData.message);
-          alert(`Processing failed: ${statusData.message}`);
-        }
-        else {
-          setTimeout(pollStatus, 2000);
-        }
-      };
-
-      pollStatus();
-
-    } catch (error) {
-      setResponseData(`Error: ${error.message}`);
-      console.error("Video processing error:", error);
-
-      // Show user-friendly alerts for specific errors
-      if (error.message.includes('blocked for inappropriate')) {
-        alert(error.message);
-      } else if (error.message.includes('Invalid YouTube URL')) {
-        alert("Please enter a valid YouTube URL");
-      } else {
-        alert("Processing failed. Please try again later.");
-      }
-    }
-  }
   */
-  /*async function validateYTURL() {
-    const urlValue = document.getElementById("youtubeUrl").value.trim();
-    setResponseData("Initializing content check...");
-
-    try {
-      // 1. First check if video is appropriate
-      setResponseData("Checking video content...");
-      const [isSafe, videoTitle] = await isVideoSafe({ src: urlValue });
-      /*
-      if (!isSafe) {
-        throw new Error(`Video "${videoTitle}" was blocked for inappropriate content`);
-      }
-
-      // 2. Add to local state immediately (before processing)
-      addYoutubeUrl(urlValue, videoTitle);
-      setResponseData(`"${videoTitle}" approved - starting processing...`);
-
-      // 3. Start backend processing
-      const processResponse = await fetch('https://your-render-url/process', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: urlValue })
-      });
-
-      const { video_id, status_url } = await processResponse.json();
-
-      // 4. Poll for processing status
-      const pollStatus = async () => {
-        const statusResponse = await fetch(`https://your-render-url${status_url}`);
-        const statusData = await statusResponse.json();
-
-        // Update status message
-        setResponseData(
-            `Processing "${videoTitle}": ${statusData.message} (${statusData.progress}%)`
-        );
-
-        if (statusData.status === 'complete') {
-          // Display final questions
-          const formattedQuestions = statusData.data.questions
-              .map((q, i) => `${i+1}. ${q.question} (at ${q.timestamp}s)`)
-              .join('\n');
-
-          setResponseData(
-              `Questions for "${videoTitle}":\n\n${formattedQuestions}`
-          );
-        }
-        else if (statusData.status === 'error') {
-          throw new Error(`Processing failed: ${statusData.message}`);
-        }
-        else {
-          setTimeout(pollStatus, 2000);
-        }
-      };
-
-      pollStatus();
-
-    } catch (error) {
-      setResponseData(`Error: ${error.message}`);
-      console.error("Video processing error:", error);
-
-      // Show user-friendly alerts for specific errors
-      if (error.message.includes('blocked for inappropriate')) {
-        alert(error.message);
-      } else if (error.message.includes('Invalid YouTube URL')) {
-        alert("Please enter a valid YouTube URL");
-      } else {
-        alert("Processing failed. Please try again later.");
-      }
-    }
-  }*/
 
   async function addYoutubeUrl(url, title) {
     const [safe, videoTitle] = await isVideoSafe({ src: url });
@@ -499,7 +474,7 @@ function Home() {
       <input type="text" id="youtubeUrl" placeholder="Paste YouTube URL here..." />
     </div>
     <div>
-      <button onClick={checkYTVideoInDatabase} className="submit-btn">Add Video</button>
+      <button onClick={handleYoutubeVideo} className="submit-btn">Add Video</button>
     </div>
     <section className="processing-results">
       {responseData && (
@@ -577,7 +552,7 @@ function Home() {
             <input type="text" id="youtubeUrl" placeholder="Paste YouTube URL here..."/>
           </div>
           <div>
-            <button onClick={validateYTURL} className="submit-btn">Add Video</button>
+            <button onClick={handleYoutubeVideo} className="submit-btn">Add Video</button>
           </div>
           <section className="processing-results">
             {responseData && (
@@ -603,145 +578,174 @@ function Home() {
 
 export default Home;
 
-/*
-  async function validateYTURL() {
-    const urlValue = document.getElementById("youtubeUrl").value;
-    let data;
-    try {
-      const response = await fetch("/validateYT_URL", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: urlValue })
-      });
-      const contentType = response.headers.get("content-type");
-      if (!response.ok) {
-        const errorData = contentType && contentType.includes("application/json")
-          ? await response.json()
-          : await response.text();
-        throw new Error(`${response.status}: ${JSON.stringify(errorData)}`);
-      }
-      data = contentType && contentType.includes("application/json")
-        ? await response.json()
-        : await response.text();
-      console.log("Backend response data:", data);
-      if (typeof data === 'string') data = JSON.parse(data);
-      setResponseData(JSON.stringify(data, null, 2));
-    } catch (err) {
-      console.error("Error:", err);
-      setResponseData("Error: " + err.message);
-      return;
-    }
-    addYoutubeUrl(data.url, null);
-  }
-  */
+/*async function validateYTURL() {
+  const urlValue = document.getElementById("youtubeUrl").value.trim();
+  setResponseData("Initializing content check...");
 
-/*
-  async function validateYTURL() {
-    const urlValue = document.getElementById("youtubeUrl").value.trim();
-    setResponseData("Initializing...");
+  try {
+    /*
+    // 1. First check if video is appropriate
+    setResponseData("Checking video content...");
+    const [isSafe, videoTitle] = await isVideoSafe({ src: urlValue });
 
-    if (!urlValue) {
-      setResponseData("Please enter a YouTube URL");
-      return;
+
+    if (!isSafe) {
+      throw new Error(`Video "${videoTitle}" was blocked for inappropriate content`);
     }
 
-    try {
-      // 1. First verify backend connection
-      setResponseData("Checking backend connection...");
+     // 2. Add to local state immediately (before processing)
+    addYoutubeUrl(urlValue, videoTitle);
+    setResponseData(`"${videoTitle}" approved - starting processing...`);
 
-      const healthResponse = await fetch('http://localhost:8000/health', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
+    // 3. Start backend processing - using correct local URL
+    const processResponse = await fetch('http://localhost:8000/process', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: urlValue })
+    });
+
+    if (!processResponse.ok) {
+      //throw new Error(`Server error: ${processResponse.status} ${processResponse.statusText}`);
+      try {
+        const errorData = await processResponse.json();
+        const errorMessage = errorData.error || `Server error: ${processResponse.status} ${processResponse.statusText}`;
+        setResponseData(`Error: ${errorMessage}`);
+        console.error("Video processing error:", errorMessage);
+        if (errorMessage.includes('Invalid YouTube URL')) {
+          alert("Please enter a valid YouTube URL");
+        } else {
+          alert("Processing failed. Please try again later.");
         }
-      });
+      } catch (parseError) {
+        setResponseData(`Error: Could not parse server error response. Status: ${processResponse.status}`);
+        console.error("Error parsing server error:", parseError);
+        alert("Processing failed due to a server error. Check the console for details.");
+      }
+      return; // Stop further processing on error
+    }
 
-      if (!healthResponse.ok) {
-        throw new Error(`Backend returned status ${healthResponse.status}`);
+    const { video_id, status_url } = await processResponse.json();
+
+    // 4. Poll for processing status
+    const pollStatus = async () => {
+      const statusResponse = await fetch(`http://localhost:8000${status_url}`);
+
+      if (!statusResponse.ok) {
+        throw new Error(`Status check failed: ${statusResponse.status}`);
       }
 
-      const healthData = await healthResponse.json();
-      if (healthData.status !== "healthy") {
-        throw new Error("Backend service not ready");
+      const statusData = await statusResponse.json();
+
+      // Update status message
+      setResponseData(
+          `Processing "${videoTitle}": ${statusData.message} (${statusData.progress}%)`
+      );
+
+      if (statusData.status === 'complete') {
+        // Display final questions
+        const formattedQuestions = statusData.data.questions
+            .map((q, i) => `${i+1}. ${q.question} (at ${q.timestamp}s)`)
+            .join('\n');
+
+        setResponseData(
+            `Questions for "${videoTitle}":\n\n${formattedQuestions}`
+        );
       }
-
-      // 2. Verify YouTube URL
-      setResponseData("Validating URL...");
-      const verifyResponse = await fetch('http://localhost:8000/verify_url', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({ url: urlValue })
-      });
-
-      if (!verifyResponse.ok) {
-        const error = await verifyResponse.json();
-        throw new Error(error.message || "Invalid YouTube URL");
+      else if (statusData.status === 'error') {
+        //throw new Error(`Processing failed: ${statusData.message}`);
+        setResponseData(`Processing failed: ${statusData.message}`);
+        console.error("Processing failed:", statusData.message);
+        alert(`Processing failed: ${statusData.message}`);
       }
-
-      // 3. Start processing
-      setResponseData("Starting processing...");
-      const processResponse = await fetch('http://localhost:8000/process', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({ url: urlValue })
-      });
-
-      if (!processResponse.ok) {
-        const error = await processResponse.json();
-        throw new Error(error.message || "Failed to start processing");
+      else {
+        setTimeout(pollStatus, 2000);
       }
+    };
 
-      // 4. Poll for results
-      let attempts = 0;
-      const maxAttempts = 12; // 1 minute timeout (5s * 12)
+    pollStatus();
 
-      const checkResults = async () => {
-        attempts++;
-        setResponseData(`Processing (attempt ${attempts}/${maxAttempts})...`);
+  } catch (error) {
+    setResponseData(`Error: ${error.message}`);
+    console.error("Video processing error:", error);
 
-        const resultsResponse = await fetch('http://localhost:8000/results');
-        const resultsData = await resultsResponse.json();
-
-        if (resultsData.status === 'complete') {
-          if (resultsData.questions && resultsData.questions.trim().length > 0) {
-            setResponseData(resultsData.questions);
-          } else {
-            throw new Error("Received empty questions");
-          }
-        }
-        else if (resultsData.status === 'error') {
-          throw new Error(resultsData.error || "Processing error");
-        }
-        else if (attempts >= maxAttempts) {
-          throw new Error("Processing timed out");
-        }
-        else {
-          setTimeout(checkResults, 50000); // Check again in 5 seconds
-        }
-      };
-
-      checkResults();
-
-    } catch (error) {
-      let errorMessage = error.message;
-
-      // Enhanced error messages
-      if (error.message.includes('Failed to fetch')) {
-        errorMessage = `Connection failed. Please ensure:
-                1. The Python backend is running (video_scanning.py)
-                2. No firewall is blocking port 8000
-                3. You're using the correct URL`;
-      }
-
-      setResponseData(`Error: ${errorMessage}`);
-      console.error("Processing error:", error);
+    // Show user-friendly alerts for specific errors
+    if (error.message.includes('blocked for inappropriate')) {
+      alert(error.message);
+    } else if (error.message.includes('Invalid YouTube URL')) {
+      alert("Please enter a valid YouTube URL");
+    } else {
+      alert("Processing failed. Please try again later.");
     }
   }
- */
+}
+*/
+/*async function validateYTURL() {
+  const urlValue = document.getElementById("youtubeUrl").value.trim();
+  setResponseData("Initializing content check...");
+
+  try {
+    // 1. First check if video is appropriate
+    setResponseData("Checking video content...");
+    const [isSafe, videoTitle] = await isVideoSafe({ src: urlValue });
+    /*
+    if (!isSafe) {
+      throw new Error(`Video "${videoTitle}" was blocked for inappropriate content`);
+    }
+
+    // 2. Add to local state immediately (before processing)
+    addYoutubeUrl(urlValue, videoTitle);
+    setResponseData(`"${videoTitle}" approved - starting processing...`);
+
+    // 3. Start backend processing
+    const processResponse = await fetch('https://your-render-url/process', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: urlValue })
+    });
+
+    const { video_id, status_url } = await processResponse.json();
+
+    // 4. Poll for processing status
+    const pollStatus = async () => {
+      const statusResponse = await fetch(`https://your-render-url${status_url}`);
+      const statusData = await statusResponse.json();
+
+      // Update status message
+      setResponseData(
+          `Processing "${videoTitle}": ${statusData.message} (${statusData.progress}%)`
+      );
+
+      if (statusData.status === 'complete') {
+        // Display final questions
+        const formattedQuestions = statusData.data.questions
+            .map((q, i) => `${i+1}. ${q.question} (at ${q.timestamp}s)`)
+            .join('\n');
+
+        setResponseData(
+            `Questions for "${videoTitle}":\n\n${formattedQuestions}`
+        );
+      }
+      else if (statusData.status === 'error') {
+        throw new Error(`Processing failed: ${statusData.message}`);
+      }
+      else {
+        setTimeout(pollStatus, 2000);
+      }
+    };
+
+    pollStatus();
+
+  } catch (error) {
+    setResponseData(`Error: ${error.message}`);
+    console.error("Video processing error:", error);
+
+    // Show user-friendly alerts for specific errors
+    if (error.message.includes('blocked for inappropriate')) {
+      alert(error.message);
+    } else if (error.message.includes('Invalid YouTube URL')) {
+      alert("Please enter a valid YouTube URL");
+    } else {
+      alert("Processing failed. Please try again later.");
+    }
+  }
+}*/

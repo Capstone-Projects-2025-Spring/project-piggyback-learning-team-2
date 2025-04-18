@@ -3,7 +3,10 @@ import random
 import base64
 import cv2
 import numpy as np
-from fastapi import APIRouter, HTTPException
+import time
+import re
+from fastapi import APIRouter, HTTPException, BackgroundTasks
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from dotenv import load_dotenv
 from youtube_transcript_api import (
@@ -41,6 +44,9 @@ bulldozer, hot air balloon, cable car, tempo, forklift truck.
 """
 }
 
+# In-memory processing store
+processing_results = {}
+
 class VideoInput(BaseModel):
     youtube_url: str = None
     image_base64: str = None
@@ -57,57 +63,44 @@ def answer_question(payload: AnswerInput):
     correct = payload.answer.strip().lower() == payload.selected_label.strip().lower()
     return {"correct": correct}
 
+@router.post("/video/process/{video_id}")
+def start_video_processing(video_id: str, payload: VideoInput, background_tasks: BackgroundTasks):
+    # Start processing if not already complete
+    if video_id in processing_results and processing_results[video_id]["status"] == "complete":
+        return {"status": "already complete"}
 
-@router.post("/video/process")
-def process_video(payload: VideoInput):
-    import re
-    video_id = re.sub(r"\s+", "_", (payload.title or "").lower())
+    processing_results[video_id] = {"status": "processing"}
+    background_tasks.add_task(run_processing_job, video_id, payload)
+    return {"status": "started"}
 
-    # 🟡 Local video: base64 image input
-    if payload.image_base64:
-        try:
-            print("📷 Received image for detection.")
+def run_processing_job(video_id: str, payload: VideoInput):
+    try:
+        # 📷 Local image
+        if payload.image_base64:
             image_data = base64.b64decode(payload.image_base64)
             image = Image.open(io.BytesIO(image_data)).convert("RGB")
             image_np = np.array(image)
-
             image_resized = cv2.resize(image_np, (640, 640))
             _, buffer = cv2.imencode(".jpg", image_resized)
             resized_base64 = base64.b64encode(buffer).decode("utf-8")
 
             labels = detect_objects_from_base64(resized_base64)
-            print("🔍 Detected labels:", labels)
-
             if not labels:
-                return {"question": None, "objects": []}
+                processing_results[video_id] = {"status": "complete", "question": None, "objects": []}
+                return
 
             question_obj = generate_mcq_from_labels(labels)
-            print("🧠 Generated Question:", question_obj)
-
-            return {
-                "question": {
-                    "id": "img1",
-                    **question_obj
-                },
-                "objects": labels
+            processing_results[video_id] = {
+                "status": "complete",
+                "question": {"id": "img1", **question_obj},
+                "objects": labels,
+                "video_id": video_id,
+                "title": payload.title or "Image"
             }
 
-        except Exception as e:
-            raise HTTPException(status_code=500, detail=f"YOLOv8 error: {str(e)}")
-
-    # 🟢 YouTube video: use transcript
-    elif payload.youtube_url:
-        try:
-            if "embed/" in payload.youtube_url:
-                yt_id = payload.youtube_url.split("embed/")[-1]
-            elif "watch?v=" in payload.youtube_url:
-                yt_id = payload.youtube_url.split("watch?v=")[-1]
-            elif "youtu.be/" in payload.youtube_url:
-                yt_id = payload.youtube_url.split("youtu.be/")[-1]
-            else:
-                raise HTTPException(status_code=400, detail="Invalid YouTube URL format.")
-
-            print("📹 YouTube Video ID:", yt_id)
+        # 📼 YouTube video
+        elif payload.youtube_url:
+            yt_id = extract_video_id(payload.youtube_url)
 
             transcript_raw = None
             for proxy in random.sample(PROXIES, len(PROXIES)):
@@ -119,40 +112,39 @@ def process_video(payload: VideoInput):
                         transcript_raw = YouTubeTranscriptApi.get_transcript(yt_id, languages=["es"], proxies={"https": proxy})
                         break
                     except Exception as proxy_err:
-                        print(f"❌ Proxy failed: {proxy} — {proxy_err}")
                         continue
 
             if not transcript_raw:
-                if video_id in manual_transcripts:
-                    transcript = manual_transcripts[video_id]
-                    print("📼 Using manual transcript fallback.")
-                else:
-                    raise HTTPException(status_code=403, detail="Transcript unavailable.")
+                transcript = manual_transcripts.get(video_id)
+                if not transcript:
+                    processing_results[video_id] = {"status": "error", "detail": "Transcript unavailable."}
+                    return
             else:
                 transcript = " ".join([t['text'] for t in transcript_raw])
 
             question_obj = generate_questions_from_transcript(payload.title or "Video", transcript)
-            print("🧠 GPT Question:", question_obj)
 
-            return {
+            processing_results[video_id] = {
+                "status": "complete",
+                "question": {"id": "transcript1", **question_obj},
+                "objects": [],
                 "video_id": yt_id,
-                "question": {
-                    "id": "transcript1",
-                    **question_obj
-                },
-                "objects": []
+                "title": payload.title or "YouTube Video"
             }
 
-        except (TranscriptsDisabled, NoTranscriptFound, CouldNotRetrieveTranscript) as e:
-            raise HTTPException(status_code=403, detail=str(e))
+    except Exception as e:
+        processing_results[video_id] = {"status": "error", "detail": str(e)}
 
-    raise HTTPException(status_code=400, detail="No valid input provided.")
+@router.get("/video/results/{video_id}")
+def get_processing_results(video_id: str):
+    if video_id not in processing_results:
+        return JSONResponse(status_code=404, content={"status": "not_found"})
+    return processing_results[video_id]
 
 @router.post("/video/explain")
 def explain_wrong_answer(payload: dict):
     from openai import ChatCompletion
     import openai
-
     openai.api_key = os.getenv("OPENAI_API_KEY")
 
     prompt = f"""
@@ -174,10 +166,21 @@ Respond with a single friendly sentence.
             messages=[{"role": "user", "content": prompt}],
             temperature=0.7,
         )
-
         explanation = response.choices[0].message.content.strip()
         return {"message": explanation}
 
     except Exception as e:
         print("❌ GPT explanation error:", e)
         return {"message": "Oops! Something went wrong trying to explain the answer."}
+
+def extract_video_id(url: str) -> str:
+    if "embed/" in url:
+        return url.split("embed/")[-1]
+    elif "watch?v=" in url:
+        return url.split("watch?v=")[-1]
+    elif "youtu.be/" in url:
+        return url.split("youtu.be/")[-1]
+    else:
+        raise HTTPException(status_code=400, detail="Invalid YouTube URL format.")
+
+
