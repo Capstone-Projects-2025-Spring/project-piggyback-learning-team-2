@@ -133,7 +133,11 @@ function Home() {
   async function processNewVideo(urlValue, videoId) {
     try {
       // Use the correct backend URL based on environment
-      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
+      const backendUrl = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000'||'http:127.0.0.1:8000';
+
+      // 0.5. VISIBLE LOG - appears in browser console and on screen
+      setResponseData(prev => prev + "\n[1] Connecting to backend at: " + backendUrl);
+      console.log("[DEBUG] Connecting to backend at:", backendUrl);
 
       // 1. Check backend health
       const healthResponse = await fetch(`${backendUrl}/health`, {
@@ -145,10 +149,14 @@ function Home() {
       });
 
       if (!healthResponse.ok) {
-        throw new Error(`Backend returned status ${healthResponse.status}`);
+        const msg = `[ERROR] Backend health check failed: ${healthResponse.status}`;
+        setResponseData(prev => prev + "\n" + msg);
+        console.error(msg); 
+        throw new Error(msg);
       }
 
       // 2. Start processing
+      setResponseData(prev => prev + "\n[3] Starting video processing...");
       const processResponse = await fetch(`${backendUrl}/video/process/${videoId}`, {
         method: 'POST',
         headers: {
@@ -159,11 +167,15 @@ function Home() {
       });
 
       if (!processResponse.ok) {
-        const error = await processResponse.json();
-        throw new Error(error.message || "Failed to start processing");
+        const errorData = await processResponse.json();
+        const msg = `[ERROR] Processing failed: ${errorData.detail || processResponse.status}`;
+        setResponseData(prev => prev + "\n" + msg);
+        console.error(msg, errorData);
+        throw new Error(msg);
       }
 
       // 3. Poll for results
+      setResponseData(prev => prev + "\n[4] Processing started, waiting for results...");
       let attempts = 0;
       const maxAttempts = 12; // 1 minute timeout (5s * 12)
 
@@ -171,7 +183,7 @@ function Home() {
         attempts++;
         setResponseData(`Processing video (attempt ${attempts}/${maxAttempts})...`);
 
-        const resultsResponse = await fetch(`${backendUrl}/video/results${videoId}`);
+        const resultsResponse = await fetch(`${backendUrl}/video/results/${videoId}`);
         const resultsData = await resultsResponse.json();
 
         if (resultsData.status === 'complete') {
@@ -190,6 +202,7 @@ function Home() {
 
               if (!error) {
                 console.log("Video added to database successfully");
+
               }
             } catch (dbError) {
               console.error("Error adding video to database:", dbError);
@@ -213,6 +226,9 @@ function Home() {
 
     } catch (error) {
       let errorMessage = error.message;
+      const errorMsg = `[FINAL ERROR] ${error.message}`;
+      setResponseData(prev => prev + "\n" + errorMsg);
+      console.error(errorMsg, error);
 
       // Enhanced error messages
       if (error.message.includes('Failed to fetch')) {
@@ -273,10 +289,6 @@ function Home() {
 
   const scrollLeft = () => videoCardsRef.current?.scrollBy({ left: -300, behavior: 'smooth' });
   const scrollRight = () => videoCardsRef.current?.scrollBy({ left: 300, behavior: 'smooth' });
-
-  
-
-  
 
   // const handleGradeChange = (event) => {
   //   const selected = event.target.value;

@@ -3,9 +3,9 @@
 from fastapi import APIRouter, status, HTTPException, Response, Depends
 from sqlalchemy.orm import Session
 
-from backend.yolov7 import db_models
+from backend import db_models
 from backend.database import get_db
-from backend.yolov7.schemas import YouTubeVideo
+from backend.schemas import YouTubeVideo
 
 router = APIRouter()
 

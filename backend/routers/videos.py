@@ -20,6 +20,13 @@ from ..youtube import retreiveYoutubeMetaData
 from ..yolov8_detector import detect_objects_from_base64
 from PIL import Image
 import io
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 load_dotenv()
 router = APIRouter()
@@ -61,6 +68,7 @@ class AnswerInput(BaseModel):
 @router.post("/video/answer")
 def answer_question(payload: AnswerInput):
     correct = payload.answer.strip().lower() == payload.selected_label.strip().lower()
+    logger.info("Video Answer endpoint called")
     return {"correct": correct}
 
 @router.post("/video/process/{video_id}")
@@ -71,6 +79,7 @@ def start_video_processing(video_id: str, payload: VideoInput, background_tasks:
 
     processing_results[video_id] = {"status": "processing"}
     background_tasks.add_task(run_processing_job, video_id, payload)
+    logger.info("Video Process endpoint called")
     return {"status": "started"}
 
 def run_processing_job(video_id: str, payload: VideoInput):
@@ -131,6 +140,7 @@ def run_processing_job(video_id: str, payload: VideoInput):
                 "video_id": yt_id,
                 "title": payload.title or "YouTube Video"
             }
+            logger.info("run_processing was called and run")
 
     except Exception as e:
         processing_results[video_id] = {"status": "error", "detail": str(e)}
@@ -138,7 +148,9 @@ def run_processing_job(video_id: str, payload: VideoInput):
 @router.get("/video/results/{video_id}")
 def get_processing_results(video_id: str):
     if video_id not in processing_results:
+        logger.info("Results not found")
         return JSONResponse(status_code=404, content={"status": "not_found"})
+    logger.info("Results found")
     return processing_results[video_id]
 
 @router.post("/video/explain")
@@ -167,6 +179,7 @@ Respond with a single friendly sentence.
             temperature=0.7,
         )
         explanation = response.choices[0].message.content.strip()
+        logger.info("Explanation called")
         return {"message": explanation}
 
     except Exception as e:

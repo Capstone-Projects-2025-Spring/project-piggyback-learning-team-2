@@ -1,8 +1,9 @@
-from fastapi import FastAPI, HTTPException, Depends, status
+from fastapi import FastAPI, HTTPException, Depends, status, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 import time
+import logging
 
 
 from . import db_models, schemas, tools
@@ -10,7 +11,14 @@ from backend.database import engine, get_db
 from backend.routers import crud_test, authentication
 from backend.routers.videos import router as video_router  
 from backend.youtube import retreiveYoutubeMetaData
-from backend.yolo_detect import router as yolo_router
+from backend.yolov8_router import router as yolo_router
+
+
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 
 # Initialize FastAPI app
 app = FastAPI()
@@ -18,10 +26,25 @@ app = FastAPI()
 # Register database models
 db_models.Base.metadata.create_all(bind=engine)
 
+origins = ["http://localhost:3000",  # React default
+"http://127.0.0.1:3000", "https://branma-front-latest.onrender.com"]
+
+# Add middleware to log all requests
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    logger.info(f"Incoming request: {request.method} {request.url}")
+    try:
+        response = await call_next(request)
+        logger.info(f"Response status: {response.status_code}")
+        return response
+    except Exception as e:
+        logger.error(f"Request failed: {str(e)}")
+        raise
+
 # Enable CORS for frontend access (development)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # You can later restrict this in production
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -42,12 +65,14 @@ def health_check():
         "timestamp": time.time()
     }
     headers = {"Access-Control-Allow-Headers": "Content-Type"}
+    logger.info("Health check endpoint called")
     return JSONResponse(content=response, headers=headers)
 
 # SQLAlchemy test route
 @app.get("/sqlalchemy")
 def test_url(db: Session = Depends(get_db)):
     engagement = db.query(db_models.User_engagment).all()
+    logger.info("SQL checkpoint called")
     return {"data": engagement}
 
 # YouTube metadata endpoint
@@ -67,6 +92,7 @@ def get_youtube_metadata(video: schemas.YouTubeVideo):
         raise HTTPException(status_code=400, detail="Could not extract a valid video ID.")
 
     metadata = retreiveYoutubeMetaData(video_id)
+    logger.info("Youtube metadata checkpoint called")
     return {"metadata": metadata}
 
 # User registration route
@@ -82,6 +108,7 @@ def register_user(user: schemas.UserCredentials, db: Session = Depends(get_db)):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+    logger.info("Registration checkpoint called")
     return new_user
 
 # Root welcome route

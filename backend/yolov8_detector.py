@@ -1,4 +1,3 @@
-# yolov8_detector.py
 from ultralytics import YOLO
 import cv2
 import base64

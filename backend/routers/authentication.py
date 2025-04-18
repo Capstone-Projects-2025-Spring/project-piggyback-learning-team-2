@@ -4,7 +4,7 @@ from fastapi import APIRouter, status, HTTPException, Depends
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
-from backend.yolov7 import db_models, tools
+from backend import db_models, tools
 from backend import oauth2
 from backend.database import get_db
 from backend import schemas
