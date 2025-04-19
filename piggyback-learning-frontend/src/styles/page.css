@@ -3,7 +3,7 @@ body {
   font-family: 'Arial', sans-serif;
   margin: 0;
   padding: 0;
-  background-image: url('https://getwallpapers.com/wallpaper/full/3/3/0/1115244-amazing-kids-desktop-background-1920x1200-images.jpg'); 
+  background-image: url('https://getwallpapers.com/wallpaper/full/3/3/0/1115244-amazing-kids-desktop-background-1920x1200-images.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -11,7 +11,6 @@ body {
   text-align: center;
   font-size: 15px;
 }
-
 
 :root {
   --header-height: 100px;
@@ -22,7 +21,7 @@ body {
 
 /* Container limit */
 .home-container {
-  background-image: url('https://getwallpapers.com/wallpaper/full/3/3/0/1115244-amazing-kids-desktop-background-1920x1200-images.jpg'); 
+  background-image: url('https://getwallpapers.com/wallpaper/full/3/3/0/1115244-amazing-kids-desktop-background-1920x1200-images.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -92,7 +91,7 @@ body {
 /* Main */
 main {
   padding-top: var(--header-height);
-  padding-bottom: 15px;
+  padding-bottom: calc(var(--footer-height) + 40px);
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -164,7 +163,7 @@ main {
 .youtube-url-enhanced,
 .videos-enhanced {
   position: relative;
-  overflow: hidden; /* Prevents overflow of scrolling content */
+  overflow: hidden;
   padding: 20px;
   margin: 10px;
   background: rgba(255, 255, 255, 0.4);
@@ -172,6 +171,7 @@ main {
   backdrop-filter: blur(10px);
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
 }
+
 .grade-selection-enhanced h2,
 .youtube-url-enhanced h2,
 .videos-enhanced h2 {
@@ -234,7 +234,7 @@ main {
 .video-scroll-wrapper {
   display: flex;
   align-items: center;
-  justify-content: center; 
+  justify-content: center;
   position: relative;
 }
 .video-cards-horizontal {
@@ -242,7 +242,7 @@ main {
   gap: 20px;
   overflow-x: auto;
   scroll-behavior: smooth;
-  padding: 15px 60px;  /* Extra horizontal padding makes room for the scroll buttons */
+  padding: 15px 60px;
   box-sizing: border-box;
   max-width: 100%;
 }
@@ -250,7 +250,7 @@ main {
   display: none;
 }
 .video-card {
-  flex: 0 0 300px;  /* Fixed width for each video card */
+  flex: 0 0 300px;
   background: white;
   border-radius: 20px;
   padding: 10px;
@@ -266,8 +266,6 @@ main {
   margin: 0 auto;
   overflow: hidden;
 }
-
-/* didn't know you could do this, feels like python */
 .video-card iframe,
 .video-thumbnail {
   width: 356px;
@@ -286,7 +284,6 @@ main {
   font-size: 1em;
   font-weight: bold;
   margin: 0;
-  
   overflow: hidden;
   text-overflow: ellipsis;
   width: 100%;
