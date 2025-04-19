@@ -3,7 +3,7 @@ body {
   font-family: 'Arial', sans-serif;
   margin: 0;
   padding: 0;
-  background-image: url('https://getwallpapers.com/wallpaper/full/3/3/0/1115244-amazing-kids-desktop-background-1920x1200-images.jpg'); 
+  background-image: url('https://getwallpapers.com/wallpaper/full/3/3/0/1115244-amazing-kids-desktop-background-1920x1200-images.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -11,7 +11,6 @@ body {
   text-align: center;
   font-size: 15px;
 }
-
 
 :root {
   --header-height: 100px;
@@ -22,11 +21,12 @@ body {
 
 /* Container limit */
 .home-container {
-  background-image: url('https://getwallpapers.com/wallpaper/full/3/3/0/1115244-amazing-kids-desktop-background-1920x1200-images.jpg'); 
+  background-image: url('https://getwallpapers.com/wallpaper/full/3/3/0/1115244-amazing-kids-desktop-background-1920x1200-images.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
   min-height: 100vh;
+  animation: fadeIn 1s ease-out; /* Entrance animation */
 }
 
 /* Header */
@@ -43,6 +43,7 @@ body {
   z-index: 1000;
   height: var(--header-height);
   box-sizing: border-box;
+  animation: slideDownFadeIn 0.8s ease-out; /* Entrance animation */
 }
 
 .logo-container {
@@ -53,10 +54,11 @@ body {
 
 .logo-animated {
   height: 60px;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, filter 0.3s ease;
 }
 .logo-animated:hover {
-  transform: rotate(360deg);
+  transform: rotate(360deg) scale(1.1); /* Enhanced hover */
+  filter: brightness(1.2); /* Glow effect */
 }
 
 .site-title {
@@ -64,6 +66,10 @@ body {
   font-size: 1.4em;
   font-weight: bold;
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease;
+}
+.site-title:hover {
+  transform: scale(1.05); /* Subtle scale on hover */
 }
 
 .header-enhanced nav ul {
@@ -82,17 +88,37 @@ body {
   text-decoration: none;
   font-size: 1em;
   font-weight: bold;
-  transition: all 0.3s ease;
+  transition: all 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative; /* For ripple effect */
+  overflow: hidden;
 }
 .header-enhanced nav ul li a:hover {
   background: rgba(255, 255, 255, 0.2);
-  color: #ffeb38db;
+  color: #ffeb38;
+  transform: scale(1.1); /* Scale on hover */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+}
+.header-enhanced nav ul li a::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease, height 0.4s ease;
+}
+.header-enhanced nav ul li a:hover::after {
+  width: 200px;
+  height: 200px; /* Ripple effect on hover */
 }
 
 /* Main */
 main {
   padding-top: var(--header-height);
-  padding-bottom: 15px;
+  padding-bottom: calc(var(--footer-height) + 40px); /* Adjusted to add 40px space below last component */
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -109,11 +135,12 @@ main {
   flex-direction: column;
   align-items: center;
   animation: slideDownFadeIn 1s ease-out, floatUpDown 3s ease-in-out infinite;
-  transition: background 0.5s ease, color 0.5s ease;
+  transition: background 0.5s ease, color 0.5s ease, transform 0.3s ease;
 }
 .intro-enhanced:hover {
   background: linear-gradient(135deg, #FFD700, #ff46a2);
   color: white;
+  transform: scale(1.02) translateY(-5px); /* Enhanced hover */
 }
 .animated-heading {
   font-size: 2.2em;
@@ -125,6 +152,10 @@ main {
   -webkit-text-fill-color: transparent;
   animation: gradientFlow 8s ease infinite, fadeIn 1.5s ease-out;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+  transition: transform 0.3s ease;
+}
+.animated-heading:hover {
+  transform: scale(1.05); /* Subtle scale on hover */
 }
 .intro-enhanced h1 {
   font-size: 2em;
@@ -144,18 +175,37 @@ main {
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
   color: white;
   text-decoration: none;
-  transition: all 0.3s ease;
+  transition: all 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
 }
 .cta-button:hover {
   background: #45a049;
-  transform: scale(1.05);
+  transform: scale(1.1); /* Larger scale */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); /* Deeper shadow */
+}
+.cta-button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease, height 0.4s ease;
+}
+.cta-button:hover::after {
+  width: 300px;
+  height: 300px; /* Ripple effect */
 }
 .pulse {
   animation: pulse 2s infinite;
 }
 @keyframes pulse {
   0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+  50% { transform: scale(1.08); } /* Slightly larger pulse */
   100% { transform: scale(1); }
 }
 
@@ -171,7 +221,15 @@ main {
   border-radius: 25px;
   backdrop-filter: blur(10px);
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 1s ease-out; /* Entrance animation */
+  transition: transform 0.3s ease;
 }
+.grade-selection-enhanced:hover,
+.youtube-url-enhanced:hover,
+.videos-enhanced:hover {
+  transform: scale(1.02); /* Subtle scale on hover */
+}
+
 .grade-selection-enhanced h2,
 .youtube-url-enhanced h2,
 .videos-enhanced h2 {
@@ -182,6 +240,12 @@ main {
   color: white;
   display: inline-block;
   margin-bottom: 15px;
+  transition: transform 0.2s ease;
+}
+.grade-selection-enhanced h2:hover,
+.youtube-url-enhanced h2:hover,
+.videos-enhanced h2:hover {
+  transform: scale(1.05); /* Subtle scale on hover */
 }
 
 .dropdown-container {
@@ -194,11 +258,13 @@ main {
   width: 250px;
   border-radius: 10px;
   border: 2px solid var(--primary-green);
-  transition: 0.3s ease;
+  transition: 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }
-.grade-dropdown:hover {
-  transform: scale(1.03);
+.grade-dropdown:hover,
+.grade-dropdown:focus {
+  transform: scale(1.05);
   border-color: #45a049;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
 }
 
 /* Input Area */
@@ -215,6 +281,12 @@ main {
   border: 2px solid var(--primary-green);
   width: 60%;
   outline: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.youtube-url-enhanced input[type="text"]:hover,
+.youtube-url-enhanced input[type="text"]:focus {
+  transform: scale(1.03);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
 }
 .submit-btn {
   padding: 8px 20px;
@@ -224,17 +296,37 @@ main {
   border-radius: 10px;
   border: none;
   cursor: pointer;
+  transition: all 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
 }
 .submit-btn:hover {
   background: #45a049;
-  transform: scale(1.05);
+  transform: scale(1.1);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+.submit-btn::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease, height 0.4s ease;
+}
+.submit-btn:hover::after {
+  width: 200px;
+  height: 200px; /* Ripple effect */
 }
 
 /* Video Gallery */
 .video-scroll-wrapper {
   display: flex;
   align-items: center;
-  justify-content: center; 
+  justify-content: center;
   position: relative;
 }
 .video-cards-horizontal {
@@ -242,23 +334,39 @@ main {
   gap: 20px;
   overflow-x: auto;
   scroll-behavior: smooth;
-  padding: 15px 60px;  /* Extra horizontal padding makes room for the scroll buttons */
+  padding: 15px 60px; /* Extra horizontal padding makes room for the scroll buttons */
   box-sizing: border-box;
   max-width: 100%;
 }
 .video-cards-horizontal::-webkit-scrollbar {
-  display: none;
+  height: 8px; /* Thin scrollbar */
+}
+.video-cards-horizontal::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.2); /* Light, semi-transparent track */
+  border-radius: 10px;
+}
+.video-cards-horizontal::-webkit-scrollbar-thumb {
+  background: var(--primary-green); /* Match theme */
+  border-radius: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.4); /* Subtle border for contrast */
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+.video-cards-horizontal::-webkit-scrollbar-thumb:hover {
+  background: #45a049; /* Darker green on hover */
+  transform: scale(1.1); /* Slight scale for interactivity */
 }
 .video-card {
-  flex: 0 0 300px;  /* Fixed width for each video card */
+  flex: 0 0 300px; /* Fixed width for each video card */
   background: white;
   border-radius: 20px;
   padding: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
+  transition: all 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+  animation: slideIn 0.5s ease-out; /* Entrance animation */
 }
 .video-card:hover {
-  transform: translateY(-8px);
+  transform: translateY(-10px) scale(1.05); /* Enhanced hover */
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 .video-gallery-container {
   width: 100%;
@@ -266,7 +374,6 @@ main {
   margin: 0 auto;
   overflow: hidden;
 }
-
 /* didn't know you could do this, feels like python */
 .video-card iframe,
 .video-thumbnail {
@@ -275,6 +382,11 @@ main {
   aspect-ratio: 16 / 9;
   object-fit: cover;
   border-radius: 12px;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+.video-card:hover .video-thumbnail {
+  transform: scale(1.1); /* Zoom effect on hover */
+  filter: brightness(1.1); /* Brighten on hover */
 }
 .video-info {
   display: flex;
@@ -286,16 +398,20 @@ main {
   font-size: 1em;
   font-weight: bold;
   margin: 0;
-  
   overflow: hidden;
   text-overflow: ellipsis;
   width: 100%;
   word-wrap: break-word;
   white-space: normal;
   text-align: center;
+  transition: transform 0.2s ease;
+}
+.video-info p:hover {
+  transform: scale(1.05); /* Subtle scale on hover */
 }
 .play-icon {
   color: var(--primary-green);
+  animation: pulse 2s infinite; /* Continuous pulse */
 }
 
 /* Scroll Buttons */
@@ -308,10 +424,30 @@ main {
   border: none;
   border-radius: 50%;
   cursor: pointer;
+  transition: all 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
 }
 .scroll-button:hover {
-  transform: scale(1.1);
+  transform: scale(1.2); /* Larger scale */
   background: #45a049;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+.scroll-button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease, height 0.4s ease;
+}
+.scroll-button:hover::after {
+  width: 100px;
+  height: 100px; /* Ripple effect */
 }
 
 /* Footer */
@@ -329,6 +465,11 @@ main {
   height: var(--footer-height);
   box-sizing: border-box;
   z-index: 1000;
+  animation: slideUpFadeIn 0.8s ease-out; /* Entrance animation */
+  transition: transform 0.3s ease;
+}
+.footer-enhanced:hover {
+  transform: translateY(-5px); /* Subtle lift on hover */
 }
 
 /* Animations */
@@ -341,9 +482,17 @@ main {
   0% { opacity: 0; transform: translateY(-15px); }
   100% { opacity: 1; transform: translateY(0); }
 }
+@keyframes slideUpFadeIn {
+  0% { opacity: 0; transform: translateY(15px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
+}
+@keyframes slideIn {
+  0% { opacity: 0; transform: translateX(-20px); }
+  100% { opacity: 1; transform: translateX(0); }
 }
 @keyframes gradientFlow {
   0% { background-position: 0% 50%; }
