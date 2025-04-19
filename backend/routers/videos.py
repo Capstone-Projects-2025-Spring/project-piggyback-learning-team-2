@@ -4,11 +4,18 @@ import base64
 import cv2
 import numpy as np
 import time
+from datetime import datetime, timedelta
 import re
 from fastapi import APIRouter, HTTPException, BackgroundTasks
+from fastapi_cache import FastAPICache
+from fastapi_cache.backends.redis import Redis, RedisBackend
+from fastapi_cache.decorator import cache
+import redis
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from dotenv import load_dotenv
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 from youtube_transcript_api import (
     YouTubeTranscriptApi,
     TranscriptsDisabled,
@@ -65,6 +72,46 @@ class AnswerInput(BaseModel):
     selected_label: str
     timestamp: float
 
+def get_redis_client():
+    return redis.from_url(
+        os.getenv("REDIS_URL", "redis://localhost:6379"),
+        decode_responses=True,
+        socket_timeout=5,
+        socket_connect_timeout=5,
+        health_check_interval=30
+    )
+
+# Starter that sets up redis to help speedup some of the object detection
+@router.on_event("startup")
+async def initialize_cache():
+    redis_client = get_redis_client()
+    try:
+        # Test connection
+        redis_client.ping()
+        FastAPICache.init(RedisBackend(redis_client), prefix="video-cache")
+        logger.info("Redis cache initialized successfully")
+    except redis.RedisError as e:
+        logger.error(f"Redis connection failed: {str(e)}")
+        # Fallback to in-memory cache
+        from fastapi_cache.backends.inmemory import InMemoryBackend
+        FastAPICache.init(InMemoryBackend(), prefix="video-cache-mem")
+
+# Have transcript endpoint use caches to alleviate some of workload
+@router.get("/transcript/{video_id}")
+@cache(expire=int(timedelta(hours=24).total_seconds()))
+async def get_cached_transcript(video_id: str):
+    try:
+        # Your existing transcript logic
+        transcript = await YouTubeTranscriptApi.get_transcript(
+            video_id,
+            languages=["en"],
+            proxies=random.choice(PROXIES) if PROXIES else None
+        )
+        return {"status": "success", "transcript": transcript}
+    except Exception as e:
+        logger.error(f"Transcript error for {video_id}: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
+
 @router.post("/video/answer")
 def answer_question(payload: AnswerInput):
     correct = payload.answer.strip().lower() == payload.selected_label.strip().lower()
@@ -72,18 +119,32 @@ def answer_question(payload: AnswerInput):
     return {"correct": correct}
 
 @router.post("/video/process/{video_id}")
-def start_video_processing(video_id: str, payload: VideoInput, background_tasks: BackgroundTasks):
-    # Start processing if not already complete
-    if video_id in processing_results and processing_results[video_id]["status"] == "complete":
-        return {"status": "already complete"}
+async def start_video_processing(video_id: str, payload: VideoInput, background_tasks: BackgroundTasks):
+    """Start video processing with proper cleanup and progress tracking"""
+    # Cleanup any stale entries
+    cleanup_old_entries()
 
-    processing_results[video_id] = {"status": "processing"}
+    # Initialize processing entry
+    processing_results[video_id] = {
+        "status": "processing",
+        "start_time": time.time(),
+        "last_update": time.time(),
+        "progress": "Initializing",
+        "timeout_at": time.time() + 300  # 5 minute timeout
+    }
+
     background_tasks.add_task(run_processing_job, video_id, payload)
-    logger.info("Video Process endpoint called")
-    return {"status": "started"}
+
+    return {
+        "status": "processing",
+        "video_id": video_id,
+        "check_status_url": f"/api/v1/video/results/{video_id}",
+        "started_at": datetime.now().isoformat()
+    }
 
 def run_processing_job(video_id: str, payload: VideoInput):
     try:
+        entry = processing_results[video_id]
         # 📷 Local image
         if payload.image_base64:
             image_data = base64.b64decode(payload.image_base64)
@@ -109,49 +170,84 @@ def run_processing_job(video_id: str, payload: VideoInput):
 
         # 📼 YouTube video
         elif payload.youtube_url:
+            entry["progress"] = "Fetching YouTube transcript"
             yt_id = extract_video_id(payload.youtube_url)
 
+            # Try with proxies first
             transcript_raw = None
             for proxy in random.sample(PROXIES, len(PROXIES)):
                 try:
-                    transcript_raw = YouTubeTranscriptApi.get_transcript(yt_id, languages=["en"], proxies={"https": proxy})
+                    transcript_raw = YouTubeTranscriptApi.get_transcript(
+                        yt_id,
+                        languages=["en"],
+                        proxies={"https": proxy}
+                    )
                     break
-                except:
-                    try:
-                        transcript_raw = YouTubeTranscriptApi.get_transcript(yt_id, languages=["es"], proxies={"https": proxy})
-                        break
-                    except Exception as proxy_err:
-                        continue
+                except Exception:
+                    continue
+
+            # Fallback to direct fetch if proxies fail
+            if not transcript_raw:
+                try:
+                    transcript_raw = YouTubeTranscriptApi.get_transcript(yt_id, languages=["en"])
+                except Exception as e:
+                    logger.warning(f"Transcript fetch failed: {str(e)}")
+                    transcript_raw = None
 
             if not transcript_raw:
-                transcript = manual_transcripts.get(video_id)
+                transcript = manual_transcripts.get(video_id, "")
                 if not transcript:
-                    processing_results[video_id] = {"status": "error", "detail": "Transcript unavailable."}
-                    return
+                    raise HTTPException(status_code=404, detail="Transcript unavailable")
             else:
                 transcript = " ".join([t['text'] for t in transcript_raw])
 
+            entry["progress"] = "Generating questions"
             question_obj = generate_questions_from_transcript(payload.title or "Video", transcript)
 
-            processing_results[video_id] = {
+            processing_results[video_id].update({
                 "status": "complete",
                 "question": {"id": "transcript1", **question_obj},
-                "objects": [],
-                "video_id": yt_id,
-                "title": payload.title or "YouTube Video"
-            }
-            logger.info("run_processing was called and run")
+                "completed_at": datetime.now().isoformat(),
+                "processing_time": time.time() - entry["start_time"],
+                "progress": "Done"
+            })
 
     except Exception as e:
-        processing_results[video_id] = {"status": "error", "detail": str(e)}
+        processing_results[video_id].update({
+            "status": "error",
+            "error": str(e),
+            "failed_at": datetime.now().isoformat()
+        })
+        logger.error(f"Processing failed for {video_id}: {str(e)}")
 
 @router.get("/video/results/{video_id}")
 def get_processing_results(video_id: str):
+    """Check processing results with automatic cleanup"""
+    cleanup_old_entries()
+
     if video_id not in processing_results:
-        logger.info("Results not found")
-        return JSONResponse(status_code=404, content={"status": "not_found"})
-    logger.info("Results found")
-    return processing_results[video_id]
+        return {"status": "not_started"}
+
+    result = processing_results[video_id].copy()
+
+    # Add progress info if still processing
+    if result["status"] == "processing":
+        elapsed = time.time() - result["start_time"]
+        result.update({
+            "elapsed_seconds": elapsed,
+            "estimated_remaining": max(0, result["timeout_at"] - time.time()),
+            "progress": result.get("progress", "In progress")
+        })
+
+    return result
+
+def cleanup_old_entries():
+    """Cleanup entries older than 1 hour"""
+    now = time.time()
+    for vid in list(processing_results.keys()):
+        entry = processing_results[vid]
+        if "start_time" in entry and (now - entry["start_time"] > 3600):
+            del processing_results[vid]
 
 @router.post("/video/explain")
 def explain_wrong_answer(payload: dict):

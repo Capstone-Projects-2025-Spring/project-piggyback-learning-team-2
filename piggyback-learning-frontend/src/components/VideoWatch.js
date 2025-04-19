@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import '../styles/VideoWatch.css';
 import ReactPlayer from 'react-player';
 import logo from '../images/Mob_Iron_Hog.png';
@@ -10,11 +10,21 @@ export default function InteractiveVideoQuiz() {
   const canvasRef = useRef(null);
   const videoWrapperRef = useRef(null);
   const location = useLocation();
+  const navigate = useNavigate();
 
   const queryParams = new URLSearchParams(location.search);
   const videoUrl = queryParams.get("video");
   const videoTitle = queryParams.get("title") || "Unknown Video";
+  const isProcessing = queryParams.get("processing") === "true";
   const isYouTube = videoUrl?.includes("youtube.com") || videoUrl?.includes("youtu.be");
+
+  const [processingState, setProcessingState] = useState({
+    status: isProcessing ? 'processing' : 'idle',
+    progress: '',
+    elapsed: 0,
+    remaining: null
+  });
+  const [processingError, setProcessingError] = useState(null);
 
   const [question, setQuestion] = useState(null);
   const [detections, setDetections] = useState([]);
@@ -24,6 +34,84 @@ export default function InteractiveVideoQuiz() {
   const [videoReady, setVideoReady] = useState(false);
   const [retryOption, setRetryOption] = useState(false);
 
+
+  useEffect(() => {
+    if (!isProcessing) return;
+
+    const videoId = getYouTubeVideoId(videoUrl);
+    if (!videoId) {
+      setProcessingError("Invalid video URL");
+      return;
+    }
+
+    let timeoutId;
+    let attempts = 0;
+    const maxAttempts = 30; // ~5 minutes max with backoff
+
+    const pollForResults = async () => {
+      try {
+        attempts++;
+        const response = await fetch(`/api/v1/video/results/${videoId}`);
+        const data = await response.json();
+
+        setProcessingState({
+          status: data.status,
+          progress: data.progress || '',
+          elapsed: data.elapsed_seconds || 0,
+          remaining: data.estimated_remaining || null
+        });
+
+        if (data.status === 'complete') {
+          if (data.question) {
+            setQuestion(data.question);
+          }
+          // Update URL to remove processing flag
+          navigate(`/watch?video=${encodeURIComponent(videoUrl)}&title=${encodeURIComponent(videoTitle)}`, {
+            replace: true
+          });
+        }
+        else if (data.status === 'error') {
+          setProcessingError(data.error || "Processing failed");
+        }
+        else if (attempts >= maxAttempts) {
+          setProcessingError("Processing timed out");
+        }
+        else {
+          // Adaptive polling with backoff
+          const delay = Math.min(10000, 1000 + (attempts * 300));
+          timeoutId = setTimeout(pollForResults, delay);
+        }
+      } catch (error) {
+        setProcessingError("Failed to check processing status");
+        console.error("Polling error:", error);
+      }
+    };
+
+    // Start processing
+    const startProcessing = async () => {
+      try {
+        const response = await fetch(`/api/v1/video/process/${videoId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: videoUrl })
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to start processing");
+        }
+
+        pollForResults();
+      } catch (error) {
+        setProcessingError(error.message);
+      }
+    };
+
+    startProcessing();
+
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [isProcessing, videoUrl, videoTitle, navigate]);
 
   const pauseVideo = useCallback(() => {
     if (isYouTube) {
@@ -243,6 +331,42 @@ export default function InteractiveVideoQuiz() {
   
   return (
     <div className="video-watch-container">
+      {processingState.status === 'processing' && (
+          <div className="processing-overlay">
+            <div className="spinner"></div>
+            <h3>Processing Video: {videoTitle}</h3>
+            <div className="progress-container">
+              <div
+                  className="progress-bar"
+                  style={{ width: `${processingState.progressPercent || 0}%` }}
+              ></div>
+            </div>
+            <p>Step: {processingState.progress || 'Starting...'}</p>
+            <p>Elapsed: {formatTime(processingState.elapsed)}</p>
+            {processingState.remaining && (
+                <p>Estimated remaining: {formatTime(processingState.remaining)}</p>
+            )}
+            <button
+                onClick={() => {
+                  // Option to cancel processing
+                  setProcessingState({ status: 'cancelled' });
+                  navigate(`/watch?video=${encodeURIComponent(videoUrl)}&title=${encodeURIComponent(videoTitle)}`);
+                }}
+                className="cancel-button"
+            >
+              Cancel Processing
+            </button>
+          </div>
+      )}
+
+      {processingError && (
+          <div className="error-overlay">
+            <h3>Processing Error</h3>
+            <p>{processingError}</p>
+            <button onClick={() => window.location.reload()}>Try Again</button>
+          </div>
+      )}
+
       <header className="video-watch-header">
         <div className="video-watch-logo-container">
           <img src={logo} alt="Logo" className="video-watch-logo-animated" />
@@ -308,7 +432,7 @@ export default function InteractiveVideoQuiz() {
                   src={videoUrl}
                   crossOrigin="anonymous"
                   controls
-                  autoPlay
+                  autoPlay={!isProcessing}
                   width="640"
                   height="360"
                   onPlay={() => setAutoDetect(true)}
@@ -319,7 +443,7 @@ export default function InteractiveVideoQuiz() {
                 <ReactPlayer
                   ref={playerRef}
                   url={videoUrl}
-                  playing
+                  playing={!isProcessing}
                   controls
                   width="640px"
                   height="360px"
@@ -421,4 +545,9 @@ export default function InteractiveVideoQuiz() {
     </div>
   );
  
+}
+function getYouTubeVideoId(url) {
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : null;
 }

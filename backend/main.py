@@ -53,7 +53,7 @@ app.add_middleware(
 # Include routers
 app.include_router(crud_test.router)
 app.include_router(authentication.router)
-app.include_router(video_router)
+app.include_router(video_router, prefix="/api/v1")
 app.include_router(yolo_router)
 
 # General backend connectivity health check route
