@@ -4,7 +4,8 @@ sidebar_position: 2
 
 # System Block Diagram
 
-![Alt Text](/img/system_block_diagram.png)
+![System block diagram drawio](https://github.com/user-attachments/assets/facae559-d0a0-42a0-89e6-097c760cf2a3)
+
 
 ## Technology Stack
 
