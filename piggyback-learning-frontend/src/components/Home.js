@@ -74,21 +74,99 @@ function Home() {
     return ''; 
   };
 
-  const handleVideoClick = (videoUrl) => {
+  // const handleVideoClick = (videoUrl) => {
 
+  //   const videoId = getYouTubeVideoId(videoUrl);
+
+  //   navigate('/video', { state: { videoId } });
+  // };
+
+  const handleVideoClick = (videoUrl, videoTitle) => {
+
+    //const videoId = getYouTubeVideoId(videoUrl);
+
+    navigate(`/watch?video=${encodeURIComponent(videoUrl)}&title=${encodeURIComponent(videoTitle)}`);
+  };
+
+  // async function checkYTVideoInDatabase() {
+  //   const urlValue = document.getElementById("youtubeUrl").value.trim();
+  //   setResponseData("Checking video in the database...");
+  
+  //   if (!urlValue) {
+  //     setResponseData("Please enter a YouTube URL");
+  //     return;
+  //   }
+  
+  //   const videoId = getYouTubeVideoId(urlValue);
+  //   if (!videoId) {
+  //     setResponseData("Could not extract video ID from the URL.");
+  //     return;
+  //   }
+  
+  //   // const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+  
+  //   // const { data: videoData, error } = await supabase
+  //   //   .from('videos')
+  //   //   .select('*')
+  //   //   .eq('embed', embedUrl)
+  //   const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+  
+  //   const { data: videoData, error } = await supabase
+  //     .from('videos')
+  //     .select('*')
+  //     .eq('embed', videoId)
+      
+  
+  //   if (error) {
+  //     console.error('Error searching for video:', error);
+  //     setResponseData("Error: " + error.message);
+  //     return;
+  //   }
+  //   // console.log(`video title: ${videoData[0]?.title} `);
+  //   if (videoData && videoData[0]?.title.length >0) {
+  //     setResponseData(`Video exists in our database: ${videoData[0]?.title || embedUrl}`);
+  //     handleVideoClick(embedUrl)
+
+  //   } else {
+  //     setResponseData("Video not found in the database. You can add it.");
+  //   }
+  // }
+
+  const getYTTitle = async (videoUrl) => {
     const videoId = getYouTubeVideoId(videoUrl);
-
-    navigate('/video', { state: { videoId } });
+    if (!videoId) return '';
+  
+    const apiKey = process.env.REACT_APP_YOUTUBE_API_KEY;
+    if (!apiKey) {
+      console.error("YOUTUBE_API_KEY is not defined in your environment variables.");
+      return '';
+    }
+  
+    const apiUrl = `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${videoId}&key=${apiKey}`;
+  
+    try {
+      const response = await fetch(apiUrl);
+      const data = await response.json();
+      if (data.items && data.items.length > 0) {
+        return data.items[0].snippet.title;
+      } else {
+        console.warn('No video data found for ID:', videoId);
+      }
+    } catch (error) {
+      console.error('Error fetching video title:', error);
+    }
+  
+    return '';
   };
 
   async function checkYTVideoInDatabase() {
     const urlValue = document.getElementById("youtubeUrl").value.trim();
-    setResponseData("Checking video in the database...");
+    // setResponseData("Checking video in the database...");
   
-    if (!urlValue) {
-      setResponseData("Please enter a YouTube URL");
-      return;
-    }
+    // if (!urlValue) {
+    //   setResponseData("Please enter a YouTube URL");
+    //   return;
+    // }
   
     const videoId = getYouTubeVideoId(urlValue);
     if (!videoId) {
@@ -96,35 +174,28 @@ function Home() {
       return;
     }
   
-    // const embedUrl = `https://www.youtube.com/embed/${videoId}`;
+
+    const videoUrl = `https://www.youtube.com/embed/${videoId}`;
+    const videoTitle = await getYTTitle(videoUrl);
+    navigate(`/watch?video=${encodeURIComponent(videoUrl)}&title=${encodeURIComponent(videoTitle)}`);
   
     // const { data: videoData, error } = await supabase
     //   .from('videos')
     //   .select('*')
-    //   .eq('embed', embedUrl)
-    const embedUrl = `https://www.youtube.com/embed/${videoId}`;
-  
-    const { data: videoData, error } = await supabase
-      .from('videos')
-      .select('*')
-      .eq('embed', videoId)
+    //   .eq('embed', videoId)
       
   
-    if (error) {
-      console.error('Error searching for video:', error);
-      setResponseData("Error: " + error.message);
-      return;
-    }
-    // console.log(`video title: ${videoData[0]?.title} `);
-    if (videoData && videoData[0]?.title.length >0) {
-      setResponseData(`Video exists in our database: ${videoData[0]?.title || embedUrl}`);
-      handleVideoClick(embedUrl)
+    // if (error) {
+    //   console.error('Error searching for video:', error);
+    //   setResponseData("Error: " + error.message);
+    //   return;
+    // }
 
-    } else {
-      setResponseData("Video not found in the database. You can add it.");
-    }
+    // console.log(`video title: ${videoData[0]?.title} `);
+    
   }
 
+  
   
 
   const scrollLeft = () => videoCardsRef.current?.scrollBy({ left: -300, behavior: 'smooth' });
@@ -535,7 +606,7 @@ function Home() {
         <div className="video-gallery-container">
           <div className="video-cards-horizontal" ref={videoCardsRef}>
             {youtubeUrls.map((video, index) => (
-              <div className="video-card" key={index} onClick={() => handleVideoClick(video.src)}>
+              <div className="video-card" key={index} onClick={() => handleVideoClick(video.src, video.title)}>
                 <img
                   src={video.thumbnail || `${process.env.PUBLIC_URL}/logo192.png`}
                   alt={video.title}
@@ -570,7 +641,7 @@ function Home() {
             </div>
             <button className="scroll-button right" onClick={scrollRight}>→</button>
           </div>
-        </section> */}
+        </section> 
         <section className="youtube-url-enhanced">
           <h2>Add Your Own Learning Video</h2>
           <div className="url-input-container">
@@ -591,7 +662,7 @@ function Home() {
                 </div>
             )}
           </section>
-        </section>
+        </section>*/}
       </main>
 
       <footer className="footer-enhanced">

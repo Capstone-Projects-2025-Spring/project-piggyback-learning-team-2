@@ -3,25 +3,23 @@
 from fastapi import APIRouter, status, HTTPException, Response, Depends
 from sqlalchemy.orm import Session
 
-from backend.yolov7 import db_models
+from backend import db_models                     
 from backend.database import get_db
-from backend.yolov7.schemas import YouTubeVideo
+from backend.schemas import YouTubeVideo
 
 router = APIRouter()
-
 
 @router.get("/")
 def read_root():
     return {"message": "Welcome"}
 
-# transition to use sqlalchemy
+# Test SQLAlchemy connection
 @router.get("/sqlalchemy")
 def test_url(db: Session = Depends(get_db)):
     engagement = db.query(db_models.User_engagment).all()
     return {"data": engagement}
 
-
-# GET from table
+# Get engagement by video URL
 @router.get("/validateYT_URL/{video_url:path}")
 def get_URL(video_url: str, db: Session = Depends(get_db)):
     engagement = db.query(db_models.User_engagment).filter(
@@ -34,7 +32,7 @@ def get_URL(video_url: str, db: Session = Depends(get_db)):
         )
     return {"data": engagement}
 
-
+# Add video URL to engagements
 @router.post("/validateYT_URL")
 def add_URL(video: YouTubeVideo, db: Session = Depends(get_db)):
     existing = db.query(db_models.User_engagment).filter(
@@ -55,7 +53,7 @@ def add_URL(video: YouTubeVideo, db: Session = Depends(get_db)):
         "new_row": new_engagement
     }
 
-
+# Delete video URL
 @router.delete("/validateYT_URL/{video_url:path}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_URL(video_url: str, db: Session = Depends(get_db)):
     engagement = db.query(db_models.User_engagment).filter(
@@ -70,7 +68,7 @@ def delete_URL(video_url: str, db: Session = Depends(get_db)):
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-
+# Update video URL
 @router.put("/validateYT_URL/{video_url:path}")
 def update_URL(video_url: str, video: YouTubeVideo, db: Session = Depends(get_db)):
     engagement = db.query(db_models.User_engagment).filter(

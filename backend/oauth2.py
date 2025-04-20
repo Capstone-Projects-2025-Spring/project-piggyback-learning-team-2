@@ -1,7 +1,7 @@
 import jwt
 import os
 from datetime import datetime, timedelta, timezone
-from backend.yolov7 import schemas
+from backend import schemas
 from jwt import ExpiredSignatureError, InvalidTokenError
 from fastapi import Depends, status, HTTPException
 from fastapi.security import OAuth2PasswordBearer
