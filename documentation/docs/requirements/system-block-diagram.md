@@ -16,7 +16,7 @@ sidebar_position: 2
 ### Backend
 - **FastAPI** `v0.115.8` for managing user data, processing quiz results, and video interactions
 - **Supabase** `v2.49.1` for user profiles, quiz results, and video storage
-- **YOLOv7** for object detection in videos
+- **YOLOv8** for object detection in videos
 
 ### Third‑Party APIs
 - **GPT‑3‑o-mini** for generating questions based on processed video data
