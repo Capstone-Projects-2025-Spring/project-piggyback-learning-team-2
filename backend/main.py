@@ -2,15 +2,21 @@ from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
-from .yolov7 import db_models, schemas, tools
-from backend.database import engine, get_db
+from backend import db_models                      
+from backend.database import engine, get_db         
 from backend.routers import crud_test, authentication
-from backend.routers.videos import router as video_router  
+from backend.routers.videos import router as video_router
 from backend.youtube import retreiveYoutubeMetaData
-from backend.yolo_detect import router as yolo_router
+from backend.yolov8_detector import router as yolo_router
+from backend import schemas, tools       
+from backend.schemas import UserCredentials, UserResponse, YouTubeVideo
+          
+
 
 # Initialize FastAPI app
 app = FastAPI()
+
+app.include_router(yolo_router)
 
 # Register database models
 db_models.Base.metadata.create_all(bind=engine)
@@ -18,7 +24,7 @@ db_models.Base.metadata.create_all(bind=engine)
 # Enable CORS for frontend access (development)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # You can later restrict this in production
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
