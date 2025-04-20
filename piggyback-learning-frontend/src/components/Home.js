@@ -641,7 +641,7 @@ function Home() {
             </div>
             <button className="scroll-button right" onClick={scrollRight}>→</button>
           </div>
-        </section> */}
+        </section> 
         <section className="youtube-url-enhanced">
           <h2>Add Your Own Learning Video</h2>
           <div className="url-input-container">
@@ -662,7 +662,7 @@ function Home() {
                 </div>
             )}
           </section>
-        </section>
+        </section>*/}
       </main>
 
       <footer className="footer-enhanced">
