@@ -3,8 +3,7 @@ sidebar_position: 2
 ---
 
 # System Block Diagram
-
-![System block diagram drawio](https://github.com/user-attachments/assets/facae559-d0a0-42a0-89e6-097c760cf2a3)
+![System block diagram](https://github.com/user-attachments/assets/b8a00438-3765-4777-95a3-4337abeebd37)
 
 
 ## Technology Stack
