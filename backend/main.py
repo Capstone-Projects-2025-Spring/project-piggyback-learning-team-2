@@ -29,18 +29,6 @@ db_models.Base.metadata.create_all(bind=engine)
 origins = ["http://localhost:3000",  # React default
 "http://127.0.0.1:3000", "https://branma-front-latest.onrender.com"]
 
-# Add middleware to log all requests
-@app.middleware("http")
-async def log_requests(request: Request, call_next):
-    logger.info(f"Incoming request: {request.method} {request.url}")
-    try:
-        response = await call_next(request)
-        logger.info(f"Response status: {response.status_code}")
-        return response
-    except Exception as e:
-        logger.error(f"Request failed: {str(e)}")
-        raise
-
 # Enable CORS for frontend access (development)
 app.add_middleware(
     CORSMiddleware,
@@ -55,6 +43,18 @@ app.include_router(crud_test.router)
 app.include_router(authentication.router)
 app.include_router(video_router, prefix="/api/v1")
 app.include_router(yolo_router)
+
+# Add middleware to log all requests
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    logger.info(f"Incoming request: {request.method} {request.url}")
+    try:
+        response = await call_next(request)
+        logger.info(f"Response status: {response.status_code}")
+        return response
+    except Exception as e:
+        logger.error(f"Request failed: {str(e)}")
+        raise
 
 # General backend connectivity health check route
 @app.get("/health")

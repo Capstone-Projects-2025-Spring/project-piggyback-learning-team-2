@@ -8,7 +8,8 @@ from datetime import datetime, timedelta
 import re
 from fastapi import APIRouter, HTTPException, BackgroundTasks
 from fastapi_cache import FastAPICache
-from fastapi_cache.backends.redis import Redis, RedisBackend
+from fastapi_cache.backends.redis import RedisBackend
+from fastapi_cache.backends.inmemory import InMemoryBackend
 from fastapi_cache.decorator import cache
 import redis
 from fastapi.responses import JSONResponse
@@ -16,6 +17,7 @@ from pydantic import BaseModel
 from dotenv import load_dotenv
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 from youtube_transcript_api import (
     YouTubeTranscriptApi,
     TranscriptsDisabled,
@@ -28,6 +30,7 @@ from ..yolov8_detector import detect_objects_from_base64
 from PIL import Image
 import io
 import logging
+import psutil
 
 logging.basicConfig(
     level=logging.INFO,
@@ -44,6 +47,23 @@ PROXY_PASSWORD = os.getenv("WEBSHARE_PASSWORD", "0wsd704fu1go")
 PROXIES = [
     f"http://{PROXY_USERNAME}:{PROXY_PASSWORD}@185.199.228.220:7300",
 ]
+
+MAX_TRANSCRIPT_LENGTH = 5000  # Characters to process for questions
+IMAGE_PROCESSING_SIZE = (320, 320)  # Smaller size for faster processing
+
+PROCESSING_TIME_ESTIMATES = {
+    "Initializing": 5,
+    "Fetching transcript": 10,
+    "Processing transcript": 15,
+    "Generating questions": 30,
+    "Processing image": 10,
+    "Detecting objects": 20,
+}
+
+PROCESSING_EXECUTOR = ThreadPoolExecutor(
+    max_workers=2,  # Reduced from 4 for free tier
+    thread_name_prefix="video_processor"
+)
 
 manual_transcripts = {
     "animal": """
@@ -72,68 +92,92 @@ class AnswerInput(BaseModel):
     selected_label: str
     timestamp: float
 
-def get_redis_client():
-    return redis.from_url(
-        os.getenv("REDIS_URL", "redis://localhost:6379"),
-        decode_responses=True,
-        socket_timeout=5,
-        socket_connect_timeout=5,
-        health_check_interval=30
-    )
-
 # Starter that sets up redis to help speedup some of the object detection
 @router.on_event("startup")
 async def initialize_cache():
-    redis_client = get_redis_client()
+    redis_url = os.getenv("REDIS_URL")
+    if not redis_url:
+        logger.warning("REDIS_URL not set, using in-memory cache")
+        FastAPICache.init(InMemoryBackend(), prefix="video-cache")
+        return
+
     try:
-        # Test connection
-        redis_client.ping()
+        redis_client = redis.from_url(
+            redis_url,
+            decode_responses=True,
+            socket_timeout=5,
+            socket_connect_timeout=5,
+            health_check_interval=30
+        )
+        if not redis_client.ping():
+            raise redis.ConnectionError("Redis ping failed")
+
         FastAPICache.init(RedisBackend(redis_client), prefix="video-cache")
         logger.info("Redis cache initialized successfully")
-    except redis.RedisError as e:
+
+    except Exception as e:
         logger.error(f"Redis connection failed: {str(e)}")
-        # Fallback to in-memory cache
-        from fastapi_cache.backends.inmemory import InMemoryBackend
         FastAPICache.init(InMemoryBackend(), prefix="video-cache-mem")
+        logger.info("Using in-memory cache as fallback")
 
 # Have transcript endpoint use caches to alleviate some of workload
 @router.get("/transcript/{video_id}")
 @cache(expire=int(timedelta(hours=24).total_seconds()))
 async def get_cached_transcript(video_id: str):
     try:
-        # Your existing transcript logic
-        transcript = await YouTubeTranscriptApi.get_transcript(
-            video_id,
-            languages=["en"],
-            proxies=random.choice(PROXIES) if PROXIES else None
-        )
+        transcript = await get_transcript_with_retry(video_id)
         return {"status": "success", "transcript": transcript}
     except Exception as e:
-        logger.error(f"Transcript error for {video_id}: {str(e)}")
+        logger.error(f"Transcript error: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.post("/video/answer")
-def answer_question(payload: AnswerInput):
-    correct = payload.answer.strip().lower() == payload.selected_label.strip().lower()
-    logger.info("Video Answer endpoint called")
-    return {"correct": correct}
+async def get_transcript_with_retry(video_id: str, retries=3):
+    """Helper function with retry logic for transcripts"""
+    for attempt in range(retries):
+        try:
+            proxy = random.choice(PROXIES) if PROXIES and attempt > 0 else None
+            return YouTubeTranscriptApi.get_transcript(
+                video_id,
+                languages=["en"],
+                proxies={"https": proxy} if proxy else None
+            )
+        except Exception as e:
+            if attempt == retries - 1:
+                logger.warning(f"Transcript failed, using manual fallback")
+                return manual_transcripts.get(video_id, "")
+            await asyncio.sleep(1 + attempt)  # Exponential backoff
 
+# Optimized image processing
+def process_image(image_base64: str):
+    """Optimized image processing pipeline"""
+    try:
+        # Decode and resize
+        image_data = base64.b64decode(image_base64)
+        image = Image.open(io.BytesIO(image_data)).convert("RGB")
+        image_np = np.array(image)
+        image_resized = cv2.resize(image_np, IMAGE_PROCESSING_SIZE)
+
+        # Compress before detection
+        _, buffer = cv2.imencode(".jpg", image_resized, [int(cv2.IMWRITE_JPEG_QUALITY), 80])
+        return base64.b64encode(buffer).decode("utf-8")
+    except Exception as e:
+        logger.error(f"Image processing error: {str(e)}")
+        raise
+
+# Main processing endpoint
 @router.post("/video/process/{video_id}")
 async def start_video_processing(video_id: str, payload: VideoInput, background_tasks: BackgroundTasks):
-    """Start video processing with proper cleanup and progress tracking"""
-    # Cleanup any stale entries
+    """Start optimized video processing"""
     cleanup_old_entries()
 
-    # Initialize processing entry
     processing_results[video_id] = {
         "status": "processing",
         "start_time": time.time(),
-        "last_update": time.time(),
         "progress": "Initializing",
-        "timeout_at": time.time() + 300  # 5 minute timeout
+        "timeout_at": time.time() + 180  # 3 minute timeout
     }
 
-    background_tasks.add_task(run_processing_job, video_id, payload)
+    background_tasks.add_task(run_optimized_processing, video_id, payload)
 
     return {
         "status": "processing",
@@ -142,83 +186,78 @@ async def start_video_processing(video_id: str, payload: VideoInput, background_
         "started_at": datetime.now().isoformat()
     }
 
-def run_processing_job(video_id: str, payload: VideoInput):
+async def run_optimized_processing(video_id: str, payload: VideoInput):
+    """Optimized processing pipeline"""
+    entry = processing_results[video_id]
+    loop = asyncio.get_running_loop()
+
     try:
-        entry = processing_results[video_id]
-        # 📷 Local image
-        if payload.image_base64:
-            image_data = base64.b64decode(payload.image_base64)
-            image = Image.open(io.BytesIO(image_data)).convert("RGB")
-            image_np = np.array(image)
-            image_resized = cv2.resize(image_np, (640, 640))
-            _, buffer = cv2.imencode(".jpg", image_resized)
-            resized_base64 = base64.b64encode(buffer).decode("utf-8")
+        # Set a timeout for the entire processing
+        async with asyncio.timeout(600):  # 3 minute timeout
+            # Image processing path
+            if payload.image_base64:
+                entry["progress"] = "Processing image"
+                processed_image = await loop.run_in_executor(
+                    PROCESSING_EXECUTOR,
+                    partial(process_image, payload.image_base64)
+                )
 
-            labels = detect_objects_from_base64(resized_base64)
-            if not labels:
-                processing_results[video_id] = {"status": "complete", "question": None, "objects": []}
-                return
+                entry["progress"] = "Detecting objects"
+                labels = await loop.run_in_executor(
+                    PROCESSING_EXECUTOR,
+                    partial(detect_objects_from_base64, processed_image)
+                )
 
-            question_obj = generate_mcq_from_labels(labels)
-            processing_results[video_id] = {
-                "status": "complete",
-                "question": {"id": "img1", **question_obj},
-                "objects": labels,
-                "video_id": video_id,
-                "title": payload.title or "Image"
-            }
+                entry["progress"] = "Generating questions"
+                question_obj = await loop.run_in_executor(
+                    PROCESSING_EXECUTOR,
+                    partial(generate_mcq_from_labels, labels)
+                )
 
-        # 📼 YouTube video
-        elif payload.youtube_url:
-            entry["progress"] = "Fetching YouTube transcript"
-            yt_id = extract_video_id(payload.youtube_url)
+                entry.update({
+                    "status": "complete",
+                    "question": question_obj,
+                    "objects": labels,
+                    "completed_at": datetime.now().isoformat()
+                })
 
-            # Try with proxies first
-            transcript_raw = None
-            for proxy in random.sample(PROXIES, len(PROXIES)):
-                try:
-                    transcript_raw = YouTubeTranscriptApi.get_transcript(
-                        yt_id,
-                        languages=["en"],
-                        proxies={"https": proxy}
-                    )
-                    break
-                except Exception:
-                    continue
+            # YouTube processing path
+            elif payload.youtube_url:
+                entry["progress"] = "Fetching transcript"
+                video_id = extract_video_id(payload.youtube_url)
+                transcript_raw = await get_transcript_with_retry(video_id)
 
-            # Fallback to direct fetch if proxies fail
-            if not transcript_raw:
-                try:
-                    transcript_raw = YouTubeTranscriptApi.get_transcript(yt_id, languages=["en"])
-                except Exception as e:
-                    logger.warning(f"Transcript fetch failed: {str(e)}")
-                    transcript_raw = None
+                entry["progress"] = "Processing transcript"
+                transcript = " ".join([t['text'] for t in transcript_raw])[:MAX_TRANSCRIPT_LENGTH]
 
-            if not transcript_raw:
-                transcript = manual_transcripts.get(video_id, "")
-                if not transcript:
-                    raise HTTPException(status_code=404, detail="Transcript unavailable")
-            else:
-                transcript = " ".join([t['text'] for t in transcript_raw])
+                entry["progress"] = "Generating questions"
+                question_obj = await loop.run_in_executor(
+                    PROCESSING_EXECUTOR,
+                    partial(generate_questions_from_transcript,
+                            payload.title or "Video",
+                            transcript)
+                )
 
-            entry["progress"] = "Generating questions"
-            question_obj = generate_questions_from_transcript(payload.title or "Video", transcript)
+                entry.update({
+                    "status": "complete",
+                    "question": question_obj,
+                    "completed_at": datetime.now().isoformat()
+                })
 
-            processing_results[video_id].update({
-                "status": "complete",
-                "question": {"id": "transcript1", **question_obj},
-                "completed_at": datetime.now().isoformat(),
-                "processing_time": time.time() - entry["start_time"],
-                "progress": "Done"
-            })
-
+    except asyncio.TimeoutError:
+        logger.error(f"Processing timed out for video {video_id}")
+        entry.update({
+            "status": "timeout",
+            "error": "Processing took too long",
+            "failed_at": datetime.now().isoformat()
+        })
     except Exception as e:
-        processing_results[video_id].update({
+        logger.error(f"Processing failed: {str(e)}")
+        entry.update({
             "status": "error",
             "error": str(e),
             "failed_at": datetime.now().isoformat()
         })
-        logger.error(f"Processing failed for {video_id}: {str(e)}")
 
 @router.get("/video/results/{video_id}")
 def get_processing_results(video_id: str):
@@ -230,13 +269,18 @@ def get_processing_results(video_id: str):
 
     result = processing_results[video_id].copy()
 
-    # Add progress info if still processing
     if result["status"] == "processing":
         elapsed = time.time() - result["start_time"]
+        current_step = result.get("progress", "Initializing")
+
+        # Calculate remaining time dynamically
+        step_estimate = PROCESSING_TIME_ESTIMATES.get(current_step, 30)
+        remaining = max(5, step_estimate - (elapsed % step_estimate))  # More dynamic calculation
+
         result.update({
             "elapsed_seconds": elapsed,
-            "estimated_remaining": max(0, result["timeout_at"] - time.time()),
-            "progress": result.get("progress", "In progress")
+            "estimated_remaining": remaining,
+            "progress": current_step
         })
 
     return result
@@ -248,6 +292,22 @@ def cleanup_old_entries():
         entry = processing_results[vid]
         if "start_time" in entry and (now - entry["start_time"] > 3600):
             del processing_results[vid]
+
+@router.post("/video/cancel/{video_id}")
+async def cancel_processing(video_id: str):
+    if video_id in processing_results:
+        processing_results[video_id].update({
+            "status": "cancelled",
+            "cancelled_at": datetime.now().isoformat()
+        })
+        return {"status": "cancelled"}
+    raise HTTPException(status_code=404, detail="Video not found in processing")
+
+@router.post("/video/answer")
+def answer_question(payload: AnswerInput):
+    correct = payload.answer.strip().lower() == payload.selected_label.strip().lower()
+    logger.info("Video Answer endpoint called")
+    return {"correct": correct}
 
 @router.post("/video/explain")
 def explain_wrong_answer(payload: dict):

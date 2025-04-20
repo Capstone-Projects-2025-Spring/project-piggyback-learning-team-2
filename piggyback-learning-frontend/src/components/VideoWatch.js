@@ -18,6 +18,8 @@ export default function InteractiveVideoQuiz() {
   const isProcessing = queryParams.get("processing") === "true";
   const isYouTube = videoUrl?.includes("youtube.com") || videoUrl?.includes("youtu.be");
 
+  const videoId = getYouTubeVideoId(videoUrl);
+
   const [processingState, setProcessingState] = useState({
     status: isProcessing ? 'processing' : 'idle',
     progress: '',
@@ -35,10 +37,27 @@ export default function InteractiveVideoQuiz() {
   const [retryOption, setRetryOption] = useState(false);
 
 
+  // Check for cached results first
+  // Check for cached results first
+  useEffect(() => {
+    if (!isProcessing && videoId) {
+      const cachedResults = localStorage.getItem(`video_${videoId}_results`);
+      if (cachedResults) {
+        try {
+          const data = JSON.parse(cachedResults);
+          if (data.question) {
+            setQuestion(data.question);
+          }
+        } catch (e) {
+          console.error("Error parsing cached results:", e);
+        }
+      }
+    }
+  }, [isProcessing, videoId]);
+
   useEffect(() => {
     if (!isProcessing) return;
 
-    const videoId = getYouTubeVideoId(videoUrl);
     if (!videoId) {
       setProcessingError("Invalid video URL");
       return;
@@ -51,8 +70,37 @@ export default function InteractiveVideoQuiz() {
     const pollForResults = async () => {
       try {
         attempts++;
-        const response = await fetch(`/api/v1/video/results/${videoId}`);
+        const response = await fetch(`/api/v1/video/results/${videoId}`,  {
+          method: 'GET'
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch status');
+        }
+
         const data = await response.json();
+
+        // Handle different states
+        if (data.status === 'complete') {
+          localStorage.setItem(`video_${videoId}_results`, JSON.stringify(data));
+          if (data.question) {
+            setQuestion(data.question);
+          }
+          // Update URL to remove processing flag
+          navigate(`/watch?video=${encodeURIComponent(videoUrl)}&title=${encodeURIComponent(videoTitle)}`, {
+            replace: true
+          });
+        } else if (data.status === 'error') {
+          setProcessingError(data.error || "Processing failed");
+        } else if (data.status === 'cancelled') {
+          setProcessingState({ status: 'cancelled' });
+        } else if (attempts >= maxAttempts) {
+          setProcessingError("Processing timed out");
+        } else {
+          // Continue polling with backoff
+          const delay = Math.min(10000, 1000 + (attempts * 300));
+          timeoutId = setTimeout(pollForResults, delay);
+        }
 
         setProcessingState({
           status: data.status,
@@ -61,28 +109,8 @@ export default function InteractiveVideoQuiz() {
           remaining: data.estimated_remaining || null
         });
 
-        if (data.status === 'complete') {
-          if (data.question) {
-            setQuestion(data.question);
-          }
-          // Update URL to remove processing flag
-          navigate(`/watch?video=${encodeURIComponent(videoUrl)}&title=${encodeURIComponent(videoTitle)}`, {
-            replace: true
-          });
-        }
-        else if (data.status === 'error') {
-          setProcessingError(data.error || "Processing failed");
-        }
-        else if (attempts >= maxAttempts) {
-          setProcessingError("Processing timed out");
-        }
-        else {
-          // Adaptive polling with backoff
-          const delay = Math.min(10000, 1000 + (attempts * 300));
-          timeoutId = setTimeout(pollForResults, delay);
-        }
       } catch (error) {
-        setProcessingError("Failed to check processing status");
+        setProcessingError("Connection error - try refreshing");
         console.error("Polling error:", error);
       }
     };
@@ -111,7 +139,7 @@ export default function InteractiveVideoQuiz() {
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [isProcessing, videoUrl, videoTitle, navigate]);
+  }, [isProcessing, videoUrl, videoTitle, navigate, videoId]);
 
   const pauseVideo = useCallback(() => {
     if (isYouTube) {
@@ -141,7 +169,7 @@ export default function InteractiveVideoQuiz() {
       setFeedback("⏳ Getting question from YouTube transcript...");
   
       try {
-        const res = await fetch("/video/process", {
+        const res = await fetch(`/api/v1/video/process/${videoId}`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ youtube_url: videoUrl, title: videoTitle }),
@@ -179,7 +207,7 @@ export default function InteractiveVideoQuiz() {
   
     setFeedback("⏳ Detecting objects...");
     try {
-      const res = await fetch("/video/process", {
+      const res = await fetch(`/api/v1/video/process/${videoId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ image_base64: base64, title: videoTitle }),
@@ -264,7 +292,7 @@ export default function InteractiveVideoQuiz() {
 
   const handleClick = async (label) => {
     if (!question?.id || !label || !question.answer) return;
-  
+
     try {
       const res = await fetch("/video/answer", {
         method: "POST",
@@ -276,14 +304,14 @@ export default function InteractiveVideoQuiz() {
           timestamp: getCurrentTime(),
         }),
       });
-  
+
       const result = await res.json();
-  
+
       if (!result || result.correct === undefined) {
         setFeedback("⚠️ Could not check your answer.");
         return;
       }
-  
+
       if (result.correct) {
         setFeedback("✅ Correct!");
         setDetections([]);
@@ -293,7 +321,6 @@ export default function InteractiveVideoQuiz() {
           playVideo();
         }, 2000);
       } else {
-        // ❌ Ask GPT for explanation
         const explainRes = await fetch("/video/explain", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -304,23 +331,20 @@ export default function InteractiveVideoQuiz() {
             options: question.options,
           }),
         });
-  
+
         const explain = await explainRes.json();
         setFeedback(`❌ ${explain.message}`);
-        setRetryOption(true); 
+        setRetryOption(true);
       }
     } catch (error) {
       console.error("❌ Error submitting answer:", error);
       setFeedback("⚠️ Could not check your answer.");
     }
-    
   };
-  
 
   const skipQuestion = () => {
     setFeedback("⏭️ Skipped question.");
     setDetections([]);
-
     setQuestion(null);
     playVideo();
   };
@@ -330,43 +354,53 @@ export default function InteractiveVideoQuiz() {
   };
   
   return (
-    <div className="video-watch-container">
-      {processingState.status === 'processing' && (
-          <div className="processing-overlay">
-            <div className="spinner"></div>
-            <h3>Processing Video: {videoTitle}</h3>
-            <div className="progress-container">
-              <div
-                  className="progress-bar"
-                  style={{ width: `${processingState.progressPercent || 0}%` }}
-              ></div>
-            </div>
-            <p>Step: {processingState.progress || 'Starting...'}</p>
-            <p>Elapsed: {formatTime(processingState.elapsed)}</p>
-            {processingState.remaining && (
-                <p>Estimated remaining: {formatTime(processingState.remaining)}</p>
-            )}
-            <button
-                onClick={() => {
-                  // Option to cancel processing
-                  setProcessingState({ status: 'cancelled' });
-                  navigate(`/watch?video=${encodeURIComponent(videoUrl)}&title=${encodeURIComponent(videoTitle)}`);
-                }}
-                className="cancel-button"
-            >
-              Cancel Processing
-            </button>
-          </div>
-      )}
-
-      {processingError && (
+      <div className="video-watch-container">
+        {!videoId && videoUrl && (
           <div className="error-overlay">
-            <h3>Processing Error</h3>
-            <p>{processingError}</p>
-            <button onClick={() => window.location.reload()}>Try Again</button>
+          <h3>Invalid Video URL</h3>
+          <p>The provided YouTube URL is not valid.</p>
+          <button onClick={() => navigate('/')}>Go Back</button>
           </div>
-      )}
+        )}
+        {processingState.status === 'processing' && (
+            <div className="processing-overlay">
+              <div className="spinner"></div>
+              <h3>Processing Video: {videoTitle}</h3>
+              <div className="progress-container">
+                <div
+                    className="progress-bar"
+                    style={{ width: `${Math.min(100, (processingState.elapsed / 180) * 100)}%` }}
+                ></div>
+              </div>
+              <p>Step: {processingState.progress || 'Starting...'}</p>
+              <p>Elapsed: {formatTime(processingState.elapsed)}</p>
+              {processingState.remaining && (
+                  <p>Estimated remaining: {formatTime(processingState.remaining)}</p>
+              )}
+              <button
+                  onClick={async () => {
+                    try {
+                      await fetch(`/api/v1/video/cancel/${videoId}`, { method: 'POST' });
+                      setProcessingState({ status: 'cancelled' });
+                      navigate(`/watch?video=${encodeURIComponent(videoUrl)}&title=${encodeURIComponent(videoTitle)}`);
+                    } catch (error) {
+                      console.error("Cancellation error:", error);
+                    }
+                  }}
+                  className="cancel-button"
+              >
+                Cancel Processing
+              </button>
+            </div>
+        )}
 
+        {processingError && (
+            <div className="error-overlay">
+              <h3>Processing Error</h3>
+              <p>{processingError}</p>
+              <button onClick={() => window.location.reload()}>Reload Page</button>
+            </div>
+        )}
       <header className="video-watch-header">
         <div className="video-watch-logo-container">
           <img src={logo} alt="Logo" className="video-watch-logo-animated" />
@@ -546,8 +580,18 @@ export default function InteractiveVideoQuiz() {
   );
  
 }
+
 function getYouTubeVideoId(url) {
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
   const match = url.match(regExp);
   return (match && match[2].length === 11) ? match[2] : null;
+}
+
+function formatTime(seconds) {
+  if (!seconds || isNaN(seconds)) return '0:00';
+
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+
+  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
