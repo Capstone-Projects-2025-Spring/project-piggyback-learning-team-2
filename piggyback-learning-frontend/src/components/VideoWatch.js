@@ -240,6 +240,31 @@ export default function InteractiveVideoQuiz() {
   const handleSkip = () => {
     skipQuestion();
   };
+
+  const handleWatchAgain = () => {
+    // Clear UI elements immediately
+    setQuestion(null);
+    setFeedback("");
+    setDetections([]);
+    setRetryOption(false);
+    setLastQuestionTime(0); // reset timer
+  
+    // Force video to restart from beginning
+    if (isYouTube) {
+      const player = playerRef.current?.getInternalPlayer();
+      if (player?.seekTo) {
+        player.seekTo(0, true);
+      }
+      player?.playVideo?.();
+    } else {
+      if (videoRef.current) {
+        videoRef.current.pause();
+        videoRef.current.currentTime = 0;
+        videoRef.current.play();
+      }
+    }
+  };
+  
   
   return (
     <div className="video-watch-container">
@@ -283,15 +308,8 @@ export default function InteractiveVideoQuiz() {
                 {retryOption && (
                   <div className="retry-buttons inside-box">
                     <button className="retry-btn" onClick={() => setRetryOption(false)}>🔁 Try Again</button>
-                    <button
-                      className="watch-again-btn"
-                      onClick={() => {
-                        setRetryOption(false);
-                        videoRef.current?.play();
-                      }}
-                    >
-                      ▶️ Watch Again
-                    </button>
+                    <button className="watch-again-btn" onClick={handleWatchAgain}>▶️ Watch Again</button>
+
                   </div>
                 )}
               </div>
