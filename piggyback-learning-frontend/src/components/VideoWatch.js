@@ -28,7 +28,9 @@ export default function InteractiveVideoQuiz() {
   const [videoReady, setVideoReady] = useState(false);
   const [retryOption, setRetryOption] = useState(false);
   const [showSummary, setShowSummary] = useState(false);
-
+  const [sessionStart, setSessionStart] = useState(null);
+  const [sessionEnd, setSessionEnd] = useState(null);
+  
 
 
   const pauseVideo = useCallback(() => {
@@ -319,18 +321,32 @@ useEffect(() => {
 }, [videoReady, resultStats.startTime]);
 
 
+
+useEffect(() => {
+  setSessionStart(Date.now());
+}, []);
+
 const handleEnd = () => {
   const now = Date.now();
+
+  // Set session end time
+  setSessionEnd(now);
+
+  // Ensure both start and end are set in resultStats
   setResultStats(prev => {
-    const start = prev.startTime || now;
+    const start = prev.startTime || sessionStart || now;
     return {
       ...prev,
       startTime: start,
       endTime: now,
     };
   });
+
+  // Show summary
   setShowSummary(true);
 };
+
+
 
   return (
     <div className="video-watch-container">
@@ -510,6 +526,11 @@ const handleEnd = () => {
                 <p>❌ <strong>Wrong:</strong> {resultStats.wrong}</p>
                 <p>⏭️ <strong>Skipped:</strong> {resultStats.skipped}</p>
                 <p>⏱️ <strong>Time Watched:</strong> {Math.round((resultStats.endTime - resultStats.startTime) / 1000)}s</p>
+                {sessionStart && sessionEnd && (
+                  <p className="summary-text">
+                    🕒 <strong>Session Time:</strong> {Math.round((sessionEnd - sessionStart) / 1000)}s
+                  </p>
+                )}
 
                 <button className="play-again-btn" onClick={handleWatchAgain}>🔁 Watch Again</button>
                 <button className="go-back-btn" onClick={() => navigate("/profile")}>🏠 Go Back to Profile</button>
