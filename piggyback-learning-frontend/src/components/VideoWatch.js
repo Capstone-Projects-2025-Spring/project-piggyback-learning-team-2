@@ -3,6 +3,8 @@ import { useLocation } from 'react-router-dom';
 import '../styles/VideoWatch.css';
 import ReactPlayer from 'react-player';
 import logo from '../images/Mob_Iron_Hog.png';
+import { useNavigate } from 'react-router-dom';
+
 
 export default function InteractiveVideoQuiz() {
   const videoRef = useRef(null);
@@ -10,6 +12,8 @@ export default function InteractiveVideoQuiz() {
   const canvasRef = useRef(null);
   const videoWrapperRef = useRef(null);
   const location = useLocation();
+  const navigate = useNavigate();
+
 
   const queryParams = new URLSearchParams(location.search);
   const videoUrl = queryParams.get("video");
@@ -23,6 +27,10 @@ export default function InteractiveVideoQuiz() {
   const [lastQuestionTime, setLastQuestionTime] = useState(0);
   const [videoReady, setVideoReady] = useState(false);
   const [retryOption, setRetryOption] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
+  const [sessionStart, setSessionStart] = useState(null);
+  const [sessionEnd, setSessionEnd] = useState(null);
+  
 
 
   const pauseVideo = useCallback(() => {
@@ -197,6 +205,7 @@ export default function InteractiveVideoQuiz() {
       }
   
       if (result.correct) {
+        markCorrect();
         setFeedback("✅ Correct!");
         setDetections([]);
         setTimeout(() => {
@@ -205,6 +214,9 @@ export default function InteractiveVideoQuiz() {
           playVideo();
         }, 2000);
       } else {
+        markWrong();
+        setFeedback("❌ Wrong! Let's learn why.");
+        setDetections([]);
         // ❌ Ask GPT for explanation
         const explainRes = await fetch("/video/explain", {
           method: "POST",
@@ -227,19 +239,8 @@ export default function InteractiveVideoQuiz() {
     }
     
   };
+
   
-
-  const skipQuestion = () => {
-    setFeedback("⏭️ Skipped question.");
-    setDetections([]);
-
-    setQuestion(null);
-    playVideo();
-  };
-
-  const handleSkip = () => {
-    skipQuestion();
-  };
 
   const handleWatchAgain = () => {
     // Clear UI elements immediately
@@ -264,8 +265,89 @@ export default function InteractiveVideoQuiz() {
       }
     }
   };
-  
-  
+
+
+  // 1. Define the result tracker
+const [resultStats, setResultStats] = useState({
+  total: 0,
+  correct: 0,
+  wrong: 0,
+  skipped: 0,
+  startTime: null,
+  endTime: null,
+});
+
+// 2. Set start time only once when video is ready
+useEffect(() => {
+  if (videoReady && !resultStats.startTime) {
+    setResultStats(prev => ({ ...prev, startTime: Date.now() }));
+  }
+}, [videoReady, resultStats.startTime]);
+
+// 3. Call inside appropriate events:
+
+const markCorrect = () => {
+  setResultStats(prev => ({
+    ...prev,
+    correct: prev.correct + 1,
+    total: prev.total + 1
+  }));
+};
+
+const markWrong = () => {
+  setResultStats(prev => ({
+    ...prev,
+    wrong: prev.wrong + 1,
+    total: prev.total + 1
+  }));
+};
+
+const handleSkip = () => {
+  setResultStats(prev => ({
+    ...prev,
+    skipped: prev.skipped + 1,
+    total: prev.total + 1
+  }));
+  setFeedback("⏭️ Skipped question.");
+  setDetections([]);
+  setQuestion(null);
+  playVideo();
+};
+
+useEffect(() => {
+  if (videoReady && !resultStats.startTime) {
+    setResultStats(prev => ({ ...prev, startTime: Date.now() }));
+  }
+}, [videoReady, resultStats.startTime]);
+
+
+
+useEffect(() => {
+  setSessionStart(Date.now());
+}, []);
+
+const handleEnd = () => {
+  const now = Date.now();
+
+  // Set session end time
+  setSessionEnd(now);
+
+  // Ensure both start and end are set in resultStats
+  setResultStats(prev => {
+    const start = prev.startTime || sessionStart || now;
+    return {
+      ...prev,
+      startTime: start,
+      endTime: now,
+    };
+  });
+
+  // Show summary
+  setShowSummary(true);
+};
+
+
+
   return (
     <div className="video-watch-container">
       <header className="video-watch-header">
@@ -332,9 +414,11 @@ export default function InteractiveVideoQuiz() {
                   onPlay={() => setAutoDetect(true)}
                   onPause={() => setAutoDetect(false)}
                   onLoadedMetadata={() => setVideoReady(true)}
+                  onEnded={handleEnd}
                 />
               ) : (
                 <ReactPlayer
+                  onEnded={handleEnd}
                   ref={playerRef}
                   url={videoUrl}
                   playing
@@ -429,8 +513,31 @@ export default function InteractiveVideoQuiz() {
               <p className="feedback subtle-alert">⚠️ No clickable objects detected in this frame.</p>
             )}
             {feedback && !question && <p className="feedback subtle-alert">{feedback}</p>}
+
+      
           </>
         )}
+                {showSummary && (
+            <div className="summary-overlay-on-video">
+              <div className="summary-box animate-summary">
+                <h2>🌟 You're Amazing! 🌟</h2>
+                <p>🎯 <strong>Total Questions:</strong> {resultStats.total}</p>
+                <p>✅ <strong>Correct:</strong> {resultStats.correct}</p>
+                <p>❌ <strong>Wrong:</strong> {resultStats.wrong}</p>
+                <p>⏭️ <strong>Skipped:</strong> {resultStats.skipped}</p>
+                <p>⏱️ <strong>Time Watched:</strong> {Math.round((resultStats.endTime - resultStats.startTime) / 1000)}s</p>
+                {sessionStart && sessionEnd && (
+                  <p className="summary-text">
+                    🕒 <strong>Session Time:</strong> {Math.round((sessionEnd - sessionStart) / 1000)}s
+                  </p>
+                )}
+
+                <button className="play-again-btn" onClick={handleWatchAgain}>🔁 Watch Again</button>
+                <button className="go-back-btn" onClick={() => navigate("/profile")}>🏠 Go Back to Profile</button>
+              </div>
+            </div>
+          )}
+
       </main>
   
       <footer className="footer-enhanced">
