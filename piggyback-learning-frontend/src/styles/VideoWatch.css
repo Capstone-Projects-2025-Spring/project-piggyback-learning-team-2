@@ -1,6 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
 /* Base container */
 .video-watch-container {
-  font-family: 'Comic Sans MS', cursive, sans-serif;
+  font-family: 'Poppins', sans-serif;
   background: url('https://getwallpapers.com/wallpaper/full/3/3/0/1115244-amazing-kids-desktop-background-1920x1200-images.jpg') center/cover no-repeat;
   min-height: 100vh;
   display: flex;
@@ -14,10 +16,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: linear-gradient(90deg, #a3d8ff, #d1c4ff);
-  padding: 12px 30px;
+  background: linear-gradient(90deg, #6ab9ff, #a8e6cf); /* Softer gradient */
+  padding: 16px 40px; /* Increased padding */
   border-bottom: 4px solid #ffa000;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Softer shadow */
+  position: fixed; /* Match page.css header */
+  width: 100%;
+  top: 0;
+  z-index: 1000;
 }
 
 .video-watch-logo-container {
@@ -26,127 +32,140 @@
 }
 
 .video-watch-logo-animated {
-  width: 45px;
-  height: 45px;
-  margin-right: 12px;
-  animation: bounce 2s infinite;
+  width: 50px; /* Slightly larger */
+  height: 50px;
+  margin-right: 15px;
+  animation: bounce 2.5s ease-in-out infinite; /* Smoother animation */
 }
 
 .video-watch-site-title {
-  font-size: 1.8rem;
-  font-weight: bold;
-  color: #3f3f00;
+  font-size: 1.9rem; /* Slightly larger */
+  font-weight: 700; /* Bolder */
+  color: #2e2e00; /* Darker for contrast */
 }
 
 .video-watch-nav-links a {
-  margin-left: 20px;
+  margin-left: 25px;
   text-decoration: none;
-  color: #555;
-  font-weight: bold;
-  font-size: 1rem;
-  transition: color 0.3s ease;
+  color: #444;
+  font-weight: 600;
+  font-size: 1.1rem; /* Larger for readability */
+  transition: color 0.3s ease, transform 0.2s ease;
 }
 
 .video-watch-nav-links a:hover {
   color: #007bff;
+  transform: scale(1.05); /* Subtle scale effect */
 }
 
 @keyframes bounce {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-6px); }
+  50% { transform: translateY(-8px); } /* Slightly larger bounce */
 }
 
 /* Main content */
 .video-watch-content {
   flex: 1;
-  padding: 30px 20px;
+  padding: 120px 30px 100px; /* Adjusted for fixed header and footer */
   text-align: center;
-  background: rgba(255, 255, 255, 0.9);
-  margin: 30px auto;
-  border-radius: 20px;
-  max-width: 900px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.95); /* Slightly more opaque */
+  margin: 40px auto; /* Increased margin */
+  border-radius: 25px; /* Softer corners */
+  max-width: 1000px; /* Wider for larger screens */
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2); /* Deeper shadow */
 }
 
 .video-watch-content h2 {
-  margin-bottom: 20px;
-  font-size: 2.1rem;
+  margin-bottom: 25px;
+  font-size: 2.4rem; /* Larger for emphasis */
   color: #4a148c;
+  font-weight: 700;
 }
 
 /* Question Box */
 .question-box {
-  background: linear-gradient(135deg, #fff3e0, #fce4ec);
-  border: 4px dashed #ffb74d;
-  border-radius: 20px;
-  padding: 25px;
-  margin: 30px auto;
-  max-width: 700px;
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.25);
+  background: linear-gradient(135deg, #f3e7ff, #ffe7f0); /* Softer gradient */
+  border: 4px dashed #ff9800; /* Match page.css orange */
+  border-radius: 25px;
+  padding: 30px; /* More padding */
+  margin: 40px auto; /* Increased margin */
+  max-width: 800px; /* Wider for readability */
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
   animation: floatIn 0.8s ease-out;
+  transition: transform 0.3s ease; /* Smooth hover */
+}
+
+.question-box:hover {
+  transform: scale(1.02); /* Subtle scale on hover */
 }
 
 /* Option Buttons */
 .option-button {
-  background: linear-gradient(90deg, #81d4fa, #a5d6a7);
+  background: linear-gradient(90deg, #4fc3f7, #81c784); /* Match page.css green */
   border: none;
   color: #1b1b1b;
-  font-size: 1.1rem;
-  padding: 12px 18px;
-  margin: 10px auto;
+  font-size: 1.2rem; /* Larger text */
+  padding: 15px 20px; /* More padding */
+  margin: 12px auto;
   display: block;
-  border-radius: 12px;
+  border-radius: 15px; /* Softer corners */
   cursor: pointer;
-  width: 80%;
-  max-width: 400px;
-  font-weight: bold;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-  transition: transform 0.2s ease, background 0.3s ease;
+  width: 85%; /* Slightly wider */
+  max-width: 450px;
+  font-weight: 600;
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s ease, background 0.3s ease, box-shadow 0.3s ease;
 }
 
 .option-button:hover {
-  transform: scale(1.05);
-  background: linear-gradient(90deg, #4fc3f7, #81c784);
+  transform: scale(1.08); /* Slightly larger scale */
+  background: linear-gradient(90deg, #29b6f6, #66bb6a);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
 }
 
 /* Skip Button */
 .skip-button {
   background: #f15829;
+
   border: none;
   color: white;
-  font-size: 1rem;
-  padding: 10px 20px;
-  margin-top: 15px;
-  border-radius: 10px;
+  font-size: 1.1rem;
+  padding: 12px 25px; /* More padding */
+  margin-top: 20px;
+  border-radius: 12px;
   cursor: pointer;
-  font-weight: bold;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
-  transition: background 0.3s ease;
+  font-weight: 600;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  transition: background 0.3s ease, transform 0.2s ease;
 }
 
 .skip-button:hover {
-  background: #e15d35;
+
+  background: #f4511e;
+  transform: scale(1.05);
+
 }
 
 /* Detect Button */
 .video-watch-detect-button {
-  margin-top: 20px;
-  background: #4CAF50;
+  margin-top: 30px; /* More space */
+  background: #4CAF50; /* Match page.css --primary-green */
   color: white;
   border: none;
-  padding: 12px 24px;
-  font-size: 1.1rem;
-  border-radius: 10px;
+  padding: 15px 30px; /* Larger padding */
+  font-size: 1.2rem;
+  border-radius: 12px;
   cursor: pointer;
-  transition: background 0.3s ease, transform 0.2s ease;
-  width: 80%;
-  max-width: 350px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+  transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+  width: 85%;
+  max-width: 400px;
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.25);
 }
 
 .video-watch-detect-button:hover {
   background: #388e3c;
-  transform: scale(1.05);
+  transform: scale(1.08);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
 }
 
 /* Bounding box (detection) */
@@ -167,16 +186,17 @@
   transition: transform 0.1s ease;
 }
 
-
 /* Video */
 .video-wrapper {
   position: relative;
   width: 100%;
-  max-width: 100%;
+  max-width: 720px; /* Slightly larger */
   height: auto;
-  margin: 0 auto;
+  margin: 0 auto 40px; /* Added bottom margin */
+  border-radius: 15px; /* Rounded corners */
+  overflow: hidden; /* Prevent overflow */
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2); /* Add shadow */
 }
-
 
 video {
   max-width: 100%;
@@ -186,27 +206,32 @@ video {
 
 /* Feedback */
 .feedback {
-  font-size: 1.2rem;
-  margin-top: 15px;
-  font-weight: bold;
-  color: #d84315;
-  background-color: #fff8e1;
-  padding: 10px;
-  border-radius: 8px;
+  font-size: 1.3rem; /* Larger text */
+  margin-top: 20px;
+  font-weight: 600;
+  color: #d81b60; /* Brighter pink for emphasis */
+  background-color: #fff3e0; /* Softer background */
+  padding: 12px 20px; /* More padding */
+  border-radius: 10px;
   width: fit-content;
   margin-left: auto;
   margin-right: auto;
+  animation: fadeIn 0.5s ease-out; /* Fade-in effect */
 }
 
 /* Footer */
 .footer-enhanced {
-  background: #81c784;
-  padding: 16px;
+  background: #4CAF50; /* Match page.css --primary-green */
+  padding: 20px; /* More padding */
   color: white;
-  font-size: 1rem;
+  font-size: 1.1rem;
   border-top-left-radius: 30px;
   border-top-right-radius: 30px;
   text-align: center;
+  position: fixed; /* Match page.css */
+  bottom: 0;
+  width: 100%;
+  z-index: 1000;
 }
 
 /* Animation */
@@ -218,5 +243,40 @@ video {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .video-watch-content {
+    padding: 100px 20px 80px; /* Adjust for smaller screens */
+    margin: 20px auto;
+  }
+  .video-watch-header {
+    padding: 12px 20px;
+  }
+  .video-watch-site-title {
+    font-size: 1.6rem;
+  }
+  .video-watch-logo-animated {
+    width: 40px;
+    height: 40px;
+  }
+  .video-wrapper {
+    max-width: 100%;
+  }
+  .question-box {
+    padding: 20px;
+    max-width: 90%;
+  }
+  .option-button,
+  .video-watch-detect-button {
+    width: 90%;
+    font-size: 1.1rem;
   }
 }
