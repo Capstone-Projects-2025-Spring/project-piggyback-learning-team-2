@@ -125,7 +125,8 @@
 
 /* Skip Button */
 .skip-button {
-  background: #ff7043; /* Brighter orange */
+  background: #f15829;
+
   border: none;
   color: white;
   font-size: 1.1rem;
@@ -139,8 +140,10 @@
 }
 
 .skip-button:hover {
+
   background: #f4511e;
   transform: scale(1.05);
+
 }
 
 /* Detect Button */
@@ -168,11 +171,11 @@
 /* Bounding box (detection) */
 .bounding-box {
   position: absolute;
-  border: 3px solid #4caf50; /* cleaner and more visible */
+  border: 3px solid #42b345; /* cleaner and more visible */
   color: #fff;
   font-size: 1rem;
   font-weight: bold;
-  background-color: rgba(76, 175, 80, 0.35); /* semi-transparent green */
+  background-color: rgba(76, 174, 79, 0.35); /* semi-transparent green */
   display: flex;
   align-items: center;
   justify-content: center;
