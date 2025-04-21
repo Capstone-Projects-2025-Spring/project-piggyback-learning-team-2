@@ -6,7 +6,7 @@ import numpy as np
 from PIL import Image
 import io
 
-model = YOLO("yolov8n.pt")  # or your custom-trained YOLOv8 model
+model = YOLO("backend/models/yolov8n.pt")  # or your custom-trained YOLOv8 model
 
 def detect_objects_from_base64(image_base64):
     image_data = base64.b64decode(image_base64)
@@ -27,3 +27,11 @@ def detect_objects_from_base64(image_base64):
                 "confidence": round(confidence, 2)
             })
     return detections
+from fastapi import APIRouter
+
+router = APIRouter()
+
+@router.get("/yolo-test")
+def yolo_test():
+    return {"message": "🧠 YOLOv8 is ready"}
+

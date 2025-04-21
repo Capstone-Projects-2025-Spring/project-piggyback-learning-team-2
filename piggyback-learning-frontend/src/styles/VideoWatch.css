@@ -125,7 +125,8 @@
 
 /* Skip Button */
 .skip-button {
-  background: #ff7043; /* Brighter orange */
+  background: #f15829;
+
   border: none;
   color: white;
   font-size: 1.1rem;
@@ -139,8 +140,10 @@
 }
 
 .skip-button:hover {
+
   background: #f4511e;
   transform: scale(1.05);
+
 }
 
 /* Detect Button */
@@ -168,11 +171,11 @@
 /* Bounding box (detection) */
 .bounding-box {
   position: absolute;
-  border: 3px solid #4caf50; /* cleaner and more visible */
+  border: 3px solid #42b345; /* cleaner and more visible */
   color: #fff;
   font-size: 1rem;
   font-weight: bold;
-  background-color: rgba(76, 175, 80, 0.35); /* semi-transparent green */
+  background-color: rgba(76, 174, 79, 0.35); /* semi-transparent green */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -215,6 +218,58 @@ video {
   margin-right: auto;
   animation: fadeIn 0.5s ease-out; /* Fade-in effect */
 }
+
+
+.summary-box {
+  background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+  border-radius: 20px;
+  padding: 20px;
+  text-align: center;
+  color: #333;
+  font-family: 'Comic Sans MS', cursive, sans-serif;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.summary-title {
+  font-size: 24px;
+  color: #ff69b4;
+}
+
+.summary-text {
+  font-size: 18px;
+  margin: 10px 0;
+}
+
+.play-again-btn {
+  background-color: #00c897;
+  color: white;
+  font-size: 18px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 12px;
+  margin-top: 15px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.play-again-btn:hover {
+  background-color: #00a378;
+}
+
+.go-back-btn {
+  margin-top: 10px;
+  background-color: #007bff;
+  color: white;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  font-size: 16px;
+}
+.go-back-btn:hover {
+  background-color: #0056b3;
+}
+
 
 /* Footer */
 .footer-enhanced {
