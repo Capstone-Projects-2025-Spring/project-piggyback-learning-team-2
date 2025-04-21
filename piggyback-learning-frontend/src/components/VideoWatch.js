@@ -20,6 +20,7 @@ export default function InteractiveVideoQuiz() {
   const videoTitle = queryParams.get("title") || "Unknown Video";
   const isYouTube = videoUrl?.includes("youtube.com") || videoUrl?.includes("youtu.be");
 
+
   const [question, setQuestion] = useState(null);
   const [detections, setDetections] = useState([]);
   const [feedback, setFeedback] = useState("");
@@ -31,6 +32,7 @@ export default function InteractiveVideoQuiz() {
   const [sessionStart, setSessionStart] = useState(null);
   const [sessionEnd, setSessionEnd] = useState(null);
   
+  const [questionStart, setQuestionStart] = useState(null);
 
 
   const pauseVideo = useCallback(() => {
@@ -141,6 +143,7 @@ export default function InteractiveVideoQuiz() {
   // Pause when a question appears
   useEffect(() => {
     if (question) pauseVideo();
+    setQuestionStart(Date.now());
   }, [question, pauseVideo]);
 
   // Time-based auto-detection
@@ -184,6 +187,10 @@ export default function InteractiveVideoQuiz() {
 
   const handleClick = async (label) => {
     if (!question?.id || !label || !question.answer) return;
+
+    const responseTime = questionStart
+    ? Math.floor(Date.now() - questionStart) / 1000
+      : null;
   
     try {
       const res = await fetch("/video/answer", {
@@ -194,6 +201,7 @@ export default function InteractiveVideoQuiz() {
           selected_label: label,
           question_id: question.id,
           timestamp: getCurrentTime(),
+          response_time: responseTime, 
         }),
       });
   
@@ -245,6 +253,7 @@ export default function InteractiveVideoQuiz() {
   const handleWatchAgain = () => {
     // Clear UI elements immediately
     setQuestion(null);
+    setQuestionStart(null);    
     setFeedback("");
     setDetections([]);
     setRetryOption(false);
