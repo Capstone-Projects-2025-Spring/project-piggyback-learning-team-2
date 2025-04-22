@@ -51,6 +51,8 @@ By combining client-side storage for fast, private interaction tracking with bac
 
 This project will require the use of various frontend and backend software tools, including JavaScript, React, HTML/CSS, Flask or FastAPI, IndexedDB, MongdoDB or PostgreSQL and the YouTubeAPI. React will be used for the front-end, Flask or FastAPI for the backend, along with IndexedDB to collect user data locally. MongoDB or PostgresSQL will store user data such as quiz results, and serve as persistent storage for the user data collected locally by IndexedDB such as user clicks. No specialized hardware or software is required for the completion of this project.
 
+## How to Run
+For instructions on how to run the code locally, please reference the Backend setup.docx in the repository or in the release for detailed instructions.
 
 
 ## Collaborators
