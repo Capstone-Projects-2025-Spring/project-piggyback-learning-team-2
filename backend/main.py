@@ -9,7 +9,7 @@ import logging
 from . import db_models, schemas, tools
 from backend.database import engine, get_db
 from backend.routers import crud_test, authentication
-from backend.routers.videos import router as video_router  
+from backend.routers import videos as video_router
 from backend.youtube import retreiveYoutubeMetaData
 from backend.yolov8_router import router as yolo_router
 
@@ -27,21 +27,23 @@ app = FastAPI()
 db_models.Base.metadata.create_all(bind=engine)
 
 origins = ["http://localhost:3000",  # React default
-"http://127.0.0.1:3000", "https://branma-front-latest.onrender.com"]
+"http://127.0.0.1:3000", "http://0.0.0.0:8000", "http://localhost:8000", "https://branma-front-latest.onrender.com"]
 
 # Enable CORS for frontend access (development)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 
 # Include routers
 app.include_router(crud_test.router)
 app.include_router(authentication.router)
-app.include_router(video_router, prefix="/api/v1")
+app.include_router( video_router.router,
+                    prefix="/api/v1/video",
+                    tags=["videos"])
 app.include_router(yolo_router)
 
 # Add middleware to log all requests
@@ -120,6 +122,10 @@ def read_root():
 @app.on_event("startup")
 async def startup_message():
     print("🚀 FastAPI is running!")
+    print("🚀 Available routes:")
+    for route in app.routes:
+        if hasattr(route, "path"):
+            print(f"- {route.path}")
 
 @app.on_event("shutdown")
 async def shutdown_message():

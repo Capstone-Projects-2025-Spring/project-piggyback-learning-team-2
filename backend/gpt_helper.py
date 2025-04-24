@@ -3,7 +3,8 @@ import os
 import json
 import re
 from dotenv import load_dotenv
-
+import time
+from tenacity import retry, stop_after_attempt, wait_exponential
 # Load OpenAI API key from .env file
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -49,7 +50,7 @@ Respond with ONLY this JSON format:
         response = openai.ChatCompletion.create(
             model="gpt-4o",
             messages=[{"role": "user", "content": prompt}],
-            temperature=0.7,
+            temperature=0.5,
         )
 
         raw_response = response.choices[0].message.content
@@ -66,6 +67,11 @@ Respond with ONLY this JSON format:
 
         return parsed
 
+    except openai.error.RateLimitError:
+        print("⚠️ Rate limit hit, waiting before retry...")
+        time.sleep(20)  # Wait 20 seconds before retrying
+        raise  # This will trigger the retry
+
     except Exception as e:
         print(f"[⚠️] GPT MCQ generation failed: {str(e)}")
         return {
@@ -75,6 +81,7 @@ Respond with ONLY this JSON format:
         }
 
 # --- Generate MCQ from YouTube transcript ---
+@retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=4, max=10))
 def generate_questions_from_transcript(title: str, transcript: str):
     prompt = f"""
 You are a friendly educational assistant for children. Read the transcript of a YouTube video below and create a fun multiple-choice question **in English**, even if the video is in another language.
