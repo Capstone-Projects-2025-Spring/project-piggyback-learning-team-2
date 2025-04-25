@@ -46,9 +46,9 @@ The YouTube Iframe API will be used for embedding YouTube videos and interacting
 * Control Playback: The API will be used to pause, play, seek to specific timestamps, and sync quizzes and materials with the video timeline.
 * Video Metadata: Extracts metadata like video titles, descriptions, and timestamps for display in the UI.
 
-## Machine Learning: YOLOv7
+## Machine Learning: YOLOv8
 ### Purpose: 
-YOLOv7 is a python-based object recognition model will be used to analyze the contents of video frames to identify objects or specific content relevant to the video as the (e.g., images for quizzes or learning materials).
+YOLOv8 is a python-based object recognition model will be used to analyze the contents of video frames to identify objects or specific content relevant to the video as the (e.g., images for quizzes or learning materials).
 
 ### Key Features:
 * Object Detection: Detects objects in video frames for later use in generating related quizzes or interactive content.

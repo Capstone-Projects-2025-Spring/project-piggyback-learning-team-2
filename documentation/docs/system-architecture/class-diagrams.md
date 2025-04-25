@@ -39,9 +39,9 @@ Figure 1.2 shows the components that make up AIEngine, which is the component th
 
 This component handles everything related to the AI and ML aspects of the project. It handles scanning videos and collecting frames from them, which are then manually labelled and then given to yolov7 within this component in order to analyze their content to create a question. This component then uses the OpenAI API to generate relevant questions based on the frames. This component is also responsible for collecting the timestamps for the questions so that the video will stop and start and the relevant times to ask the question to a user.
 
-### Yolov7 and OpenAI
+### Yolov8 and OpenAI
 
-These components are external services that the AI Engine uses to achieve it's functionality, with Yolov7 being used to break down video and analyze the content of video frames, and OpenAI's API being used to generate questions based on the frames for users to answer as they watch a video.
+These components are external services that the AI Engine uses to achieve it's functionality, with Yolov8 being used to break down video and analyze the content of video frames, and OpenAI's API being used to generate questions based on the frames for users to answer as they watch a video.
 
 ### Video Interaction and Progress Tracking
 

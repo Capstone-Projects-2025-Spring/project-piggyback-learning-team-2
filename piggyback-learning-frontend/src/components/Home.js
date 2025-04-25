@@ -38,7 +38,7 @@ function Home() {
       // 1. First verify backend connection
       setResponseData("Checking backend connection...");
 
-      const healthResponse = await fetch('http://localhost:8000/health', {
+      const healthResponse = await fetch('/health', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -57,7 +57,7 @@ function Home() {
 
       // 2. Verify YouTube URL
       setResponseData("Validating URL...");
-      const verifyResponse = await fetch('http://localhost:8000/verify_url', {
+      const verifyResponse = await fetch('/verify_url', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -73,7 +73,7 @@ function Home() {
 
       // 3. Start processing
       setResponseData("Starting processing...");
-      const processResponse = await fetch('http://localhost:8000/process', {
+      const processResponse = await fetch('/process', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -95,7 +95,7 @@ function Home() {
         attempts++;
         setResponseData(`Processing (attempt ${attempts}/${maxAttempts})...`);
 
-        const resultsResponse = await fetch('http://localhost:8000/results');
+        const resultsResponse = await fetch('/results');
         const resultsData = await resultsResponse.json();
 
         if (resultsData.status === 'complete') {

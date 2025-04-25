@@ -11,6 +11,7 @@ import re
 from dotenv import load_dotenv
 
 # Load environment variables - moved to function to avoid loading on import
+'''
 def load_aws_credentials():
     load_dotenv("aws_storage_credentials.env")
 
@@ -26,6 +27,43 @@ def load_aws_credentials():
     bedrock_runtime = boto3.client('bedrock-runtime', aws_access_key_id=AWS_ACCESS_KEY, aws_secret_access_key=AWS_SECRET_KEY, region_name=AWS_REGION)
 
     return s3_client, transcribe_client, bedrock_runtime, S3_AUDIO_BUCKET
+'''
+def load_aws_credentials():
+    # Load from specific path if needed
+    env_path = os.path.join(os.path.dirname(__file__), "aws_storage_credentials.env")
+    if not os.path.exists(env_path):
+        raise FileNotFoundError(f"AWS credentials file not found at {env_path}")
+    
+    load_dotenv(env_path)
+
+    # Verify all required variables exist
+    required_vars = ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_DEFAULT_REGION', 'S3_AUDIO_BUCKET_NAME']
+    missing_vars = [var for var in required_vars if not os.getenv(var)]
+    if missing_vars:
+        raise ValueError(f"Missing AWS credentials: {missing_vars}")
+
+    return (
+        os.getenv('AWS_ACCESS_KEY_ID'),
+        os.getenv('AWS_SECRET_ACCESS_KEY'),
+        os.getenv('AWS_DEFAULT_REGION'),
+        os.getenv('S3_AUDIO_BUCKET_NAME')
+    )
+
+def get_aws_clients():
+    access_key, secret_key, region, bucket = load_aws_credentials()
+    
+    session = boto3.Session(
+        aws_access_key_id=access_key,
+        aws_secret_access_key=secret_key,
+        region_name=region
+    )
+    
+    return (
+        session.client('s3'),
+        session.client('transcribe'),
+        session.client('bedrock-runtime'),
+        bucket
+    )
 
 # Clean existing files
 def ensure_clean_files():
@@ -53,6 +91,31 @@ def validate_youtube_url(url):
     return any(re.match(pattern, url) for pattern in patterns)
 
 # Extracts raw audio from video
+def extract_video_audio(youtube_url):
+    ydl_opts = {
+        'format': 'bestaudio/best',
+        'cookiefile': 'cookies.txt',  # Point to your cookies file
+        'ignoreerrors': True,
+        'extractor_args': {
+            'youtube': {
+                'skip': ['dash', 'hls'],  # Avoid problematic formats
+                'player_client': ['web']   # Use web client with cookies
+            }
+        },
+        'http_headers': {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        }
+    }
+
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(youtube_url, download=False)
+            if not info or 'url' not in info:
+                raise ValueError("Could not extract audio URL")
+            return info['url'], info['ext']
+    except Exception as e:
+        raise RuntimeError(f"Audio extraction failed: {str(e)}")
+'''
 def extract_video_audio(youtube_url):
     """More robust audio extraction with validation"""
     print(f"Extracting audio from: {youtube_url}")
@@ -90,6 +153,7 @@ def extract_video_audio(youtube_url):
 
     except Exception as e:
         raise RuntimeError(f"Audio extraction failed: {str(e)}")
+'''
 
 # Transcribes the audio into text
 def transcribe_audio(audio_url, format_extension, s3_client, transcribe_client, S3_AUDIO_BUCKET):
@@ -389,9 +453,14 @@ def generate_questions_from_youtube(youtube_url):
     print(f"Starting question generation process for: {youtube_url}")
 
     # Load AWS credentials
-    s3_client, transcribe_client, bedrock_runtime, S3_AUDIO_BUCKET = load_aws_credentials()
+    # s3_client, transcribe_client, bedrock_runtime, S3_AUDIO_BUCKET = load_aws_credentials()
 
     try:
+
+        # Load AWS credentials
+        # s3_client, transcribe_client, bedrock_runtime, S3_AUDIO_BUCKET = load_aws_credentials()
+        s3_client, transcribe_client, bedrock_runtime, S3_AUDIO_BUCKET = get_aws_clients()
+
         # Extract audio
         print("Extracting audio from video...")
         audio_source, format_extension = extract_video_audio(youtube_url)
