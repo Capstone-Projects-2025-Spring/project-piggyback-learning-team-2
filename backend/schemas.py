@@ -21,3 +21,21 @@ class UserResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+# For saving video information        
+class VideoQuestionBase(BaseModel):
+    video_link: str
+    video_title: Optional[str] = None
+    video_thumbnail: Optional[str] = None
+    video_duration: Optional[int] = None
+    questions_json: Dict[str, Any]
+
+class VideoQuestionCreate(VideoQuestionBase):
+    pass
+
+class VideoQuestion(VideoQuestionBase):
+    video_id: str
+    created_at:datetime
+
+    class Config:
+        from_attributes = True

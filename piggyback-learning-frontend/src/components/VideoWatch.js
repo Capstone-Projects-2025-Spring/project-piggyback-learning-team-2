@@ -1,558 +1,835 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import '../styles/VideoWatch.css';
 import ReactPlayer from 'react-player';
 import logo from '../images/Mob_Iron_Hog.png';
-import { useNavigate } from 'react-router-dom';
 
+// Utility functions
+function getYouTubeVideoId(url) {
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : null;
+}
+
+function formatTime(seconds) {
+  if (!seconds || isNaN(seconds)) return '0:00';
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+  return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+}
 
 export default function InteractiveVideoQuiz() {
+  // Constants and refs
+  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
   const videoRef = useRef(null);
   const playerRef = useRef(null);
-  const canvasRef = useRef(null);
   const videoWrapperRef = useRef(null);
   const location = useLocation();
   const navigate = useNavigate();
 
-
+  // URL parameters
   const queryParams = new URLSearchParams(location.search);
   const videoUrl = queryParams.get("video");
   const videoTitle = queryParams.get("title") || "Unknown Video";
+  const isProcessing = queryParams.get("processing") === "true";
   const isYouTube = videoUrl?.includes("youtube.com") || videoUrl?.includes("youtu.be");
+  const videoId = getYouTubeVideoId(videoUrl);
 
+  // State management
+  const [state, setState] = useState({
+    processing: {
+      status: isProcessing ? 'processing' : 'idle',
+      progress: '',
+      elapsed: 0,
+      remaining: null,
+      error: null,
+      pollCount: 0
+    },
+    quiz: {
+      questions: [],
+      currentQuestion: null,
+      detections: [],
+      feedback: "",
+      answeredQuestions: {},
+      questionHistory: {},  // Add this line
+      retryOption: false,
+      showSummary: false
+    },
+    player: {
+      autoDetect: true,
+      lastQuestionTime: 0,
+      videoReady: false,
+      isPlaying: false,
+      lastQuestionId: null
+    },
+    session: {
+      start: null,
+      end: null,
+      stats: {
+        total: 0,
+        correct: 0,
+        wrong: 0,
+        skipped: 0,
+        startTime: null,
+        endTime: null,
+      }
+    }
+  });
 
-  const [question, setQuestion] = useState(null);
-  const [detections, setDetections] = useState([]);
-  const [feedback, setFeedback] = useState("");
-  const [autoDetect, setAutoDetect] = useState(true);
-  const [lastQuestionTime, setLastQuestionTime] = useState(0);
-  const [videoReady, setVideoReady] = useState(false);
-  const [retryOption, setRetryOption] = useState(false);
-  const [showSummary, setShowSummary] = useState(false);
-  const [sessionStart, setSessionStart] = useState(null);
-  const [sessionEnd, setSessionEnd] = useState(null);
-  
-  const [questionStart, setQuestionStart] = useState(null);
+  // Derived state for easier access
+  const {
+    processing, quiz, player, session
+  } = state;
 
+  // Helper functions for state updates
+  const updateState = (key, value) => {
+    setState(prev => ({ ...prev, [key]: { ...prev[key], ...value } }));
+  };
 
+  const updateQuizState = (value) => updateState('quiz', value);
+  const updatePlayerState = (value) => updateState('player', value);
+  const updateProcessingState = (value) => updateState('processing', value);
+  const updateSessionState = (value) => updateState('session', value);
+
+  // Video control functions
   const pauseVideo = useCallback(() => {
     if (isYouTube) {
-      playerRef.current?.getInternalPlayer()?.pauseVideo();
-    } else {
-      videoRef.current?.pause();
+      const player = playerRef.current?.getInternalPlayer();
+      player?.pauseVideo?.();
+    } else if (videoRef.current) {
+      videoRef.current.pause();
     }
+    updatePlayerState({ isPlaying: false });
   }, [isYouTube]);
 
   const playVideo = useCallback(() => {
     if (isYouTube) {
-      playerRef.current?.getInternalPlayer()?.playVideo();
-    } else {
-      videoRef.current?.play();
+      const player = playerRef.current?.getInternalPlayer();
+      player?.playVideo?.();
+    } else if (videoRef.current) {
+      videoRef.current.play();
     }
+    updatePlayerState({ isPlaying: true });
   }, [isYouTube]);
 
   const getCurrentTime = useCallback(() => {
-    return isYouTube
-      ? playerRef.current?.getInternalPlayer()?.getCurrentTime?.() || 0
-      : videoRef.current?.currentTime || 0;
-  }, [isYouTube]);
-
-  const captureFrame = useCallback(async () => {
-    if (isYouTube) {
-      // 🟢 YouTube Mode — use transcript
-      setFeedback("⏳ Getting question from YouTube transcript...");
-  
-      try {
-        const res = await fetch("/video/process", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ youtube_url: videoUrl, title: videoTitle }),
-        });
-  
-        if (!res.ok) {
-          const err = await res.text();
-          console.error("❌ Transcript fetch failed:", err);
-          setFeedback("⚠️ Could not get transcript question.");
-          return;
-        }
-  
-        const data = await res.json();
-        setDetections([]); // No boxes in YouTube mode
-        setQuestion(data.question || null);
-        setFeedback("");
-      } catch (err) {
-        console.error("❌ Error getting GPT question:", err);
-        setFeedback("⚠️ Failed to process YouTube transcript.");
-      }
-  
-      return;
-    }
-  
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-    if (!video || !canvas) return;
-  
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-  
-    const ctx = canvas.getContext("2d");
-    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const base64 = canvas.toDataURL("image/jpeg").split(",")[1];
-  
-    setFeedback("⏳ Detecting objects...");
-    try {
-      const res = await fetch("/video/process", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ image_base64: base64, title: videoTitle }),
-      });
-  
-      if (!res.ok) {
-        const err = await res.text();
-        console.error("Server error:", err);
-        setFeedback("⚠️ Object detection failed.");
-        return;
-      }
-  
-      const data = await res.json();
-      const detected = Array.isArray(data.objects) ? data.objects : [];
-      setDetections(detected);
-  
-      let questionFromBackend = data.question;
-      if (!questionFromBackend && Array.isArray(data.questions)) {
-        questionFromBackend = {
-          id: "q1",
-          text: typeof data.questions[0] === "string" ? data.questions[0] : data.questions[0]?.text,
-        };
-      }
-  
-      if (!questionFromBackend && detected.length === 0) {
-        setFeedback("🤷 No objects or question found in this frame.");
-      } else {
-        setFeedback("");
-      }
-  
-      setQuestion(questionFromBackend || null);
-    } catch (err) {
-      console.error("Failed to detect:", err);
-      setFeedback("⚠️ Error contacting detection service.");
-    }
-  }, [isYouTube, videoUrl, videoTitle]);
-  
-
-  // Pause when a question appears
-  useEffect(() => {
-    if (question) pauseVideo();
-    setQuestionStart(Date.now());
-  }, [question, pauseVideo]);
-
-  // Time-based auto-detection
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-
-    const handleTimeUpdate = () => {
-      const currentTime = Math.floor(video.currentTime);
-      if (currentTime - lastQuestionTime >= 25 && !question) {
-        setLastQuestionTime(currentTime);
-        captureFrame();
-      }
-    };
-
-    video.addEventListener("timeupdate", handleTimeUpdate);
-    return () => video.removeEventListener("timeupdate", handleTimeUpdate);
-  }, [lastQuestionTime, question, captureFrame]);
-
-  useEffect(() => {
-    if (!videoReady || question) return;
-    const interval = setInterval(() => {
-      const now = getCurrentTime();
-      if (now - lastQuestionTime >= 20) {
-        setLastQuestionTime(now);
-        captureFrame();
-      }
-    }, 1000); // check every second, ask only after 20s
-    return () => clearInterval(interval);
-  }, [lastQuestionTime, question, captureFrame, getCurrentTime, videoReady]);
-  
-  // Auto-detect if enabled
-  useEffect(() => {
-    if (!autoDetect) return;
-    const currentTime = getCurrentTime();
-    if (currentTime - lastQuestionTime >= 25 && !question) {
-      setLastQuestionTime(currentTime);
-      captureFrame();
-    }
-  }, [lastQuestionTime, question, autoDetect, captureFrame, getCurrentTime]);
-
-  const handleClick = async (label) => {
-    if (!question?.id || !label || !question.answer) return;
-
-    const responseTime = questionStart
-    ? Math.floor(Date.now() - questionStart) / 1000
-      : null;
-  
-    try {
-      const res = await fetch("/video/answer", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          answer: question.answer,
-          selected_label: label,
-          question_id: question.id,
-          timestamp: getCurrentTime(),
-          response_time: responseTime, 
-        }),
-      });
-  
-      const result = await res.json();
-  
-      if (!result || result.correct === undefined) {
-        setFeedback("⚠️ Could not check your answer.");
-        return;
-      }
-  
-      if (result.correct) {
-        markCorrect();
-        setFeedback("✅ Correct!");
-        setDetections([]);
-        setTimeout(() => {
-          setFeedback("");
-          setQuestion(null);
-          playVideo();
-        }, 2000);
-      } else {
-        markWrong();
-        setFeedback("❌ Wrong! Let's learn why.");
-        setDetections([]);
-        // ❌ Ask GPT for explanation
-        const explainRes = await fetch("/video/explain", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            answer: question.answer,
-            selected_label: label,
-            question: question.text,
-            options: question.options,
-          }),
-        });
-  
-        const explain = await explainRes.json();
-        setFeedback(`❌ ${explain.message}`);
-        setRetryOption(true); 
-      }
-    } catch (error) {
-      console.error("❌ Error submitting answer:", error);
-      setFeedback("⚠️ Could not check your answer.");
-    }
-    
-  };
-
-  
-
-  const handleWatchAgain = () => {
-    // Clear UI elements immediately
-    setQuestion(null);
-    setQuestionStart(null);    
-    setFeedback("");
-    setDetections([]);
-    setRetryOption(false);
-    setLastQuestionTime(0); // reset timer
-  
-    // Force video to restart from beginning
     if (isYouTube) {
       const player = playerRef.current?.getInternalPlayer();
-      if (player?.seekTo) {
-        player.seekTo(0, true);
+      return player?.getCurrentTime?.() || 0;
+    } else if (videoRef.current) {
+      return videoRef.current.currentTime || 0;
+    }
+    return 0;
+  }, [isYouTube]);
+
+  const showQuestion = useCallback((question) => {
+    const filteredDetections = question.type === 'object_detection' && question.objects
+        ? question.objects.filter(obj => obj.label.toLowerCase() === question.answer.toLowerCase())
+        : [];
+
+    updateQuizState({
+      currentQuestion: question,
+      detections: filteredDetections,
+      feedback: "", // Clear any existing feedback
+      retryOption: false // Reset retry option
+    });
+
+    updatePlayerState({
+      lastQuestionTime: getCurrentTime(),
+      lastQuestionId: question.id
+    });
+
+    pauseVideo();
+  }, [getCurrentTime, pauseVideo]);
+
+  // Processing cancellation function
+  const handleCancelProcessing = async () => {
+    try {
+      console.log(`Cancelling processing for ${videoId}`);
+
+      // First update UI immediately for better responsiveness
+      updateProcessingState({
+        status: 'cancelling',
+        progress: 'Cancelling processing...'
+      });
+
+      const response = await fetch(`${BACKEND_URL}/api/v1/video/cancel/${videoId}`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'}
+      });
+
+      if (response.ok) {
+        // Update the local state to reflect cancellation
+        updateProcessingState({
+          status: 'cancelled',
+          progress: 'Processing cancelled'
+        });
+
+        // Force a page reload after a short delay
+        setTimeout(() => {
+          window.location.href = '/'; // Redirect to home page after cancellation
+        }, 2000);
+      } else {
+        throw new Error(`Cancel failed: ${response.status}`);
       }
-      player?.playVideo?.();
-    } else {
-      if (videoRef.current) {
-        videoRef.current.pause();
-        videoRef.current.currentTime = 0;
-        videoRef.current.play();
+    } catch (error) {
+      console.error("Cancellation error:", error);
+
+      // Even if the cancellation API fails, update the UI to show cancellation
+      updateProcessingState({
+        status: 'cancelled',
+        progress: 'Processing cancelled (forced)',
+        error: `Failed to cancel: ${error.message}`
+      });
+
+      // Redirect anyway
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 2000);
+    }
+  };
+
+  // Processing effects
+  useEffect(() => {
+    if (!isProcessing || !videoId) return;
+
+    let pollInterval = null;
+    let consecutiveErrors = 0;
+    const MAX_ERRORS = 5;
+    const POLL_INTERVAL_MS = 2000;
+    const MAX_POLL_COUNT = 150;
+
+    const processVideo = async () => {
+      updateProcessingState({
+        status: 'processing',
+        progress: 'Starting...',
+        elapsed: 0,
+        remaining: null
+      });
+
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/v1/video/process/${videoId}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            youtube_url: videoUrl,
+            title: videoTitle,
+            full_analysis: true,
+            num_questions: 5,
+            keyframe_interval: 30
+          })
+        });
+
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+      } catch (error) {
+        console.error("Processing error:", error);
+        updateProcessingState({ error: error.message });
       }
+    };
+
+    const pollResults = async () => {
+      try {
+        updateProcessingState(prev => ({ pollCount: prev.pollCount + 1 }));
+
+        if (processing.pollCount > MAX_POLL_COUNT) {
+          clearInterval(pollInterval);
+          updateProcessingState({ error: "Processing timeout. Please try again later." });
+          return;
+        }
+
+        const resultsResponse = await fetch(`${BACKEND_URL}/api/v1/video/results/${videoId}`, {
+          method: 'GET',
+          cache: 'no-store'
+        });
+
+        if (!resultsResponse.ok) throw new Error(`HTTP error! status: ${resultsResponse.status}`);
+
+        const resultsData = await resultsResponse.json();
+        consecutiveErrors = 0;
+
+        updateProcessingState({
+          ...resultsData,
+          status: resultsData.status || processing.status
+        });
+
+        if (resultsData.status === 'complete') {
+          clearInterval(pollInterval);
+
+          if (resultsData.questions?.length) {
+            const validatedQuestions = resultsData.questions.map((q, index) => ({
+              id: q.id || `question-${index}`,
+              text: q.text || "What is shown in this frame?",
+              type: q.type || "text",
+              options: q.options || [],
+              answer: q.answer || "",
+              timestamp: q.timestamp || 0,
+              objects: q.objects || []
+            }));
+
+            updateQuizState({ questions: validatedQuestions });
+            localStorage.setItem(`video_${videoId}_questions`, JSON.stringify(validatedQuestions));
+            playVideo();
+          } else {
+            updateProcessingState({ error: "No questions were generated. Please try again." });
+          }
+        } else if (resultsData.status === 'error') {
+          clearInterval(pollInterval);
+          updateProcessingState({ error: resultsData.error || "Processing failed" });
+        }
+
+      } catch (error) {
+        console.error("Polling error:", error);
+        if (++consecutiveErrors >= MAX_ERRORS) {
+          clearInterval(pollInterval);
+          updateProcessingState({ error: "Connection to server lost. Please refresh the page." });
+        }
+      }
+    };
+
+    processVideo();
+    pollInterval = setInterval(pollResults, POLL_INTERVAL_MS);
+    const initialPollTimeout = setTimeout(pollResults, 1000);
+
+    return () => {
+      clearInterval(pollInterval);
+      clearTimeout(initialPollTimeout);
+    };
+  }, [isProcessing, videoId, videoUrl, videoTitle, BACKEND_URL]);
+
+  // Load cached questions
+  useEffect(() => {
+    if (!isProcessing && videoId) {
+      const cachedQuestions = localStorage.getItem(`video_${videoId}_questions`);
+      if (cachedQuestions) {
+        try {
+          const parsedQuestions = JSON.parse(cachedQuestions);
+          if (Array.isArray(parsedQuestions) && parsedQuestions.length > 0) {
+            updateQuizState({ questions: parsedQuestions });
+          }
+        } catch (error) {
+          console.error("Error parsing cached questions:", error);
+        }
+      }
+    }
+  }, [isProcessing, videoId]);
+
+  // Question handling
+  const checkQuestionTime = useCallback(() => {
+    if (!player.videoReady || !quiz.questions.length || !player.isPlaying) return;
+
+    const currentTime = getCurrentTime();
+
+    // Clear current question if we've seeked before its timestamp
+    if (quiz.currentQuestion && currentTime < quiz.currentQuestion.timestamp - 1) {
+      updateQuizState({
+        currentQuestion: null,
+        detections: [],
+        feedback: "",
+        retryOption: false
+      });
+      return;
+    }
+
+    // Try to find rewatched questions first
+    if (player.lastQuestionId) {
+      const sameQuestion = quiz.questions.find(q =>
+          q.id === player.lastQuestionId &&
+          !quiz.answeredQuestions[q.id]
+      );
+
+      if (sameQuestion) {
+        const timeDiff = Math.abs(sameQuestion.timestamp - currentTime);
+        const threshold = sameQuestion.type === 'object_detection' ? 0.3 : 1.5;
+
+        if (timeDiff <= threshold) {
+          showQuestion(sameQuestion);
+          return;
+        }
+      }
+    }
+
+    // Otherwise find the next appropriate question
+    const nextQuestion = quiz.questions.find(q => {
+      const timeDiff = Math.abs(q.timestamp - currentTime);
+      const threshold = q.type === 'object_detection' ? 0.3 : 1.5;
+      return timeDiff <= threshold && !quiz.answeredQuestions[q.id];
+    });
+
+    if (nextQuestion) {
+      showQuestion(nextQuestion);
+    }
+  }, [player, quiz, getCurrentTime, pauseVideo]);
+
+  // Lets users rewind video
+  const handleWatchAgain = () => {
+    const currentTime = getCurrentTime();
+    const seekTime = Math.max(0, currentTime - 10);
+
+    // Clear current question immediately when rewinding
+    updateQuizState({
+      currentQuestion: null,
+      detections: [],
+      feedback: "",
+      retryOption: false
+    });
+
+    // Store the original answer data but REMOVE it from answeredQuestions
+    // so the question can be asked again
+    if (quiz.currentQuestion?.id) {
+      const questionId = quiz.currentQuestion.id;
+      const updatedAnswers = {...quiz.answeredQuestions};
+
+      // Save the answer data in a separate property to track attempts
+      const previousAnswer = updatedAnswers[questionId];
+
+      // Actually delete the entry so the question can be asked again
+      delete updatedAnswers[questionId];
+
+      // Add to question history for tracking purposes only
+      const questionHistory = quiz.questionHistory || {};
+      questionHistory[questionId] = questionHistory[questionId] || [];
+      questionHistory[questionId].push({
+        ...previousAnswer,
+        retried: true
+      });
+
+      updateQuizState({
+        answeredQuestions: updatedAnswers,
+        questionHistory: questionHistory
+      });
+    }
+
+    // Force the same question to be asked again
+    updatePlayerState({
+      lastQuestionTime: 0,
+      lastQuestionId: quiz.currentQuestion?.id
+    });
+
+    if (isYouTube && playerRef.current?.seekTo) {
+      playerRef.current.seekTo(seekTime);
+    } else if (videoRef.current) {
+      videoRef.current.currentTime = seekTime;
+    }
+    playVideo();
+  };
+
+  const handleRestartVideo = () => {
+    updatePlayerState({
+      lastQuestionTime: 0,
+      lastQuestionId: null,
+    });
+
+    updateQuizState({
+      showSummary: false,
+      feedback: "",
+      retryOption: false,
+      currentQuestion: null,
+      detections: [],
+      answeredQuestions: {}, // Reset answers if restarting
+    });
+
+    updateSessionState({
+      stats: { // Reset stats if restarting
+        total: 0,
+        correct: 0,
+        wrong: 0,
+        skipped: 0,
+        startTime: Date.now(),
+        endTime: null
+      }
+    });
+
+    if (isYouTube && playerRef.current?.seekTo) {
+      playerRef.current.seekTo(0);
+    } else if (videoRef.current) {
+      videoRef.current.currentTime = 0;
+    }
+    playVideo();
+  };
+
+  useEffect(() => {
+    const interval = setInterval(checkQuestionTime, 500);
+    return () => clearInterval(interval);
+  }, [checkQuestionTime]);
+
+  // Answer handling
+  const handleAnswer = async (label) => {
+    if (!quiz.currentQuestion?.id || !label) return;
+
+    const questionId = quiz.currentQuestion.id;
+    const correctAnswer = quiz.currentQuestion.answer || quiz.currentQuestion.options?.[0] || "";
+    const isCorrect = label.toLowerCase() === correctAnswer.toLowerCase();
+
+    // Check if this is the first time answering this question
+    const isFirstInteraction = !quiz.answeredQuestions[questionId] &&
+        (!quiz.questionHistory || !quiz.questionHistory[questionId]);
+
+    // Only update stats if this is the first interaction
+    if (isFirstInteraction) {
+      const newStats = {
+        ...session.stats,
+        correct: isCorrect ? session.stats.correct + 1 : session.stats.correct,
+        wrong: !isCorrect ? session.stats.wrong + 1 : session.stats.wrong,
+        total: session.stats.total + 1
+      };
+      updateSessionState({ stats: newStats });
+    }
+
+    // Track this answer
+    const newAnsweredQuestions = {
+      ...quiz.answeredQuestions,
+      [questionId]: {
+        answered: true,
+        correct: isCorrect,
+        selectedAnswer: label,
+        timestamp: Date.now(),
+        questionTime: getCurrentTime(),
+        statsUpdated: true
+      }
+    };
+
+    updateQuizState({
+      answeredQuestions: newAnsweredQuestions,
+      feedback: isCorrect ? "✅ Correct!" : "❌ That's not correct. Try again!",
+      retryOption: !isCorrect
+    });
+
+    if (isCorrect) {
+      setTimeout(() => {
+        updateQuizState({ currentQuestion: null, detections: [], feedback: "" });
+        playVideo();
+      }, 2000);
     }
   };
 
 
-  // 1. Define the result tracker
-const [resultStats, setResultStats] = useState({
-  total: 0,
-  correct: 0,
-  wrong: 0,
-  skipped: 0,
-  startTime: null,
-  endTime: null,
-});
+  // Skip question
+  const handleSkip = () => {
+    if (quiz.currentQuestion) {
+      const questionId = quiz.currentQuestion.id;
 
-// 2. Set start time only once when video is ready
-useEffect(() => {
-  if (videoReady && !resultStats.startTime) {
-    setResultStats(prev => ({ ...prev, startTime: Date.now() }));
-  }
-}, [videoReady, resultStats.startTime]);
+      // Only count as skipped if this is the first interaction with this question
+      const isFirstInteraction = !quiz.answeredQuestions[questionId] &&
+          (!quiz.questionHistory || !quiz.questionHistory[questionId]);
 
-// 3. Call inside appropriate events:
+      // Update stats only on first interaction
+      if (isFirstInteraction) {
+        const newStats = {
+          ...session.stats,
+          skipped: session.stats.skipped + 1,
+          total: session.stats.total + 1
+        };
+        updateSessionState({ stats: newStats });
+      }
 
-const markCorrect = () => {
-  setResultStats(prev => ({
-    ...prev,
-    correct: prev.correct + 1,
-    total: prev.total + 1
-  }));
-};
+      const newAnsweredQuestions = {
+        ...quiz.answeredQuestions,
+        [questionId]: {
+          answered: true,
+          skipped: true,
+          questionTime: getCurrentTime(),
+          statsUpdated: true
+        }
+      };
 
-const markWrong = () => {
-  setResultStats(prev => ({
-    ...prev,
-    wrong: prev.wrong + 1,
-    total: prev.total + 1
-  }));
-};
+      updateQuizState({
+        currentQuestion: null,
+        detections: [],
+        feedback: "⏭️ Skipped question.",
+        answeredQuestions: newAnsweredQuestions,
+        retryOption: false
+      });
 
-const handleSkip = () => {
-  setResultStats(prev => ({
-    ...prev,
-    skipped: prev.skipped + 1,
-    total: prev.total + 1
-  }));
-  setFeedback("⏭️ Skipped question.");
-  setDetections([]);
-  setQuestion(null);
-  playVideo();
-};
+      updatePlayerState({ lastQuestionId: null });
+      playVideo();
 
-useEffect(() => {
-  if (videoReady && !resultStats.startTime) {
-    setResultStats(prev => ({ ...prev, startTime: Date.now() }));
-  }
-}, [videoReady, resultStats.startTime]);
-
-
-
-useEffect(() => {
-  setSessionStart(Date.now());
-}, []);
-
-const handleEnd = () => {
-  const now = Date.now();
-
-  // Set session end time
-  setSessionEnd(now);
-
-  // Ensure both start and end are set in resultStats
-  setResultStats(prev => {
-    const start = prev.startTime || sessionStart || now;
-    return {
-      ...prev,
-      startTime: start,
-      endTime: now,
-    };
-  });
-
-  // Show summary
-  setShowSummary(true);
-};
-
-
-
-  return (
-    <div className="video-watch-container">
-      <header className="video-watch-header">
-        <div className="video-watch-logo-container">
-          <img src={logo} alt="Logo" className="video-watch-logo-animated" />
-          <span className="video-watch-site-title">Interactive Video Quiz</span>
-        </div>
-        <nav className="video-watch-nav-links">
-          <a href="/">Home</a>
-          <a href="/profile">Profile</a>
-        </nav>
-      </header>
-  
-      <main className="video-watch-content">
-        <h2>🎬 Learning Time!</h2>
-  
-        {!videoUrl ? (
-          <p className="feedback">⚠️ No video selected</p>
-        ) : (
-          <>
-            {question && (
-              <div className="question-box dynamic-glow">
-                <h3 className="question-text">🧠 {question.text}</h3>
-                {question.options && (
-                  <div className="options">
-                    {question.options.map((opt, index) => (
-                      <button
-                        key={index}
-                        className="option-button vibrant-border"
-                        onClick={() => handleClick(opt)}
-                      >
-                        {opt}
-                      </button>
-                    ))}
-                  </div>
-                )}
-                {feedback && <p className="feedback colorful-feedback">{feedback}</p>}
-                <button onClick={handleSkip} className="skip-button fancy-skip">⏭️ Skip</button>
-  
-                {retryOption && (
-                  <div className="retry-buttons inside-box">
-                    <button className="retry-btn" onClick={() => setRetryOption(false)}>🔁 Try Again</button>
-                    <button className="watch-again-btn" onClick={handleWatchAgain}>▶️ Watch Again</button>
-
-                  </div>
-                )}
-              </div>
-            )}
-  
-            <div
-              className="video-wrapper"
-              ref={videoWrapperRef}
-              style={{ position: "relative", width: "640px", height: "360px" }}
-            >
-              {!isYouTube ? (
-                <video
-                  ref={videoRef}
-                  src={videoUrl}
-                  crossOrigin="anonymous"
-                  controls
-                  autoPlay
-                  width="640"
-                  height="360"
-                  onPlay={() => setAutoDetect(true)}
-                  onPause={() => setAutoDetect(false)}
-                  onLoadedMetadata={() => setVideoReady(true)}
-                  onEnded={handleEnd}
-                />
-              ) : (
-                <ReactPlayer
-                  onEnded={handleEnd}
-                  ref={playerRef}
-                  url={videoUrl}
-                  playing
-                  controls
-                  width="640px"
-                  height="360px"
-                  onPlay={() => {
-                    setAutoDetect(true);
-                    setVideoReady(true);
-                  }}
-                  onPause={() => setAutoDetect(false)}
-                  onReady={() => setVideoReady(true)}
-                />
-              )}
-  
-  {videoReady && detections.map((det, i) => {
-  const video = videoRef.current;
-  const wrapper = videoWrapperRef.current;
-
-  if (!video || !wrapper || !video.videoWidth || !video.videoHeight) return null;
-
-  const [x1, y1, x2, y2] = det.box;
-
-  const intrinsicWidth = video.videoWidth;
-  const intrinsicHeight = video.videoHeight;
-  const displayedWidth = wrapper.clientWidth;
-  const displayedHeight = wrapper.clientHeight;
-
-  const videoAspect = intrinsicWidth / intrinsicHeight;
-  const wrapperAspect = displayedWidth / displayedHeight;
-
-  let scaleX, scaleY, offsetX = 0, offsetY = 0;
-
-  if (wrapperAspect > videoAspect) {
-    const scaledHeight = displayedHeight;
-    const scaledWidth = scaledHeight * videoAspect;
-    scaleX = scaleY = scaledWidth / intrinsicWidth;
-    offsetX = (displayedWidth - scaledWidth) / 5;
-  } else {
-    const scaledWidth = displayedWidth;
-    const scaledHeight = scaledWidth / videoAspect;
-    scaleX = scaleY = scaledWidth / intrinsicWidth;
-    offsetY = (displayedHeight - scaledHeight) / 5;
-  }
-
-  const originalWidth = (x2 - x1) * scaleX;
-  const originalHeight = (y2 - y1) * scaleY;
-
-  const scaleFactor = 2;
-  const width = originalWidth * scaleFactor;
-  const height = originalHeight * scaleFactor;
-
-  const centerX = x1 * scaleX + offsetX + originalWidth / 0.3;
-  const centerY = y1 * scaleY + offsetY + originalHeight / 1;
-  const left = centerX - width / 1.5;
-  const top = centerY - height / 2;
-
-  const boxStyle = {
-    position: "absolute",
-    left: `${left}px`,
-    top: `${top}px`,
-    width: `${width}px`,
-    height: `${height}px`,
-    border: "2px solid limegreen",
-    backgroundColor: "rgba(0, 255, 0, 0.25)",
-    color: "#fff",
-    fontSize: "14px",
-    fontWeight: "bold",
-    zIndex: 10,
-    pointerEvents: "auto",
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
+      setTimeout(() => updateQuizState({ feedback: "" }), 1500);
+    }
   };
 
+  // Video ended handler
+  const handleVideoEnded = () => {
+    const now = Date.now();
+
+    // For summary, count unique questions
+    const uniqueQuestionCount = new Set(Object.keys(quiz.answeredQuestions)).size;
+
+    // For reporting, get raw counts from the stats
+    const { correct, wrong, skipped, total } = session.stats;
+
+    updateSessionState({
+      end: now,
+      stats: {
+        ...session.stats,
+        endTime: now,
+        uniqueCount: uniqueQuestionCount
+      }
+    });
+
+    updateQuizState({ showSummary: true });
+  };
+
+  // Detection box calculation for object detection
+  const calculateDetectionBoxStyle = (det) => {
+    const wrapper = videoWrapperRef.current;
+    if (!wrapper) return null;
+
+    let videoElement, videoWidth, videoHeight;
+
+    if (isYouTube) {
+      videoElement = wrapper;
+      videoWidth = det.original_width || 640;
+      videoHeight = det.original_height || 360;
+    } else {
+      videoElement = videoRef.current;
+      videoWidth = videoElement?.videoWidth || 640;
+      videoHeight = videoElement?.videoHeight || 360;
+    }
+
+    const wrapperWidth = wrapper.clientWidth;
+    const wrapperHeight = wrapper.clientHeight;
+    const videoAspect = videoWidth / videoHeight;
+    const wrapperAspect = wrapperWidth / wrapperHeight;
+
+    let scale, offsetX = 0, offsetY = 0;
+
+    if (wrapperAspect > videoAspect) {
+      scale = wrapperHeight / videoHeight;
+      offsetX = (wrapperWidth - videoWidth * scale) / 2;
+    } else {
+      scale = wrapperWidth / videoWidth;
+      offsetY = (wrapperHeight - videoHeight * scale) / 2;
+    }
+
+    const [x1, y1, x2, y2] = det.box;
+    const left = offsetX + x1 * scale;
+    const top = offsetY + y1 * scale;
+    const width = (x2 - x1) * scale;
+    const height = (y2 - y1) * scale;
+
+    return {
+      position: "absolute",
+      left: `${left}px`,
+      top: `${top}px`,
+      width: `${width}px`,
+      height: `${height}px`,
+      border: "none", // Removed visible border
+      backgroundColor: "transparent", // Made transparent
+      zIndex: 10,
+      pointerEvents: "auto",
+      cursor: "pointer",
+      opacity: 0 // Fully transparent but still clickable
+    };
+  };
+
+  // Video player
+  const playerProps = {
+    ref: playerRef,
+    url: videoUrl,
+    playing: player.isPlaying && !quiz.currentQuestion,
+    controls: true,
+    width: "640px",
+    height: "360px",
+    onPlay: () => updatePlayerState({ isPlaying: true, autoDetect: true, videoReady: true }),
+    onPause: () => updatePlayerState({ isPlaying: false, autoDetect: false }),
+    onReady: () => {
+      updatePlayerState({ videoReady: true });
+      // Auto-play when ready if not processing
+      if (!isProcessing) {
+        playVideo();
+      }
+    },
+    onEnded: handleVideoEnded,
+    onError: (e) => {
+      console.error("Video playback error:", e);
+      updateQuizState({ feedback: "⚠️ Video playback error. Please try refreshing." });
+    }
+  };
+
+  // Initialization
+  useEffect(() => {
+    updateSessionState({ start: Date.now(), stats: { ...session.stats, startTime: Date.now() } });
+  }, []);
+
+  // Render
   return (
-    <div key={i} style={boxStyle} onClick={() => handleClick(det.label)}>
-      {det.label}
-    </div>
-  );
-})}
-
-
-              <canvas ref={canvasRef} style={{ display: "none" }} />
+      <div className="video-watch-container">
+        {/* Error/Processing Overlays */}
+        {!videoId && videoUrl && (
+            <div className="error-overlay">
+              <h3>Invalid Video URL</h3>
+              <p>The provided YouTube URL is not valid.</p>
+              <button onClick={() => navigate('/')}>Go Back</button>
             </div>
-  
-            <button onClick={captureFrame} className="video-watch-detect-button">
-              ✨ Ask Question Now
-            </button>
-  
-            {detections.length === 0 && (
-              <p className="feedback subtle-alert">⚠️ No clickable objects detected in this frame.</p>
-            )}
-            {feedback && !question && <p className="feedback subtle-alert">{feedback}</p>}
-
-      
-          </>
         )}
-                {showSummary && (
-            <div className="summary-overlay-on-video">
-              <div className="summary-box animate-summary">
-                <h2>🌟 You're Amazing! 🌟</h2>
-                <p>🎯 <strong>Total Questions:</strong> {resultStats.total}</p>
-                <p>✅ <strong>Correct:</strong> {resultStats.correct}</p>
-                <p>❌ <strong>Wrong:</strong> {resultStats.wrong}</p>
-                <p>⏭️ <strong>Skipped:</strong> {resultStats.skipped}</p>
-                <p>⏱️ <strong>Time Watched:</strong> {Math.round((resultStats.endTime - resultStats.startTime) / 1000)}s</p>
-                {sessionStart && sessionEnd && (
-                  <p className="summary-text">
-                    🕒 <strong>Session Time:</strong> {Math.round((sessionEnd - sessionStart) / 1000)}s
-                  </p>
+
+        {processing.status === 'processing' && (
+            <div className="processing-overlay">
+              <div className="spinner"></div>
+              <h3>Processing Video: {videoTitle}</h3>
+              {processing.progress && <p>Step: {processing.progress}</p>}
+              <p>Elapsed: {formatTime(processing.elapsed || 0)}</p>
+              {processing.remaining && <p>Estimated remaining: {formatTime(processing.remaining)}</p>}
+              <button onClick={handleCancelProcessing} className="cancel-button">
+                Cancel Processing
+              </button>
+            </div>
+        )}
+
+        {processing.status === 'cancelling' && (
+            <div className="processing-overlay">
+              <div className="spinner"></div>
+              <h3>Cancelling Processing...</h3>
+              <p>Please wait...</p>
+            </div>
+        )}
+
+        {processing.error && (
+            <div className="error-overlay">
+              <h3>Processing Error</h3>
+              <p>{processing.error}</p>
+              <button onClick={() => window.location.reload()}>Reload Page</button>
+              <button onClick={() => navigate('/')}>Go Home</button>
+            </div>
+        )}
+
+        {/* Main Content */}
+        <header className="video-watch-header">
+          <div className="video-watch-logo-container">
+            <img src={logo} alt="Logo" className="video-watch-logo-animated"/>
+            <span className="video-watch-site-title">Interactive Video Quiz</span>
+          </div>
+          <nav className="video-watch-nav-links">
+            <a href="/">Home</a>
+            <a href="/profile">Profile</a>
+          </nav>
+        </header>
+
+        <main className="video-watch-content">
+          <h2>🎬 Learning Time!</h2>
+
+          {!videoUrl ? (
+              <p className="feedback">⚠️ No video selected</p>
+          ) : (
+              <>
+                {/* Question Box */}
+                {quiz.currentQuestion && (
+                    <div className="question-box dynamic-glow">
+                      <h3 className="question-text">🧠 {quiz.currentQuestion.text}</h3>
+                      {quiz.currentQuestion.type === 'object_detection' ? (
+                          <p className="instruction">Click on the object in the video!</p>
+                      ) : (
+                          quiz.currentQuestion.options?.length > 0 && (
+                              <div className="options">
+                                {quiz.currentQuestion.options.map((opt, index) => (
+                                    <button
+                                        key={index}
+                                        className="option-button vibrant-border"
+                                        onClick={() => handleAnswer(opt)}
+                                    >
+                                      {opt}
+                                    </button>
+                                ))}
+                              </div>
+                          )
+                      )}
+                      {quiz.feedback && <p className="feedback colorful-feedback">{quiz.feedback}</p>}
+                      <button onClick={handleSkip} className="skip-button fancy-skip">⏭️ Skip</button>
+
+                      {quiz.retryOption && (
+                          <div className="retry-buttons inside-box">
+                            <button className="retry-btn" onClick={() => {
+                              const updated = {...quiz.answeredQuestions};
+                              delete updated[quiz.currentQuestion.id];
+                              updateQuizState({
+                                retryOption: false,
+                                feedback: "",
+                                answeredQuestions: updated
+                              });
+                            }}>
+                              🔁 Try Again
+                            </button>
+                            <button className="watch-again-btn" onClick={handleWatchAgain}>
+                              ▶️ Watch Again
+                            </button>
+                          </div>
+                      )}
+                    </div>
                 )}
 
-                <button className="play-again-btn" onClick={handleWatchAgain}>🔁 Watch Again</button>
-                <button className="go-back-btn" onClick={() => navigate("/profile")}>🏠 Go Back to Profile</button>
-              </div>
-            </div>
+                {/* Video Player */}
+                <div className="video-wrapper" ref={videoWrapperRef} style={{position: "relative", width: "640px", height: "360px"}}>
+                  {!isYouTube ? (
+                      <video
+                          ref={videoRef}
+                          src={videoUrl}
+                          crossOrigin="anonymous"
+                          controls
+                          autoPlay={!isProcessing}
+                          width="640"
+                          height="360"
+                          onPlay={() => updatePlayerState({ isPlaying: true, autoDetect: true })}
+                          onPause={() => updatePlayerState({ isPlaying: false })}
+                          onLoadedMetadata={() => updatePlayerState({ videoReady: true })}
+                          onEnded={handleVideoEnded}
+                      />
+                  ) : (
+                      <ReactPlayer {...playerProps} />
+                  )}
+
+                  {/* Detection Boxes */}
+                  {player.videoReady && quiz.detections.map((det, i) => {
+                    const boxStyle = calculateDetectionBoxStyle(det);
+                    if (!boxStyle) return null;
+
+                    return (
+                        <div
+                            key={i}
+                            style={boxStyle}
+                            onClick={() => handleAnswer(det.label)}
+                            title={`Click to select ${det.label}`}
+                        >
+                          {det.label}
+                        </div>
+                    );
+                  })}
+                </div>
+              </>
           )}
 
-      </main>
-  
-      <footer className="footer-enhanced">
-        © 2025 Piggyback Learning — Keep Exploring!
-      </footer>
-    </div>
+          {/* Summary Overlay */}
+          {quiz.showSummary && (
+              <div className="summary-overlay-on-video">
+                <div className="summary-box dynamic-glow">
+                  <h2>🌟 You're Amazing! 🌟</h2>
+                  <div className="results-summary">
+                    <p>🎯 <strong>Total Questions:</strong> {quiz.questions.length}</p>
+                    <p>✅ <strong>Correct:</strong> {session.stats.correct}</p>
+                    <p>❌ <strong>Wrong:</strong> {session.stats.wrong}</p>
+                    <p>⏭️ <strong>Skipped:</strong> {session.stats.skipped}</p>
+                    <p>⏱️ <strong>Time
+                      Watched:</strong> {Math.round((session.stats.endTime - session.stats.startTime) / 1000)}s</p>
+                    {session.start && session.end && (
+                        <p>🕒 <strong>Session Time:</strong> {Math.round((session.end - session.start) / 1000)}s</p>
+                    )}
+                  </div>
+
+                  <div className="summary-buttons">
+                    <button className="fancy-button" onClick={handleRestartVideo}>
+                      🔁 Watch Again
+                    </button>
+                    <button className="fancy-button" onClick={() => navigate("/profile")}>
+                    🏠 Go to Profile
+                    </button>
+                  </div>
+                </div>
+              </div>
+          )}
+        </main>
+
+        <footer className="footer-enhanced">
+          © 2025 Piggyback Learning — Keep Exploring!
+        </footer>
+      </div>
   );
- 
 }

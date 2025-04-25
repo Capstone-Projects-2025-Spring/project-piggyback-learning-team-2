@@ -1,17 +1,23 @@
 FROM python:3.11-slim
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-    libgl1-mesa-glx \
-    libglib2.0-0 \
-    && rm -rf /var/lib/apt/lists/*
-
 WORKDIR /usr/src/app
 
-COPY requirements.txt ./
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    libgl1-mesa-glx \
+    libglib2.0-0 \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
 
+# Install Python dependencies
+COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# Copy application
 COPY . .
 
+# Added threads to make some of the yolov8 stuff go faster. If it works with the rest of the code I can comment this out.
+# CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000", "--workers", "2"]
+
 CMD ["uvicorn", "backend.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
