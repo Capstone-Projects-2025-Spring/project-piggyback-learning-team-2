@@ -52,7 +52,29 @@ By combining client-side storage for fast, private interaction tracking with bac
 This project will require the use of various frontend and backend software tools, including JavaScript, React, HTML/CSS, Flask or FastAPI, IndexedDB, MongdoDB or PostgreSQL and the YouTubeAPI. React will be used for the front-end, Flask or FastAPI for the backend, along with IndexedDB to collect user data locally. MongoDB or PostgresSQL will store user data such as quiz results, and serve as persistent storage for the user data collected locally by IndexedDB such as user clicks. No specialized hardware or software is required for the completion of this project.
 
 ## How to Run
+
+### Deployed website link 
+[Click here](https://branma-front-latest.onrender.com/)
+
+### 📦 Install locally
 For instructions on how to run the code locally, please reference the Backend setup.docx in the repository or in the release for detailed instructions.
+
+Download the latest release: https://github.com/Capstone-Projects-2025-Spring/project-piggyback-learning-team-2/releases
+
+### 🐋 Docker 
+Frontend: https://hub.docker.com/r/branma/branma-front  
+Backend: https://hub.docker.com/r/tonygao777/fastapi
+
+1. Install Docker 
+2. Run the commands 
+```bash
+docker pull branma/branma-front:latest
+docker run -p 3000:3000 branma/branma-front:latest
+
+docker pull tonygao777/fastapi:latest
+docker run -p 80:8000 tonygao777/fastapi:latest
+```
+3. After both containers are running, open web browser and enter link localhost:3000.
 
 
 ## Collaborators
@@ -61,17 +83,44 @@ For instructions on how to run the code locally, please reference the Backend se
 <table>
 <tr>
     <td align="center">
-        <a href="https://github.com/ApplebaumIan">
-            <img src="https://avatars.githubusercontent.com/u/9451941?v=4" width="100;" alt="ApplebaumIan"/>
+        <a href="https://github.com/Lara-Fernandes-60730">
+            <img src="https://avatars.githubusercontent.com/u/156948184?v=4" width="100;" alt="LaraFernandes"/>
             <br />
-            <sub><b>Ian Tyler Applebaum</b></sub>
+            <sub><b>Lara Fernandes</b></sub>
         </a>
     </td>
     <td align="center">
-        <a href="https://github.com/leighflagg">
-            <img src="https://avatars.githubusercontent.com/u/77810293?v=4" width="100;" alt="leighflagg"/>
+        <a href="https://github.com/B-Hugger">
+            <img src="https://avatars.githubusercontent.com/u/102758882?v=4" width="100;" alt="BrandonHugger"/>
             <br />
-            <sub><b>Null</b></sub>
+            <sub><b>Brandon Hugger</b></sub>
+        </a>
+    </td>
+    <td align="center">
+        <a href="https://github.com/TonyGao777">
+            <img src="https://avatars.githubusercontent.com/u/143619198?v=4" width="100;" alt="TonyGao"/>
+            <br />
+            <sub><b>Tony Gao</b></sub>
+        </a>
+    </td>
+    <td align="center">
+        <a href="https://github.com/glantig1">
+            <img src="https://avatars.githubusercontent.com/u/143743234?v=4" width="100;" alt="GabrielLantigua"/>
+            <br />
+            <sub><b>Gabriel Lantigua</b></sub>
+        </a>
+    </td><td align="center">
+        <a href="https://github.com/Gunlords">
+            <img src="https://avatars.githubusercontent.com/u/180465432?v=4" width="100;" alt="AnkurChowdhury"/>
+            <br />
+            <sub><b>Ankur Chowdhury</b></sub>
+        </a>
+    </td>
+    <td align="center">
+        <a href="https://github.com/kripseepatel">
+            <img src="https://avatars.githubusercontent.com/u/156947074?v=4" width="100;" alt="KripseePatel"/>
+            <br />
+            <sub><b>Kripsee Patel</b></sub>
         </a>
     </td></tr>
 </table>
