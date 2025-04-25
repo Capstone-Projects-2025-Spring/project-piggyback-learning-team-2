@@ -1,5 +1,5 @@
 ---
-sidebar_position: 8
+sidebar_position: 7
 ---
 # Algorithm Overview
 The project leverages a variety of algorithms to process videos, analyze frames, and generate meaningful questions based on those analyses. The core components are YOLOv7 for object detection, machine learning for analyzing frames, OpenAI’s API for generating questions from those analyses, and Google’s Text-to-Speech API for reading the questions aloud. The training data is sourced from videos, primarily YouTube Kids, which are used for both training and testing the model. Below is an overview of the key algorithms employed in the project:
