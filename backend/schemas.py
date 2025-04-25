@@ -1,4 +1,6 @@
 from pydantic import BaseModel, EmailStr, HttpUrl
+from typing import Optional, Dict, Any
+from datetime import datetime
 
 
 # For YouTube video validation
