@@ -12,7 +12,7 @@ from backend.routers import crud_test, authentication
 from backend.routers import videos as video_router
 from backend.youtube import retreiveYoutubeMetaData
 from backend.yolov8_router import router as yolo_router
-
+from backend.schemas import UserCredentials, UserResponse, YouTubeVideo
 
 logging.basicConfig(
     level=logging.INFO,
@@ -20,8 +20,11 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+
 # Initialize FastAPI app
 app = FastAPI()
+
+app.include_router(yolo_router)
 
 # Register database models
 db_models.Base.metadata.create_all(bind=engine)
