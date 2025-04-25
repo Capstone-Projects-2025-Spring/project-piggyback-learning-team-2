@@ -204,16 +204,22 @@ async def process_keyframe(video_id: str, timestamp: int) -> Optional[Dict]:
             logger.debug(f"No objects detected in keyframe at {timestamp}s")
             return None
 
-        # Create object detection question
+        # Get the primary object (largest detection)
         primary_object = max(detections, key=lambda x: (x['box'][2]-x['box'][0])*(x['box'][3]-x['box'][1]))
+
+        # Filter detections to only include the primary object
+        filtered_detections = [d for d in detections if d['label'] == primary_object['label']]
+
         question = {
             'id': f"obj-det-{timestamp}-{int(time.time())}",
             'text': f"Click on the {primary_object['label']}",
             'type': 'object_detection',
-            'options': [d['label'] for d in detections],
+            'options': [primary_object['label']],
             'answer': primary_object['label'],
-            'timestamp': timestamp,
-            'objects': detections
+            'timestamp': timestamp,  # Keep original precise timestamp
+            'objects': filtered_detections,
+            'original_width': img.width,  # Add original dimensions
+            'original_height': img.height
         }
         return question
 
@@ -222,7 +228,7 @@ async def process_keyframe(video_id: str, timestamp: int) -> Optional[Dict]:
         return None
 
 async def process_transcript_sections(transcript: List[Dict], title: str, num_questions: int) -> List[Dict]:
-    """Process transcript sections into questions"""
+    """Process transcript sections with time adjustments for MCQs"""
     questions = []
     total_duration = transcript[-1]['start'] + transcript[-1]['duration']
     section_length = total_duration / num_questions
@@ -236,8 +242,11 @@ async def process_transcript_sections(transcript: List[Dict], title: str, num_qu
 
         if section_text:
             question = await generate_questions_for_section(title, section_text)
-            # Round timestamp to nearest whole number
-            question['timestamp'] = round(start_time + (section_length / 2))
+            # Add 5 seconds to MCQ questions only
+            if question['type'] != 'object_detection':
+                question['timestamp'] = start_time + (section_length / 2) + 5
+            else:
+                question['timestamp'] = start_time + (section_length / 2)
             questions.append(question)
 
     return questions
@@ -293,7 +302,7 @@ async def run_full_analysis(
                 if section_text:
                     question = await generate_questions_for_section(title, section_text)
                     question['timestamp'] = round(section[0]['start'] +
-                                                  (section[-1]['start'] + section[-1]['duration'] - section[0]['start']) / 2)+5
+                                                  (section[-1]['start'] + section[-1]['duration'] - section[0]['start']) / 2) + 5
                     transcript_questions.append(question)
 
             # Skip keyframe processing if cancelled
@@ -304,13 +313,12 @@ async def run_full_analysis(
             await update_processing_state(video_id, progress="Analyzing keyframes")
             keyframe_questions = []
 
-            # Get duration or use estimate
             duration = await get_video_duration(video_id) or 300  # Default 5 min
-
-            # Process fewer keyframes for better performance
             max_keyframes = min(5, math.ceil(duration / keyframe_interval))
-            step = math.ceil(duration / max_keyframes)
-            timestamps = [i * step for i in range(max_keyframes)]
+            step = math.ceil((duration - 20) / max_keyframes)  # Leave first 10 seconds
+
+            # Start timestamps from 10 seconds in
+            timestamps = [20 + (i * step) for i in range(max_keyframes)]
 
             # Process keyframes sequentially with cancellation checks
             for i, timestamp in enumerate(timestamps):
@@ -451,17 +459,6 @@ async def initialize_cache():
         FastAPICache.init(InMemoryBackend(), prefix="video-cache-fallback")
         logger.info("Falling back to in-memory cache")
 
-@router.get("/transcript/{video_id}")
-@cache(expire=int(timedelta(hours=24).total_seconds()))
-async def get_cached_transcript(video_id: str):
-    """Get cached transcript with retry logic"""
-    try:
-        transcript = await get_transcript_with_retry(video_id)
-        return {"status": "success", "transcript": transcript}
-    except Exception as e:
-        logger.error(f"Transcript error: {str(e)}")
-        raise HTTPException(status_code=400, detail=str(e))
-
 @router.post("/process/{video_id}")
 async def start_video_processing(
         video_id: str,
@@ -575,6 +572,17 @@ async def get_processing_results(video_id: str):
 
     return result
 
+@router.get("/transcript/{video_id}")
+@cache(expire=int(timedelta(hours=24).total_seconds()))
+async def get_cached_transcript(video_id: str):
+    """Get cached transcript with retry logic"""
+    try:
+        transcript = await get_transcript_with_retry(video_id)
+        return {"status": "success", "transcript": transcript}
+    except Exception as e:
+        logger.error(f"Transcript error: {str(e)}")
+        raise HTTPException(status_code=400, detail=str(e))
+
 # Improve cancel_processing function
 @router.post("/cancel/{video_id}")
 async def cancel_processing(video_id: str):
@@ -645,8 +653,8 @@ You are an AI tutor for kids. A student gave a wrong answer to the following qui
 
 Options: {', '.join(payload['options'])}
 
-Please explain *briefly* and kindly why the answer is incorrect, and encourage them to try again or rewatch the video.
-Respond with a single friendly sentence.
+If the answer is incorrect, please explain *briefly* and kindly why the answer is incorrect, and encourage them to try again or rewatch the video.
+If the answer is correct, please explain *briefly* and kindly why the answer is correct. Respond with a single friendly sentence.
 """
 
     try:
