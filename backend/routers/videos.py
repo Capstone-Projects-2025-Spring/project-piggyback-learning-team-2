@@ -198,28 +198,27 @@ async def process_keyframe(video_id: str, timestamp: int) -> Optional[Dict]:
         img_bytes = base64.b64encode(buffer).decode('utf-8')
 
         # Run object detection
-        labels = await run_in_executor(detect_objects_from_base64, img_bytes)
+        detections = await run_in_executor(detect_objects_from_base64, img_bytes)
 
-        if not labels or len(labels) < 2:
-            logger.debug(f"Not enough objects detected in keyframe at {timestamp}s")
+        if not detections or len(detections) < 1:
+            logger.debug(f"No objects detected in keyframe at {timestamp}s")
             return None
 
-        # Generate a question about the objects in the frame
-        question = await run_in_executor(
-            generate_mcq_from_labels,
-            labels,
-            timestamp=timestamp,
-            include_box_data=True  # Make sure we include box data for highlighting
-        )
-
-        if question:
-            question['timestamp'] = timestamp
-            question['type'] = 'object_detection'  # Mark as object detection question
-
+        # Create object detection question
+        primary_object = max(detections, key=lambda x: (x['box'][2]-x['box'][0])*(x['box'][3]-x['box'][1]))
+        question = {
+            'id': f"obj-det-{timestamp}-{int(time.time())}",
+            'text': f"Click on the {primary_object['label']}",
+            'type': 'object_detection',
+            'options': [d['label'] for d in detections],
+            'answer': primary_object['label'],
+            'timestamp': timestamp,
+            'objects': detections
+        }
         return question
 
     except Exception as e:
-        logger.error(f"Keyframe processing failed at {timestamp}s: {str(e)}")
+        logger.error(f"Keyframe processing failed: {str(e)}")
         return None
 
 async def process_transcript_sections(transcript: List[Dict], title: str, num_questions: int) -> List[Dict]:
@@ -294,7 +293,7 @@ async def run_full_analysis(
                 if section_text:
                     question = await generate_questions_for_section(title, section_text)
                     question['timestamp'] = round(section[0]['start'] +
-                                                  (section[-1]['start'] + section[-1]['duration'] - section[0]['start']) / 2)+3
+                                                  (section[-1]['start'] + section[-1]['duration'] - section[0]['start']) / 2)+5
                     transcript_questions.append(question)
 
             # Skip keyframe processing if cancelled

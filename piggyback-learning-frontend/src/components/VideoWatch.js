@@ -321,7 +321,6 @@ export default function InteractiveVideoQuiz() {
   }, [isYouTube]);
 
   // Modified time update handler to find questions at timestamps
-  // Modified time update handler to find questions at timestamps
   useEffect(() => {
     if (!videoReady || questions.length === 0) return;
 
@@ -344,6 +343,7 @@ export default function InteractiveVideoQuiz() {
 
         // If it's an object detection question, also set the detections
         if (nextQuestion.type === 'object_detection' && nextQuestion.objects) {
+          console.log("Setting detections for object detection question:", nextQuestion.objects);
           setDetections(nextQuestion.objects);
         } else {
           // Clear any previous detections for regular questions
@@ -358,6 +358,7 @@ export default function InteractiveVideoQuiz() {
     const interval = setInterval(checkQuestionTime, 1000);
     return () => clearInterval(interval);
   }, [videoReady, questions, currentQuestion, getCurrentTime, pauseVideo, lastQuestionTime, answeredQuestions]);
+
 
   const captureFrame = useCallback(async () => {
 
@@ -430,6 +431,13 @@ export default function InteractiveVideoQuiz() {
             setDetections(data.objects);
           } else {
             setDetections([]);
+          }
+
+          if (data.objects && data.objects.length > 0) {
+            console.log("Object detection data received:", data.objects);
+            // Ensure we set the question type correctly
+            validatedQuestion.type = 'object_detection';
+            setDetections(data.objects);
           }
 
           setCurrentQuestion(validatedQuestion);
@@ -564,10 +572,6 @@ export default function InteractiveVideoQuiz() {
 
   // Answer handling - FIXED to prevent double counting
   const handleAnswer = async (label) => {
-    // Debug logging for question structure
-    console.log("Current question:", currentQuestion);
-    console.log("Selected label:", label);
-
     if (!currentQuestion?.id) {
       setFeedback("⚠️ No active question to answer.");
       return;
@@ -581,19 +585,24 @@ export default function InteractiveVideoQuiz() {
     // Check if this question has already been answered
     const questionAlreadyAnswered = answeredQuestions[currentQuestion.id];
 
-    // If not already answered, we'll count it in our stats
+    // Only update stats if this is the first time answering this question
     if (!questionAlreadyAnswered) {
       // Add to answered questions tracking
       setAnsweredQuestions(prev => ({
         ...prev,
         [currentQuestion.id]: true
       }));
-    }
 
-    if (!currentQuestion.answer) {
-      // If no answer is available, use the first option as a fallback
-      console.log("No answer defined, using first option as fallback");
-      currentQuestion.answer = currentQuestion.options[0] || label;
+      // Determine if answer is correct
+      const correctAnswer = currentQuestion.answer || currentQuestion.options?.[0] || "";
+      const isCorrect = label.toLowerCase() === correctAnswer.toLowerCase();
+
+      // Update stats based on correctness
+      if (isCorrect) {
+        markCorrect();
+      } else {
+        markWrong();
+      }
     }
 
     try {
@@ -615,11 +624,6 @@ export default function InteractiveVideoQuiz() {
       const result = await res.json();
 
       if (result.correct) {
-        // Only update stats if this is the first time answering
-        if (!questionAlreadyAnswered) {
-          markCorrect();
-        }
-
         setFeedback("✅ Correct!");
         setDetections([]);
         setTimeout(() => {
@@ -628,11 +632,6 @@ export default function InteractiveVideoQuiz() {
           playVideo();
         }, 2000);
       } else {
-        // Only update stats if this is the first time answering
-        if (!questionAlreadyAnswered) {
-          markWrong();
-        }
-
         try {
           const explainRes = await fetch(`${BACKEND_URL}/api/v1/video/explain`, {
             method: "POST",
@@ -743,6 +742,8 @@ export default function InteractiveVideoQuiz() {
     // Preserve current question to show it again
     const questionToReshow = currentQuestion;
 
+    setShowSummary(false);
+
     // Clear UI elements completely
     setFeedback("");
     setRetryOption(false);
@@ -765,7 +766,8 @@ export default function InteractiveVideoQuiz() {
       if (isYouTube && playerRef.current?.seekTo) {
         playerRef.current.seekTo(Math.max(0, questionToReshow.timestamp - 5));
       } else if (videoRef.current) {
-        videoRef.current.currentTime = Math.max(0, questionToReshow.timestamp - 5);
+        // videoRef.current.currentTime = Math.max(0, questionToReshow.timestamp - 5);
+        videoRef.current.currentTime = 0;
       }
 
       // Reset last question time to slightly before the question's time
@@ -789,6 +791,19 @@ export default function InteractiveVideoQuiz() {
       }
     }
   };
+
+  useEffect(() => {
+    if (currentQuestion) {
+      console.log('Current question:', {
+        type: currentQuestion.type,
+        objects: currentQuestion.objects,
+        text: currentQuestion.text
+      });
+      if (currentQuestion.type === 'object_detection') {
+        console.log('Object detection boxes:', currentQuestion.objects);
+      }
+    }
+  }, [currentQuestion]);
 
   // Handle video ended - show summary
   const handleVideoEnded = () => {
@@ -907,32 +922,28 @@ export default function InteractiveVideoQuiz() {
               <>
                 {currentQuestion && currentQuestion.type === 'summary' ? (
                     <div className="question-box dynamic-glow">
-                      <h3 className="question-text">🎯 Quiz Summary</h3>
-                      <div className="results-summary">
-                        <p>Total Questions: {resultStats.total}</p>
-                        <p>✅ Correct: {resultStats.correct}</p>
-                        <p>❌ Wrong: {resultStats.wrong}</p>
-                        <p>⏭️ Skipped: {resultStats.skipped}</p>
-                      </div>
-                      <button onClick={() => navigate('/')} className="fancy-button">
-                        Return Home
-                      </button>
+                      {/* Summary content */}
                     </div>
-                ) : currentQuestion && (
+                ) : currentQuestion ? (
                     <div className="question-box dynamic-glow">
                       <h3 className="question-text">🧠 {currentQuestion.text}</h3>
-                      {currentQuestion.options && currentQuestion.options.length > 0 && (
-                          <div className="options">
-                            {currentQuestion.options.map((opt, index) => (
-                                <button
-                                    key={index}
-                                    className="option-button vibrant-border"
-                                    onClick={() => handleAnswer(opt)}
-                                >
-                                  {opt}
-                                </button>
-                            ))}
-                          </div>
+
+                      {currentQuestion.type === 'object_detection' ? (
+                          <p className="instruction">Click on the object in the video!</p>
+                      ) : (
+                          currentQuestion.options?.length > 0 && (
+                              <div className="options">
+                                {currentQuestion.options.map((opt, index) => (
+                                    <button
+                                        key={index}
+                                        className="option-button vibrant-border"
+                                        onClick={() => handleAnswer(opt)}
+                                    >
+                                      {opt}
+                                    </button>
+                                ))}
+                              </div>
+                          )
                       )}
                       {feedback && <p className="feedback colorful-feedback">{feedback}</p>}
                       <button onClick={handleSkip} className="skip-button fancy-skip">⏭️ Skip</button>
@@ -941,19 +952,16 @@ export default function InteractiveVideoQuiz() {
                           <div className="retry-buttons inside-box">
                             <button className="retry-btn" onClick={() => {
                               setRetryOption(false);
-                              setFeedback(""); // Clear feedback when trying again
+                              setFeedback("");
                             }}>
                               🔁 Try Again
                             </button>
                             <button className="watch-again-btn" onClick={() => {
-                              // Get current question before clearing
                               const questionToReshow = currentQuestion;
-
                               setRetryOption(false);
                               setFeedback("");
                               setCurrentQuestion(null);
 
-                              // Un-mark this question as answered
                               if (questionToReshow && questionToReshow.id) {
                                 setAnsweredQuestions(prev => {
                                   const updated = {...prev};
@@ -962,14 +970,12 @@ export default function InteractiveVideoQuiz() {
                                 });
                               }
 
-                              // If we have a timestamp for the current question, rewind to 5 seconds before
                               if (questionToReshow && questionToReshow.timestamp) {
                                 if (isYouTube && playerRef.current?.seekTo) {
                                   playerRef.current.seekTo(Math.max(0, questionToReshow.timestamp - 5));
                                 } else if (videoRef.current) {
                                   videoRef.current.currentTime = Math.max(0, questionToReshow.timestamp - 5);
                                 }
-                                // Also reset the last question time
                                 setLastQuestionTime(Math.max(0, questionToReshow.timestamp - 10));
                               }
                               playVideo();
@@ -979,7 +985,7 @@ export default function InteractiveVideoQuiz() {
                           </div>
                       )}
                     </div>
-                )}
+                ) : null}
                 <div
                     className="video-wrapper"
                     ref={videoWrapperRef}
@@ -1022,46 +1028,51 @@ export default function InteractiveVideoQuiz() {
                   )}
 
                   {videoReady && detections.map((det, i) => {
-                    const video = videoRef.current;
                     const wrapper = videoWrapperRef.current;
+                    let videoElement, videoWidth, videoHeight;
 
-                    if (!video || !wrapper || !video.videoWidth || !video.videoHeight) return null;
-
-                    const [x1, y1, x2, y2] = det.box;
-
-                    const intrinsicWidth = video.videoWidth;
-                    const intrinsicHeight = video.videoHeight;
-                    const displayedWidth = wrapper.clientWidth;
-                    const displayedHeight = wrapper.clientHeight;
-
-                    const videoAspect = intrinsicWidth / intrinsicHeight;
-                    const wrapperAspect = displayedWidth / displayedHeight;
-
-                    let scaleX, scaleY, offsetX = 0, offsetY = 0;
-
-                    if (wrapperAspect > videoAspect) {
-                      const scaledHeight = displayedHeight;
-                      const scaledWidth = scaledHeight * videoAspect;
-                      scaleX = scaleY = scaledWidth / intrinsicWidth;
-                      offsetX = (displayedWidth - scaledWidth) / 5;
+                    if (isYouTube) {
+                      // For YouTube, we'll use the wrapper dimensions
+                      videoElement = wrapper;
+                      videoWidth = det.original_width || 640; // Use original dimensions if available
+                      videoHeight = det.original_height || 360;
                     } else {
-                      const scaledWidth = displayedWidth;
-                      const scaledHeight = scaledWidth / videoAspect;
-                      scaleX = scaleY = scaledWidth / intrinsicWidth;
-                      offsetY = (displayedHeight - scaledHeight) / 5;
+                      // For direct video, use video dimensions
+                      videoElement = videoRef.current;
+                      videoWidth = videoElement?.videoWidth || 640;
+                      videoHeight = videoElement?.videoHeight || 360;
                     }
 
-                    const originalWidth = (x2 - x1) * scaleX;
-                    const originalHeight = (y2 - y1) * scaleY;
+                    if (!wrapper || !videoElement) return null;
 
-                    const scaleFactor = 2;
-                    const width = originalWidth * scaleFactor;
-                    const height = originalHeight * scaleFactor;
+                    // Calculate the scale factor based on the actual player size
+                    const wrapperWidth = wrapper.clientWidth;
+                    const wrapperHeight = wrapper.clientHeight;
 
-                    const centerX = x1 * scaleX + offsetX + originalWidth / 0.3;
-                    const centerY = y1 * scaleY + offsetY + originalHeight / 1;
-                    const left = centerX - width / 1.5;
-                    const top = centerY - height / 2;
+                    // Calculate aspect ratios
+                    const videoAspect = videoWidth / videoHeight;
+                    const wrapperAspect = wrapperWidth / wrapperHeight;
+
+                    let scale, offsetX = 0, offsetY = 0;
+
+                    if (wrapperAspect > videoAspect) {
+                      // Letterboxing (black bars on sides)
+                      scale = wrapperHeight / videoHeight;
+                      offsetX = (wrapperWidth - videoWidth * scale) / 2;
+                    } else {
+                      // Pillarboxing (black bars top and bottom)
+                      scale = wrapperWidth / videoWidth;
+                      offsetY = (wrapperHeight - videoHeight * scale) / 2;
+                    }
+
+                    const [x1, y1, x2, y2] = det.box;
+                    const left = offsetX + x1 * scale;
+                    const top = offsetY + y1 * scale;
+                    const width = (x2 - x1) * scale;
+                    const height = (y2 - y1) * scale;
+
+                    // Ensure the values are reasonable
+                    console.log(`Detection ${i}: ${det.label}, Box: [${x1},${y1},${x2},${y2}], Calculated: [${left},${top},${width},${height}]`);
 
                     const boxStyle = {
                       position: "absolute",
@@ -1069,8 +1080,8 @@ export default function InteractiveVideoQuiz() {
                       top: `${top}px`,
                       width: `${width}px`,
                       height: `${height}px`,
-                      border: "2px solid limegreen",
-                      backgroundColor: "rgba(0, 255, 0, 0.25)",
+                      border: "3px solid limegreen",
+                      backgroundColor: "rgba(0, 255, 0, 0.3)",
                       color: "#fff",
                       fontSize: "14px",
                       fontWeight: "bold",
@@ -1079,15 +1090,21 @@ export default function InteractiveVideoQuiz() {
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
+                      cursor: "pointer",
+                      textShadow: "0 0 3px black, 0 0 3px black"  // Make text more visible
                     };
 
                     return (
-                        <div key={i} style={boxStyle} onClick={() => handleAnswer(det.label)}>
+                        <div
+                            key={i}
+                            style={boxStyle}
+                            onClick={() => handleAnswer(det.label)}
+                            title={`Click to select ${det.label}`}
+                        >
                           {det.label}
                         </div>
                     );
                   })}
-
 
                   <canvas ref={canvasRef} style={{ display: "none" }} />
                 </div>
@@ -1120,7 +1137,10 @@ export default function InteractiveVideoQuiz() {
                   </div>
 
                   <div className="summary-buttons">
-                    <button className="fancy-button" onClick={handleWatchAgain}>🔁 Watch Again</button>
+                    <button className="fancy-button" onClick={() => {
+                      setShowSummary(false);
+                      handleWatchAgain();
+                    }}>🔁 Watch Again</button>
                     <button className="fancy-button" onClick={() => navigate("/profile")}>🏠 Go to Profile</button>
                   </div>
                 </div>
