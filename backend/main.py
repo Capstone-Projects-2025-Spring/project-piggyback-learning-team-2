@@ -12,6 +12,7 @@ from backend.routers import crud_test, authentication
 from backend.routers import videos as video_router
 from backend.youtube import retreiveYoutubeMetaData
 from backend.yolov8_router import router as yolo_router
+from backend.schemas import UserCredentials, UserResponse, YouTubeVideo
 
 
 logging.basicConfig(

@@ -18,6 +18,35 @@ function formatTime(seconds) {
   return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
 
+// Text to Speech for Questions
+const speakQuestion = (question) => {
+  // Check if speech synthesis is supported
+  if ('speechSynthesis' in window) {
+    // Stop any currently speaking
+    window.speechSynthesis.cancel();
+
+    // Create the main question utterance
+    const questionUtterance = new SpeechSynthesisUtterance(question.text);
+
+    // If it's a multiple choice question, add the options
+    if (question.type !== 'object_detection' && question.options?.length > 0) {
+      const optionsText = `Options are: ${question.options.join(', ')}`;
+      const optionsUtterance = new SpeechSynthesisUtterance(optionsText);
+
+      // Queue them to speak one after another
+      window.speechSynthesis.speak(questionUtterance);
+      questionUtterance.onend = () => {
+        window.speechSynthesis.speak(optionsUtterance);
+      };
+    } else {
+      // Just speak the question for object detection
+      window.speechSynthesis.speak(questionUtterance);
+    }
+  } else {
+    console.warn("Speech synthesis not supported in this browser");
+  }
+};
+
 export default function InteractiveVideoQuiz() {
   // Constants and refs
   const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'http://localhost:8000';
@@ -130,8 +159,8 @@ export default function InteractiveVideoQuiz() {
     updateQuizState({
       currentQuestion: question,
       detections: filteredDetections,
-      feedback: "", // Clear any existing feedback
-      retryOption: false // Reset retry option
+      feedback: "",
+      retryOption: false
     });
 
     updatePlayerState({
@@ -139,8 +168,12 @@ export default function InteractiveVideoQuiz() {
       lastQuestionId: question.id
     });
 
+    // Automatically read the question when it appears
+    speakQuestion(question);
+
     pauseVideo();
   }, [getCurrentTime, pauseVideo]);
+
 
   // Processing cancellation function
   const handleCancelProcessing = async () => {
@@ -716,6 +749,13 @@ export default function InteractiveVideoQuiz() {
                 {quiz.currentQuestion && (
                     <div className="question-box dynamic-glow">
                       <h3 className="question-text">🧠 {quiz.currentQuestion.text}</h3>
+                      <button
+                          className="speaker-button"
+                          onClick={() => speakQuestion(quiz.currentQuestion)}
+                          title="Read question aloud"
+                      >
+                        🔊
+                      </button>
                       {quiz.currentQuestion.type === 'object_detection' ? (
                           <p className="instruction">Click on the object in the video!</p>
                       ) : (
@@ -758,7 +798,8 @@ export default function InteractiveVideoQuiz() {
                 )}
 
                 {/* Video Player */}
-                <div className="video-wrapper" ref={videoWrapperRef} style={{position: "relative", width: "640px", height: "360px"}}>
+                <div className="video-wrapper" ref={videoWrapperRef}
+                     style={{position: "relative", width: "640px", height: "360px"}}>
                   {!isYouTube ? (
                       <video
                           ref={videoRef}
