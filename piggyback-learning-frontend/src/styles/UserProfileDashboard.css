@@ -1,0 +1,426 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+/* Base Styles */
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background-image: url('https://getwallpapers.com/wallpaper/full/3/3/0/1115244-amazing-kids-desktop-background-1920x1200-images.jpg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  color: #333;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+:root {
+  --header-height: 100px;
+  --footer-height: 80px;
+  --primary-green: #4CAF50;
+  --gradient-orange: linear-gradient(to right, #ff9800, #ffcc80);
+}
+
+/* Profile Container */
+.profile-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  animation: fadeIn 1s ease-out;
+}
+
+/* Header */
+.profile-header-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 40px;
+  background: var(--primary-green);
+  border-bottom: 4px solid #ffa000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  position: fixed;
+  width: 100%;
+  top: 0;
+  z-index: 1000;
+  height: var(--header-height);
+  box-sizing: border-box;
+  animation: slideDownFadeIn 0.8s ease-out;
+}
+
+.nav-logo img {
+  height: 50px;
+  animation: bounce 2.5s ease-in-out infinite;
+}
+
+.nav-menu ul {
+  list-style: none;
+  display: flex;
+  gap: 25px;
+  margin: 0;
+  padding: 0;
+}
+
+.nav-menu ul li a {
+  color: white;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1.1rem;
+  transition: color 0.3s ease, transform 0.2s ease, background 0.3s ease;
+  padding: 8px 12px;
+  border-radius: 20px;
+  position: relative;
+  overflow: hidden;
+}
+
+.nav-menu ul li a:hover {
+  color: #ffdd57;
+  transform: scale(1.05);
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.nav-menu ul li a::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease, height 0.4s ease;
+}
+
+.nav-menu ul li a:hover::after {
+  width: 200px;
+  height: 200px;
+}
+
+/* Profile Page */
+.profile-page {
+  flex: 1;
+  padding: 120px 30px 100px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.95);
+  margin: 40px auto;
+  border-radius: 25px;
+  max-width: 1000px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Profile Card */
+.profile-card {
+  background: linear-gradient(135deg, #f3e7ff, #ffe7f0);
+  border: 4px dashed #ff9800;
+  border-radius: 25px;
+  padding: 40px;
+  max-width: 800px;
+  width: 100%;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  animation: floatIn 0.8s ease-out;
+  transition: transform 0.3s ease;
+}
+
+.profile-card:hover {
+  transform: scale(1.02);
+}
+
+.profile-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.profile-picture {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  margin-bottom: 15px;
+  transition: transform 0.3s ease;
+}
+
+.profile-picture:hover {
+  transform: scale(1.1);
+}
+
+.profile-header h2 {
+  font-size: 2.4rem;
+  color: #4a148c;
+  font-weight: 700;
+  margin: 10px 0;
+}
+
+.profile-header p {
+  font-size: 1.2rem;
+  color: #555;
+}
+
+/* Input Fields */
+.profile-header input,
+.profile-header textarea {
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 12px;
+  border: 2px solid #ccc;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  outline: none;
+  background-color: rgba(255, 255, 255, 0.8);
+  color: #333;
+  transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+
+.profile-header input:focus,
+.profile-header textarea:focus {
+  border-color: var(--primary-green);
+  background-color: rgba(255, 255, 255, 1);
+}
+
+/* Profile Sections */
+.profile-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.profile-section-btn {
+  background: linear-gradient(90deg, #4fc3f7, #81c784);
+  border: none;
+  color: #1b1b1b;
+  font-size: 1.2rem;
+  padding: 15px;
+  border-radius: 15px;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s ease, background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.profile-section-btn:hover {
+  transform: scale(1.08);
+  background: linear-gradient(90deg, #29b6f6, #66bb6a);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Video Scroll Container */
+.video-scroll-container {
+  overflow-x: auto;
+  padding: 10px 0;
+  width: 100%;
+}
+
+.video-grid {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  padding: 10px 0;
+  min-width: max-content;
+}
+
+.video-grid::-webkit-scrollbar {
+  height: 8px;
+}
+
+.video-grid::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+}
+
+.video-grid::-webkit-scrollbar-thumb {
+  background: var(--primary-green);
+  border-radius: 10px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+}
+
+.video-grid::-webkit-scrollbar-thumb:hover {
+  background: #45a049;
+}
+
+.video-box {
+  flex: 0 0 300px;
+  background: white;
+  border-radius: 20px;
+  padding: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.video-box:hover {
+  transform: translateY(-10px) scale(1.05);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.video-box img,
+.video-box iframe {
+  width: 100%;
+  height: 180px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.video-box p {
+  font-size: 1rem;
+  font-weight: bold;
+  margin: 8px 0;
+  color: #333;
+}
+
+.video-box small {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+/* Buttons */
+.watch-button,
+.signout-button,
+.back-button {
+  background: linear-gradient(90deg, #4fc3f7, #81c784);
+  border: none;
+  color: #1b1b1b;
+  font-size: 1.1rem;
+  padding: 12px 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  margin: 8px 0;
+}
+
+.watch-button:hover,
+.signout-button:hover,
+.back-button:hover {
+  background: linear-gradient(90deg, #29b6f6, #66bb6a);
+  transform: scale(1.05);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+.signout-button {
+  background: #ff7043;
+}
+
+.signout-button:hover {
+  background: #f4511e;
+}
+
+.watch-button::after,
+.signout-button::after,
+.back-button::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease, height 0.4s ease;
+}
+
+.watch-button:hover::after,
+.signout-button:hover::after,
+.back-button:hover::after {
+  width: 200px;
+  height: 200px;
+}
+
+/* Dark Mode Toggle */
+.dark-toggle-wrapper {
+  position: fixed;
+  top: 120px;
+  right: 30px;
+  z-index: 1000;
+}
+
+.dark-mode-toggle {
+  background: var(--primary-green);
+  border: none;
+  border-radius: 50%;
+  padding: 12px;
+  font-size: 1.2rem;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.3s ease, background 0.3s ease;
+}
+
+.dark-mode-toggle:hover {
+  transform: scale(1.2);
+  background: #45a049;
+}
+
+/* Dark Mode Styles */
+body.dark-mode {
+  background: #121212;
+  color: #eaeaea;
+}
+
+
+
+
+/* Animations */
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes floatIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideDownFadeIn {
+  0% { opacity: 0; transform: translateY(-15px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .profile-page {
+    padding: 100px 20px 80px;
+    margin: 20px auto;
+  }
+
+  .profile-card {
+    padding: 20px;
+    max-width: 90%;
+  }
+
+  .profile-header h2 {
+    font-size: 2rem;
+  }
+
+  .profile-section-btn,
+  .watch-button,
+  .signout-button,
+  .back-button {
+    font-size: 1rem;
+    padding: 10px 15px;
+  }
+
+  .video-box {
+    flex: 0 0 250px;
+  }
+
+  .dark-toggle-wrapper {
+    top: 100px;
+    right: 20px;
+  }
+}
