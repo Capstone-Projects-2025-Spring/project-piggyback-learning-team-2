@@ -3,7 +3,7 @@ body {
   font-family: 'Arial', sans-serif;
   margin: 0;
   padding: 0;
-  background-image: url('https://getwallpapers.com/wallpaper/full/3/3/0/1115244-amazing-kids-desktop-background-1920x1200-images.jpg');
+  background-image: url('https://getwallpapers.com/wallpaper/full/3/3/0/1115244-amazing-kids-desktop-background-1920x1200-images.jpg'); 
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -21,7 +21,7 @@ body {
 
 /* Container limit */
 .home-container {
-  background-image: url('https://getwallpapers.com/wallpaper/full/3/3/0/1115244-amazing-kids-desktop-background-1920x1200-images.jpg');
+  background-image: url('https://getwallpapers.com/wallpaper/full/3/3/0/1115244-amazing-kids-desktop-background-1920x1200-images.jpg'); 
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -56,6 +56,7 @@ body {
   height: 60px;
   transition: transform 0.3s ease, filter 0.3s ease;
 }
+
 .logo-animated:hover {
   transform: rotate(360deg) scale(1.1); /* Enhanced hover */
   filter: brightness(1.2); /* Glow effect */
@@ -68,6 +69,7 @@ body {
   text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
   transition: transform 0.2s ease;
 }
+
 .site-title:hover {
   transform: scale(1.05); /* Subtle scale on hover */
 }
@@ -154,6 +156,7 @@ main {
   text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
   transition: transform 0.3s ease;
 }
+
 .animated-heading:hover {
   transform: scale(1.05); /* Subtle scale on hover */
 }
@@ -203,9 +206,10 @@ main {
 .pulse {
   animation: pulse 2s infinite;
 }
+
 @keyframes pulse {
   0% { transform: scale(1); }
-  50% { transform: scale(1.08); } /* Slightly larger pulse */
+  50% { transform: scale(1.08); }
   100% { transform: scale(1); }
 }
 
@@ -326,7 +330,7 @@ main {
 .video-scroll-wrapper {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: center; 
   position: relative;
 }
 .video-cards-horizontal {
@@ -334,7 +338,7 @@ main {
   gap: 20px;
   overflow-x: auto;
   scroll-behavior: smooth;
-  padding: 15px 60px; /* Extra horizontal padding makes room for the scroll buttons */
+  padding: 15px 60px;  /* Extra horizontal padding makes room for the scroll buttons */
   box-sizing: border-box;
   max-width: 100%;
 }
@@ -355,8 +359,9 @@ main {
   background: #45a049; /* Darker green on hover */
   transform: scale(1.1); /* Slight scale for interactivity */
 }
+
 .video-card {
-  flex: 0 0 300px; /* Fixed width for each video card */
+  flex: 0 0 300px;  /* Fixed width for each video card */
   background: white;
   border-radius: 20px;
   padding: 10px;
@@ -374,6 +379,7 @@ main {
   margin: 0 auto;
   overflow: hidden;
 }
+
 /* didn't know you could do this, feels like python */
 .video-card iframe,
 .video-thumbnail {
@@ -413,7 +419,6 @@ main {
   color: var(--primary-green);
   animation: pulse 2s infinite; /* Continuous pulse */
 }
-
 /* Scroll Buttons */
 .scroll-button {
   width: 40px;
@@ -471,7 +476,6 @@ main {
 .footer-enhanced:hover {
   transform: translateY(-5px); /* Subtle lift on hover */
 }
-
 /* Animations */
 @keyframes floatUpDown {
   0% { transform: translateY(-8px); }
@@ -482,17 +486,9 @@ main {
   0% { opacity: 0; transform: translateY(-15px); }
   100% { opacity: 1; transform: translateY(0); }
 }
-@keyframes slideUpFadeIn {
-  0% { opacity: 0; transform: translateY(15px); }
-  100% { opacity: 1; transform: translateY(0); }
-}
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
-}
-@keyframes slideIn {
-  0% { opacity: 0; transform: translateX(-20px); }
-  100% { opacity: 1; transform: translateX(0); }
 }
 @keyframes gradientFlow {
   0% { background-position: 0% 50%; }

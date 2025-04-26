@@ -2,8 +2,7 @@
 
 from fastapi import APIRouter, status, HTTPException, Response, Depends
 from sqlalchemy.orm import Session
-
-from backend import db_models                     
+from backend import db_models
 from backend.database import get_db
 from backend.schemas import YouTubeVideo
 
