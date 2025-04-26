@@ -6,8 +6,11 @@ from dotenv import load_dotenv
 import time
 from tenacity import retry, stop_after_attempt, wait_exponential
 # Load OpenAI API key from .env file
+
+from openai import OpenAI
+
 load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 # --- Safely extract JSON from GPT response ---
 def safe_parse_json(json_str):
@@ -47,7 +50,7 @@ Respond with ONLY this JSON format:
 """
 
     try:
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-4o",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.5,
@@ -105,7 +108,7 @@ Respond with ONLY this JSON:
 
 
     try:
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-4o",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.5,
