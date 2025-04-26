@@ -12,6 +12,7 @@ body {
   color: #333;
   min-height: 100vh;
   overflow-x: hidden;
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
 :root {
@@ -120,7 +121,7 @@ body {
   width: 100%;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
   animation: floatIn 0.8s ease-out;
-  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, background 0.3s ease, color 0.3s ease;
 }
 
 .profile-card:hover {
@@ -150,11 +151,13 @@ body {
   color: #4a148c;
   font-weight: 700;
   margin: 10px 0;
+  transition: color 0.3s ease;
 }
 
 .profile-header p {
   font-size: 1.2rem;
   color: #555;
+  transition: color 0.3s ease;
 }
 
 /* Input Fields */
@@ -169,7 +172,7 @@ body {
   outline: none;
   background-color: rgba(255, 255, 255, 0.8);
   color: #333;
-  transition: border-color 0.3s ease, background-color 0.3s ease;
+  transition: border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease;
 }
 
 .profile-header input:focus,
@@ -196,7 +199,7 @@ body {
   cursor: pointer;
   font-weight: 600;
   box-shadow: 0 5px 12px rgba(0, 0, 0, 0.25);
-  transition: transform 0.2s ease, background 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.2s ease, background 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
 }
 
 .profile-section-btn:hover {
@@ -246,7 +249,7 @@ body {
   padding: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   text-align: center;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease, color 0.3s ease;
 }
 
 .video-box:hover {
@@ -267,11 +270,13 @@ body {
   font-weight: bold;
   margin: 8px 0;
   color: #333;
+  transition: color 0.3s ease;
 }
 
 .video-box small {
   font-size: 0.9rem;
   color: #666;
+  transition: color 0.3s ease;
 }
 
 /* Buttons */
@@ -287,7 +292,7 @@ body {
   cursor: pointer;
   font-weight: 600;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
-  transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+  transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease, color 0.3s ease;
   position: relative;
   overflow: hidden;
   margin: 8px 0;
@@ -361,26 +366,40 @@ body.dark-mode {
   color: #eaeaea;
 }
 
+body.dark-mode .profile-page {
+  background: rgba(30, 30, 30, 0.95);
+  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.1);
+}
+
 body.dark-mode .profile-card {
   background: linear-gradient(135deg, #2a2a72, #2e2e8a);
   color: #eaeaea;
+  border: 4px dashed #ffdd57;
+}
+
+body.dark-mode .profile-header h2 {
+  color: #ffeb3b;
+}
+
+body.dark-mode .profile-header p {
+  color: #ccc;
 }
 
 body.dark-mode .profile-header input,
 body.dark-mode .profile-header textarea {
-  background-color: rgba(255, 255, 255, 0.05);
-  border-color: #444;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-color: #555;
   color: #eee;
 }
 
 body.dark-mode .profile-header input:focus,
 body.dark-mode .profile-header textarea:focus {
-  background-color: rgba(255, 255, 255, 0.15);
+  background-color: rgba(255, 255, 255, 0.2);
   border-color: #00e676;
 }
 
 body.dark-mode .video-box {
-  background: rgba(30, 30, 30, 0.8);
+  background: rgba(50, 50, 50, 0.9);
   color: #ddd;
 }
 
@@ -389,19 +408,51 @@ body.dark-mode .video-box small {
   color: #ddd;
 }
 
-body.dark-mode .profile-section-btn,
-body.dark-mode .watch-button,
-body.dark-mode .signout-button,
-body.dark-mode .back-button {
-  background: rgba(255, 255, 255, 0.08);
+body.dark-mode .profile-section-btn {
+  background: linear-gradient(90deg, #1e88e5, #4caf50);
   color: #eee;
 }
 
-body.dark-mode .profile-section-btn:hover,
+body.dark-mode .profile-section-btn:hover {
+  background: linear-gradient(90deg, #1565c0, #388e3c);
+}
+
+body.dark-mode .watch-button,
+body.dark-mode .back-button {
+  background: linear-gradient(90deg, #1e88e5, #4caf50);
+  color: #eee;
+}
+
 body.dark-mode .watch-button:hover,
-body.dark-mode .signout-button:hover,
 body.dark-mode .back-button:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: linear-gradient(90deg, #1565c0, #388e3c);
+}
+
+body.dark-mode .signout-button {
+  background: #e53935;
+}
+
+body.dark-mode .signout-button:hover {
+  background: #c62828;
+}
+
+body.dark-mode .video-placeholder {
+  background: rgba(50, 50, 50, 0.9);
+  color: #ddd;
+}
+
+body.dark-mode .video-placeholder h4 {
+  color: #ffeb3b;
+}
+
+body.dark-mode .video-placeholder p {
+  color: #ccc;
+}
+
+body.dark-mode .loading,
+body.dark-mode .error {
+  background: rgba(50, 50, 50, 0.9);
+  color: #ff6f61;
 }
 
 /* Progress Section */
@@ -417,12 +468,14 @@ body.dark-mode .back-button:hover {
   font-size: 1.8rem;
   color: #4a148c;
   margin-bottom: 15px;
+  transition: color 0.3s ease;
 }
 
 .video-placeholder p {
   font-size: 1.1rem;
   margin: 10px 0;
   color: #333;
+  transition: color 0.3s ease;
 }
 
 /* Loading and Error */
