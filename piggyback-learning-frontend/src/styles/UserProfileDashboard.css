@@ -12,7 +12,7 @@ body {
   color: #333;
   min-height: 100vh;
   overflow-x: hidden;
-  transition: background 0.3s ease, color 0.3s ease;
+  transition: color 0.3s ease;
 }
 
 :root {
@@ -109,6 +109,7 @@ body {
   border-radius: 25px;
   max-width: 1000px;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  transition: background 0.3s ease, box-shadow 0.3s ease;
 }
 
 /* Profile Card */
@@ -362,12 +363,11 @@ body {
 
 /* Dark Mode Styles */
 body.dark-mode {
-  background: #121212;
   color: #eaeaea;
 }
 
 body.dark-mode .profile-page {
-  background: rgba(30, 30, 30, 0.95);
+  background: rgba(30, 30, 30, 0.85);
   box-shadow: 0 6px 20px rgba(255, 255, 255, 0.1);
 }
 
