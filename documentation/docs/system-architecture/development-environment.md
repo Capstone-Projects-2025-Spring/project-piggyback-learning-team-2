@@ -32,7 +32,5 @@ sidebar_position: 4
 ### Databases
 * PostgreSQL: For user authentication, managing user accounts, and storing structured data like video metadata, questions, answers, and user progress. This will allow for features like saving content and tracking question progress.
 
-* MongoDB: For tracking user activity such as time spent on each question, video playback interactions (play/pause/stop), and where they clicked within the application. Useful for logging high-volume, unstructured data.
-
 ## Hardware
 There is no hardware used for this project.
