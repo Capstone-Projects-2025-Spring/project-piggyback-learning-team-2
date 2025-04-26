@@ -275,13 +275,20 @@ main {
 .url-input-container {
   display: flex;
   justify-content: center;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
 }
+.button-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+}
+
 .youtube-url-enhanced input[type="text"] {
   padding: 10px;
   font-size: 1.1em;
-  border-radius: 10px;
+  border-radius: 100px;
   border: 2px solid var(--primary-green);
   width: 60%;
   outline: none;
@@ -292,23 +299,98 @@ main {
   transform: scale(1.03);
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
 }
-.submit-btn {
-  padding: 8px 20px;
-  font-size: 0.95em;
-  background: var(--primary-green);
-  color: white;
-  border-radius: 10px;
+
+/* Submit Button */
+
+button.btn {
+  text-transform: uppercase;
+  text-decoration: none;
+  font-weight: 800;
   border: none;
-  cursor: pointer;
-  transition: all 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
   position: relative;
-  overflow: hidden;
+  letter-spacing: 0.1em;
+  margin: 10px auto;
+  padding: 10px 30px; 
+  background: #4CAF50; 
+  outline: none;
+  font-size: 16px;
+  color: white;
+  border-radius: 50px; 
+  width: auto; 
+  max-width: 250px; 
+  transition: all 0.5s ease;
+  display: inline-block; 
 }
-.submit-btn:hover {
+button.btn::before,
+button.btn::after {
+  content: "";
+  position: absolute;
+  height: 30%;
+  width: 8%;
+  transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  z-index: -2;
+  border-radius: 50%;
+}
+
+button.btn::before {
+  background-color:  #ff46a2;
+  top: -0.5rem;
+  left: 0.5rem;
+  animation: topAnimation 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.25s infinite alternate;
+}
+
+button.btn::after {
+  background-color: #008d00;
+  top: 2.2rem;
+  left: 8rem;
+  animation: bottomAnimation 2s cubic-bezier(0.68, -0.55, 0.265, 1.55) 0.5s infinite alternate;
+}
+
+button.btn:hover {
+  transform: scale(1.1) translateY(-2px);
   background: #45a049;
-  transform: scale(1.1);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  color: white;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
+
+
+
+button.btn:hover::before,
+button.btn:hover::after {
+  top: 0;
+  height: 100%;
+  width: 100%;
+  border-radius: 0;
+  animation: none;
+}
+
+button.btn:hover::after {
+  left: 0;
+}
+
+button.btn:hover::before {
+  top: 0.3rem;
+  left: 0.3rem;
+}
+
+/* Animations */
+@keyframes topAnimation {
+  from {
+    transform: translate(0rem, 0);
+  }
+  to {
+    transform: translate(0rem, 2.5rem);
+  }
+}
+@keyframes bottomAnimation {
+  from {
+    transform: translate(-8rem, 0);
+  }
+  to {
+    transform: translate(0rem, 0);
+  }
+}
+
 .submit-btn::after {
   content: '';
   position: absolute;
