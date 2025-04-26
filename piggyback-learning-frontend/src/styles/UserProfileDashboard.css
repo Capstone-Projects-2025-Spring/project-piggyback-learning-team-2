@@ -361,8 +361,85 @@ body.dark-mode {
   color: #eaeaea;
 }
 
+body.dark-mode .profile-card {
+  background: linear-gradient(135deg, #2a2a72, #2e2e8a);
+  color: #eaeaea;
+}
 
+body.dark-mode .profile-header input,
+body.dark-mode .profile-header textarea {
+  background-color: rgba(255, 255, 255, 0.05);
+  border-color: #444;
+  color: #eee;
+}
 
+body.dark-mode .profile-header input:focus,
+body.dark-mode .profile-header textarea:focus {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-color: #00e676;
+}
+
+body.dark-mode .video-box {
+  background: rgba(30, 30, 30, 0.8);
+  color: #ddd;
+}
+
+body.dark-mode .video-box p,
+body.dark-mode .video-box small {
+  color: #ddd;
+}
+
+body.dark-mode .profile-section-btn,
+body.dark-mode .watch-button,
+body.dark-mode .signout-button,
+body.dark-mode .back-button {
+  background: rgba(255, 255, 255, 0.08);
+  color: #eee;
+}
+
+body.dark-mode .profile-section-btn:hover,
+body.dark-mode .watch-button:hover,
+body.dark-mode .signout-button:hover,
+body.dark-mode .back-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Progress Section */
+.video-placeholder {
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+.video-placeholder h4 {
+  font-size: 1.8rem;
+  color: #4a148c;
+  margin-bottom: 15px;
+}
+
+.video-placeholder p {
+  font-size: 1.1rem;
+  margin: 10px 0;
+  color: #333;
+}
+
+/* Loading and Error */
+.loading,
+.error {
+  text-align: center;
+  font-size: 1.5rem;
+  margin-top: 50px;
+  color: #d81b60;
+  background: #fff3e0;
+  padding: 12px 20px;
+  border-radius: 10px;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+  animation: fadeIn 0.5s ease-out;
+}
 
 /* Animations */
 @keyframes bounce {
