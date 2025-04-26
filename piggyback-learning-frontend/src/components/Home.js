@@ -14,7 +14,7 @@ function Home() {
     { src: "https://www.youtube.com/embed/9e5lcQycf2M", mp4: "/videos/Why_Do_We_Get_Hiccups.mp4",title: "Why Do We Get Hiccups? | Body Science for Kids", thumbnail: "" },
     { src: "https://www.youtube.com/embed/al-do-HGuIk", mp4: "/videos/Water_Cycle_How_the_Hydrologic_Cycle_Works.mp4",title: "Water Cycle | How the Hydrologic Cycle Works", thumbnail: "" },
     { src: "https://www.youtube.com/embed/fEiVi9TB_RQ", mp4: "/videos/What_Causes_Thunder_and_Lightning.mp4",title: "What Causes Thunder and Lightning? | Weather Science | SciShow Kids", thumbnail: "" },
-    { src: "https://www.youtube.com/embed/Gg0TXNXgz-w", mp4: "/videos/How_Do_Airplanes_Fly?.mp4",title: "How Do Airplanes Fly?", thumbnail: "" },
+    { src: "https://www.youtube.com/embed/Gg0TXNXgz-w", mp4: "/videos/How_Do_Airplanes_Fly.mp4",title: "How Do Airplanes Fly?", thumbnail: "" },
     { src: "https://www.youtube.com/embed/X3uT89xoKuc", mp4: "/videos/Antarctica_Destination_World.mp4",title: "Antarctica | Destination World", thumbnail: "" },
   ]);
 
