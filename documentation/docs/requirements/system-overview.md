@@ -38,4 +38,4 @@ After completing a quiz during the video, users will immediately receive feedbac
 ## Dependencies
 - **YouTube API**: The system depends on the YouTube Iframe API for embedding videos and controlling playback.
 - **React and Node.js**: React.js for building interactive UI components and Node.js for backend services.
-- **Database**: A reliable database system (e.g., MongoDB or PostgreSQL) will be used for storing user data and video interactions.
+- **Database**: A reliable database system (e.g., PostgreSQL) will be used for storing user data and video interactions.
