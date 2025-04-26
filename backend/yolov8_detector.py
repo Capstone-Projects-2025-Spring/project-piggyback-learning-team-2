@@ -39,3 +39,11 @@ def detect_objects_from_base64(image_base64):
         print(f"Detection error: {str(e)}")
         return []
 
+from fastapi import APIRouter
+
+router = APIRouter()
+
+@router.get("/yolo-test")
+def yolo_test():
+    return {"message": "🧠 YOLOv8 is ready"}
+

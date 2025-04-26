@@ -1,29 +1,34 @@
 from .database import Base
-from sqlalchemy import Column, func, Integer, String, JSON, DateTime
+from sqlalchemy import Column, func, Integer, String, JSON, DateTime, ForeignKey
 from sqlalchemy.sql.expression import text
 from sqlalchemy.sql.sqltypes import TIMESTAMP
+from sqlalchemy.orm import relationship, declarative_base
+import datetime
 
+Base = declarative_base()
 
 class User_engagment(Base):
-    __tablename__ = "user_engagement"
+    __tablename__ = "engagements"
 
-    total_time_seconds = Column(Integer, nullable=False,
-                                server_default=text("0"))
-    total_pauses = Column(Integer, nullable=False, server_default=text("0"))
-    correct_answers = Column(Integer, nullable=False, server_default=text("0"))
-    session_started = Column(TIMESTAMP(timezone=True), nullable=False,
-                             server_default=text('now()'))
-    video_url = Column(String(255), primary_key=True, nullable=False)
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    video_id = Column(String)
+    progress = Column(Integer, default=0)
+    timestamp = Column(DateTime, default=datetime.datetime.utcnow)
+
+    user = relationship("User_Login", back_populates="engagements")
 
 
 class User_Login(Base):
-    __tablename__ = "user_login"
+    __tablename__ = "users"
 
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    email = Column(String(255), unique=True, nullable=False)
-    timestamp = Column(TIMESTAMP(timezone=True), nullable=False,
-                       server_default=('now()'))
-    password = Column(String(255), nullable=False)
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, unique=True, nullable=False, index=True)
+    password = Column(String, nullable=False)
+    name = Column(String)
+    created_at = Column(DateTime, default=datetime.datetime.utcnow)
+
+    engagements = relationship("User_engagment", back_populates="user")
 
 class VideoQuestion(Base):
     __tablename__ = "video_questions"

@@ -1,6 +1,6 @@
 // npm install react-icons chart.js react-chartjs-2 @supabase/supabase-js react-router-dom
 
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import logo from '../images/Mob_Iron_Hog.png';
@@ -14,18 +14,15 @@ import { FaMoon, FaLightbulb } from 'react-icons/fa';
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 function UserProfile() {
-
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
   const [quizStats, setQuizStats] = useState({ total: 0, correct: 0, accuracy: 0 });
-  const [quizHistory, setQuizHistory] = useState([]);
-
+  const [quizHistory] = useState([]);
   const [showSaved, setShowSaved] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showProgress, setShowProgress] = useState(false);
-
   const [editing, setEditing] = useState(false);
   const [editValues, setEditValues] = useState({
     first_name: '',
@@ -73,7 +70,7 @@ function UserProfile() {
   };
 
 
-  const calculateProgress = async (userId) => {
+  const calculateProgress = React.useCallback(async (userId) => {
     const { data: watched } = await supabase
       .from('video_history')
       .select('video_url')
@@ -84,7 +81,7 @@ function UserProfile() {
     const percent = savedCount === 0 ? 0 : Math.round((watchedCount / savedCount) * 100);
 
     setProgressStats({ saved: savedCount, watched: watchedCount, percent });
-  };
+  }, [youtubeUrls]);
 
   const fetchQuizStats = async (userId) => {
     const { data, error } = await supabase
@@ -153,8 +150,8 @@ function UserProfile() {
       setLoading(false);
     };
 
-    fetchProfile();
-  }, [navigate]);
+   fetchProfile();
+}, [navigate, calculateProgress]);
 
   const handleInputChange = (e) => {
     setEditValues({ ...editValues, [e.target.name]: e.target.value });
@@ -196,9 +193,7 @@ function UserProfile() {
   };
 
 
-const handleWatchClick = (video) => {
-  navigate("/watch", { state: video });
-};
+  
 
   if (loading) return <div className="loading">Loading Profile...</div>;
   if (!profile) return <div className="error">Error loading profile.</div>;

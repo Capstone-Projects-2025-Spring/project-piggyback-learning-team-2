@@ -4,33 +4,6 @@ sidebar_position: 4
 
 # Features and Requirements
 
-## Features
-
-### User Authentication 
-- Login/Registration with email and password.
-- Secure session management.
-
-### Video Playback
-- Play and pause videos at predefined timestamps.
-- Allow users to answer questions during playback.
-
-### Interactive Questions
-- AI-generated questions for each video.
-- Option to listen to questions again.
-
-### Performance Summary
-- View performance after completing a video.
-- Detailed results with correct/incorrect answers.
-
-### Saved Videos
-- Save videos to watch later.
-
-### Search and Navigation
-- Search for videos by title or keyword.
-- Categorized video lists for easy browsing.
-
-## Requirements
-
 ### Functional
 
 #### Authentication
@@ -49,33 +22,30 @@ sidebar_position: 4
 - Saved user responses are stored for performance tracking.
 
 #### Performance Tracking
-- Show results after completing a video, including a review of each question.
-- Performance summaries are stored and accessible via the user's account.
-
+- Show correct, incorrect, skipped, and response times on questions after completing a video.
+- Performance summaries are stored within MongoDB and accessible via the user's account.
 #### Saved Videos
-- Users can save videos for later and track watch history.
+- Users can save videos to the supabase database by extracting the video's metadata e.g. url, watchtime, etc.
 - Saved videos are accessible via the user's account.
-
 #### Search
-- Enable search by video title or topic.
+- User is aable to filter videos by title or topic.
 - Search results are displayed in a categorized list.
 
 ### Non-Functional
 
-#### Performance
+#### Performance Tracking
 - Authentication and video loading must be fast (within 5 seconds).
-
+- Data collection will be upheld to COPPA standards.
 #### AI Integration
 - Video content must be analyzed to generate relevant questions.
 
 #### Database Storage
-- Store user data and video history securely.
-- Specify database versions and tools used.
+- Store user data and video history inside supabase securely using SSL enforcement.
 
 #### Usability
 - Simple, intuitive UI with easy navigation.
 - Define browser compatibility and recommend specific browsers for optimal performance.
 
 #### Security
-- Implement secure password management and data protection.
+- Implement secure password management and data protection through MFA.
 - Include details on password encryption and data security measures.
