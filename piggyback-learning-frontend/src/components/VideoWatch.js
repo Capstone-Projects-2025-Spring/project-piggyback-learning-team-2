@@ -119,7 +119,16 @@ export default function InteractiveVideoQuiz() {
     const safeStart = startTime || Date.now();
     const safeEnd = endTime || Date.now();
     const sessionDurationSec = Math.max(0, Math.round((safeEnd - safeStart) / 1000)); 
-  
+    
+    console.log('Saving Quiz Result', {
+      user_id: user.id,
+      video_title: videoTitle,
+      total_questions: total,
+      correct_answers: correct,
+      sessionDurationSec,
+      video_url: videoUrl
+    });
+    
     const { error } = await supabase.from('quiz_results').insert([{
       user_id: user.id,
       video_title: videoTitle,
@@ -639,7 +648,6 @@ export default function InteractiveVideoQuiz() {
   });
   
     updateQuizState({ showSummary: true });
-    navigate("/profile", { state: { refresh: true } });
 
   };
   
@@ -978,13 +986,18 @@ export default function InteractiveVideoQuiz() {
 
 
                   <div className="summary-buttons">
-                    <button className="fancy-button" onClick={handleRestartVideo}>
-                      🔁 Watch Again
-                    </button>
-                    <button className="fancy-button" onClick={() => navigate("/profile")}>
+                  <button className="fancy-button" onClick={handleRestartVideo}>
+                    🔁 Watch Again
+                  </button>
+
+                  <button className="fancy-button" onClick={async () => {
+                    await saveQuizResults();  
+                    navigate("/profile", { state: { refresh: true } });  
+                  }}>
                     🏠 Go to Profile
-                    </button>
-                  </div>
+                  </button>
+                </div>
+
                 </div>
               </div>
           )}

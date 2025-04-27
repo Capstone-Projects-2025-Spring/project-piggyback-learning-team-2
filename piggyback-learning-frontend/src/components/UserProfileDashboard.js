@@ -476,9 +476,9 @@ function UserProfile() {
 
 <button
   className="fancy-button"
-  onClick={() => navigate("/profile", { state: { refresh: true } })}
+  onClick={() => navigate("/", { state: { refresh: true } })}
 >
-  🏠 Go to Profile
+  🏠 Go to Home
 </button>
 
 
