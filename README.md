@@ -54,7 +54,8 @@ This project will require the use of various frontend and backend software tools
 ## How to Run
 
 ### Deployed website link 
-[Click here](https://branma-front-latest.onrender.com/)
+[Primary Link](https://project-piggyback-learning-te-git-d53105-kripseepatels-projects.vercel.app/)
+[Backup link](https://branma-front.onrender.com/)
 
 ### 📦 Install locally
 For instructions on how to run the code locally, please reference the Backend setup.docx in the repository or in the release for detailed instructions.
@@ -69,7 +70,7 @@ Backend: https://hub.docker.com/r/tonygao777/fastapi
 2. Run the commands 
 ```bash
 docker pull branma/branma-front:latest
-docker run -p 3000:3000 branma/branma-front:latest
+docker run -p 3000:80 branma/branma-front:latest
 
 docker pull tonygao777/fastapi:latest
 docker run -p 80:8000 tonygao777/fastapi:latest
