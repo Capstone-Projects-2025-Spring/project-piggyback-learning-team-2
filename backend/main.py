@@ -29,7 +29,7 @@ app.include_router(yolo_router)
 # Register database models
 db_models.Base.metadata.create_all(bind=engine)
 
-origins = ["http://localhost:3000",  # React default
+origins = ["https://project-piggyback-learning-te-git-d53105-kripseepatels-projects.vercel.app/.", "http://localhost:3000",  # React default
 "http://127.0.0.1:3000", "http://0.0.0.0:8000", "http://localhost:8000", "https://branma-front-latest.onrender.com"]
 
 # Enable CORS for frontend access (development)
