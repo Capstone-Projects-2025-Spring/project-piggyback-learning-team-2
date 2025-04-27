@@ -19,7 +19,9 @@ sidebar_position: 5
    * yolov8: Python based machine learning framework that will be used to analyze video frames to determine their contents
 
 ### Databases
-* PostgreSQL (Version 14.17): For user authentication, managing user accounts, and storing structured data like video metadata, questions, answers, and user progress. This will allow for features like saving content and tracking question progress.
+* PostgreSQL: For user authentication, managing user accounts, and storing structured data like video metadata, questions, answers, and user progress. This will allow for features like saving content and tracking question progress.
+
+* MongoDB: For tracking user activity such as time spent on each question, video playback interactions (play/pause/stop), and where they clicked within the application. Useful for logging high-volume, unstructured data.
 
 ## Hardware
 There is no hardware used for this project.

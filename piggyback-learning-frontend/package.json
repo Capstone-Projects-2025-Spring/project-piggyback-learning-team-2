@@ -7,13 +7,9 @@
     "@react-oauth/google": "^0.12.1",
     "@supabase/supabase-js": "^2.0.0",
     "@vitejs/plugin-react": "^4.3.4",
-<<<<<<< HEAD
-    "bootstrap": "^5.3.5",
-=======
     "all": "^0.0.0",
     "bootstrap": "^5.3.5",
     "chart.js": "^4.4.8",
->>>>>>> origin/main
     "react": "^18.3.1",
     "react-bootstrap": "^2.10.9",
     "react-chartjs-2": "^5.3.0",
@@ -26,7 +22,7 @@
     "web-vitals": "^4.2.4"
   },
   "scripts": {
-    "start": "concurrently \"cd ../backend && python video_scanning.py\" \"react-scripts start\"",
+    "start": "react-scripts start",
     "dev": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
@@ -53,8 +49,7 @@
   "devDependencies": {
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.2.0",
-    "concurrently": "^9.1.2"
+    "@testing-library/react": "^16.2.0"
   },
   "description": "This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).",
   "main": "UserProfile.test.js",
