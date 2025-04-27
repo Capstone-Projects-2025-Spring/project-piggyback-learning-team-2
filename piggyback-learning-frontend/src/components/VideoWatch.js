@@ -170,6 +170,10 @@ export default function InteractiveVideoQuiz() {
     processing, quiz, player, session
   } = state;
 
+  useEffect(() => {
+    console.log("Current BACKEND_URL:", BACKEND_URL);
+  }, []);
+
   // Helper functions for state updates
   const updateState = (key, value) => {
     setState(prev => ({ ...prev, [key]: { ...prev[key], ...value } }));
