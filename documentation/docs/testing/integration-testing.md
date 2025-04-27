@@ -88,9 +88,11 @@ Jest will be used to test React components and user interactions. We will mock A
 ## Use Case 1 - Creating an Account
 *As a user, I want to be able to create an account in order to access videos and interact with them.*
 
-1. Upon accessing the web application for the first time and piggybacklearning.com, the user is directed to a landing page, where there are buttons that allow the user to either login in or register with a new account.
+1. Upon accessing the web application for the first time at "https://project-piggyback-learning-te-git-d53105-kripseepatels-projects.vercel.app/", the user is directed to a landing page, where there are buttons that allow the user to either login in or register with a new account.
 
-2. The user selects the “Register” button to access the account registration page.
+2. The user selects the “Sign In” button to access the account login page.
+
+3. The user selets the "Sign Up" Option at the bottom of the login box to be redirected to the sign up page.
 
 3. The user inputs a username, email address, and password into the relevant fields and clicks the sign-up button in order to register. If the information is valid and is processed, the user will receive a notification that their account has been created on the screen and in their email.
 
@@ -98,7 +100,7 @@ Jest will be used to test React components and user interactions. We will mock A
 
 ## Assertations:
 
-1. Upon selecting the "Register" button, the user is directed to the account registration page.
+1. Upon selecting the "Sign In" button, the user is directed to the account sign page.
 
 2. Upon submitting valid information (username, email, and password), the user receives a notification that their account has been created.
 
@@ -111,9 +113,9 @@ Jest will be used to test React components and user interactions. We will mock A
 ## Use Case 2 - Logging In
 *As a user, I want to be able to log in to my account in order to access videos, interact with them, and submit my own content to generate interactive videos from.*
 
-1. The user accesses the web application by going to “piggybacklearning.com”.
+1. The user accesses the web application by going to “https://project-piggyback-learning-te-git-d53105-kripseepatels-projects.vercel.app/”.
 
-2. The user selects the “Login” button to access the sign in page.
+2. The user selects the “Sign In” button to access the sign in page.
 
 3. The user enters their email and password to login.
 
@@ -121,7 +123,7 @@ Jest will be used to test React components and user interactions. We will mock A
 
 ## Assertations:
 
-1. Upon selecting the "Login" button, the user is directed to the sign-in page.
+1. Upon selecting the "Sign In" button, the user is directed to the sign-in page.
 
 2. Upon entering valid credentials (email and password), the user is redirected to the main page.
 
@@ -132,9 +134,9 @@ Jest will be used to test React components and user interactions. We will mock A
 ## Use Case 3 - Resetting a Password
 *As a user, I want to be able to reset my password in the event that I forget it and can no longer access my account as a result.*
 
-1. The user accesses the web application by going to “piggybacklearning.com”.
+1. The user accesses the web application by going to “https://project-piggyback-learning-te-git-d53105-kripseepatels-projects.vercel.app/”.
 
-2. The user selects the “Reset Password” button to access the reset page.
+2. The user selects the “Forgot your password?” button to access the reset page.
 
 3. The user enters their email address into the relevant field.
 
@@ -142,7 +144,7 @@ Jest will be used to test React components and user interactions. We will mock A
 
 ## Assertations:
 
-1. Upon selecting the "Reset Password" button, the user is directed to the password reset page.
+1. Upon selecting the "Forgot your password?" button, the user is directed to the password reset page.
 
 2. Upon entering a valid, registered email address, the user receives a notification that a password reset email has been sent.
 
@@ -150,37 +152,16 @@ Jest will be used to test React components and user interactions. We will mock A
 
 4. The password reset email contains a valid link to reset the user’s password.
 
-## Use Case 4 - Searching for a Video
-*As a user, I want to be able to search for different types of videos depending on my interests or a desired topic.*
-
-1.The user navigates to the search bar at the top of the screen, where they can type in their search query to search for a video by name or topic. 
-
-2.The user chooses a video from the dropdown menu that populates as they type, clicking any of the suggestions to be redirected to the page for that video and have the video start.
-
-3. The user can also search by topic, clicking the “Topic List” text button from the options at the top of the site to be redirected to the topic list page, or hovering over it to see a list of topic options as well as a button to access the full list.
-
-4. The user then clicks on a topic, and is redirected to that topics page, where there are a selection of videos related to that topic to choose from.
-
-## Assertations:
-
-1. Upon typing a query in the search bar, a dropdown menu populates with relevant video suggestions.
-
-2. Upon selecting a video from the dropdown menu, the user is redirected to the video’s page, and the video starts playing.
-
-3. Upon clicking the "Topic List" button, the user is redirected to the topic list page.
-
-4. Upon selecting a topic, the user is redirected to a page displaying videos related to that topic.
-
-## Use Case 5 - Answering a Question During a Video
+## Use Case 4 - Answering a Question During a Video
 *As a user, I want to be able to answer questions during a video.*
 
-1. The user selects a video whether from their saved videos, a video on the main page, or a video they searched for.
+1. The user selects a video whether from their saved videos, or a video on the main page.
 
 2. The user clicks the video to play it.
 
 3. When the video pauses automatically at the designated timestamp for that question, users will have the text for the question appear and have the question read to them.
 
-4. The user can then answer the question, whether by typing in an answer or selecting from a list of multiple choices. If they need to hear the question again, they can click the speaker button in the top left corner of the question box to have it read to them again.
+4. The user can then answer the question, by selecting from a list of multiple choices. If they need to hear the question again, they can click the speaker button in the top left corner of the question box to have it read to them again.
 
 5. After answering the question, the user is given feedback and an explanation about their answer, and the video resumes.
 
@@ -188,7 +169,7 @@ Jest will be used to test React components and user interactions. We will mock A
 
 1. Upon reaching a designated timestamp, the video pauses, and a question is displayed and read aloud to the user.
 
-2. The user can answer the question by typing or selecting from multiple-choice options.
+2. The user can answer the question by selecting from multiple-choice options.
 
 3. Upon clicking the speaker button, the question is read aloud again.
 
@@ -196,7 +177,7 @@ Jest will be used to test React components and user interactions. We will mock A
 
 5. The video resumes playing after the user submits their answer.
 
-## Use Case 6 - Getting Results Immediately After Watching a Video
+## Use Case 5 - Getting Results Immediately After Watching a Video
 *As a user, I want to be able to see my results after answering all of the questions during a video.*
 
 1. The user logs into an existing account, or registers with a new account to access a video.
@@ -217,29 +198,59 @@ Jest will be used to test React components and user interactions. We will mock A
 
 4. The summary is displayed on the screen immediately after the video ends.
 
+## Use Case 6 - Adding a Video
+*As a user, I want to be able to add a video to the website and interact with it immediately.*
+
+1. The user logs into their account, or registers a new account to access videos and have a personal profile.
+
+2. The user inputs the video link into the "Add Video" section on the home page.
+
+3. After submitting the link, the user is automatically navigated to the video watching page.
+
+4. On the video watching page, the video is processed to generate questions and then automatically starts playing.
+
+5. The user can interact with the video and, if they want to keep it for later, save it from this page.
+
+## Assertions:
+
+1. The video begins playing automatically after being processed.
+
+2. A bookmark-shaped save icon is available on the video watching page.
+
+3. Upon clicking the save icon, the video is added to the user's personal library.
+
+4. The user receives a confirmation notification that the video was saved successfully.
+
+5. The saved video is accessible from the user's account library for future viewing.
+
+
 ## Use Case 7 - Saving a Video to Watch Later
-*As a user, I want to be able to save a video to my account to interact with later rather than having to search for it.*
+*As a user, I want to be able to save a video to my account after previewing it, without needing to search for it again.*
 
-1. The user logs into their account, or registers with a new account in order to access videos and have a profile to save them to.
+1. The user logs into their account, or registers a new account to create a personal profile.
 
-2. When the user finds a video they like, they can select the bookmark shaped save icon under the video to save it to their personal library.
+2. After adding a video and being navigated to the video watching page, the user can watch or preview the video.
 
-3. The user receives a notification that the video has been saved to their personal library.
+3. If the user decides they want to save the video for future interaction, they can click the save button displayed under the video.
 
-## Assertations:
+4. The video is then saved into the user's personal library.
 
-1. Upon clicking the bookmark-shaped save icon, the video is saved to the user’s personal library.
+## Assertions:
 
-2. The user receives a notification confirming that the video has been saved.
+1. The save button is clearly visible on the video watching page.
 
-3. The saved video is stored in the user’s account and can be accessed later.
+2. Clicking the save button results in the video being stored under the user's profile.
 
-## Use Case 8 - Accessing Saved Videos
+3. A notification confirms that the video was successfully saved.
+
+4. Saved videos are available in the user's account for future access and interaction.
+
+## Use Case 9 - Accessing Saved Videos
 *As a user, I want to be able to access the videos I have saved and interact with them.*
 
 1. The user clicks their profile icon in the top right corner of the application (which will either have a profile picture or a default picture) to go to their profile.
 
-2. The user clicks on the “Saved Library” text button in the sidebar of the profile page.
+2. The user clicks on the “Saved Videos” button in the sidebar of the profile page.
 
 3. The user is redirected to their saved library, where saved videos are stored in order of most recent addition. 
 
@@ -249,27 +260,25 @@ Jest will be used to test React components and user interactions. We will mock A
 
 1. Upon clicking the profile icon, the user is directed to their profile page.
 
-2. Upon clicking the "Save Library" button, the user is redirected to their saved videos.
+2. Upon clicking the "Saved Videos" button, the user is redirected to their saved videos.
 
 3. The saved videos are displayed in order of most recent addition.
 
 4. Upon clicking a saved video, the video starts playing.
 
-## Use Case 9 - Seeing Results from a Video Previously Watched
+## Use Case 10 - Seeing Results from a Video Previously Watched
 *As a user, I want to be able to see a record of the videos I have watched in the past and a complete summary of how I answered the questions in those videos.*
 
-1. The user clicks their profile icon in the top right corner of the application (which will either have a profile picture or a default picture) to go to their profile.
+1. The user clicks the "Profile" button in the top right corner of the application to go to their profile.
 
-2. The user clicks on the “Activity History” text button in the sidebar of the profile page, which redirects them to the activity history page. The user then can see a list of all the videos they interacted with, with their most recent score displayed next to the video. 
+2. The user clicks on the “Progess” button in the center of the profile page, which redirects them to the activity history page. The user then can see a list of all the videos they interacted with, with their most recent score displayed next to the video. 
 
-3. The user clicks the “Detailed Results” button under the most recent score for a video. This redirects them to a full breakdown of the questions for that video and their answers.
 
 ## Assertions:
 
-1. Upon clicking the profile icon, the user is directed to their profile page.
+1. Upon clicking the "Profile" button, the user is directed to their profile page.
 
-2. Upon clicking the "Activity History" button, the user is redirected to their activity history page.
+2. Upon clicking the "Progess" button, the user is redirected to their activity history page.
 
 3. The activity history page displays a list of videos the user has interacted with, along with their most recent score.
 
-4. Upon clicking the "Results" button, the user is redirected to a full breakdown of the questions and their answers for that video.

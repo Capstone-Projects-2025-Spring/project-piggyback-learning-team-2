@@ -5,6 +5,38 @@ description: Backend API documentation
 
 # Backend Class Documentation
 
+## Backend General Structure
+
+## Routers
+
+### Authentication
+
+### Crud_test
+
+### Video_process
+
+### Videos
+
+## Database
+
+## Db_models
+
+## Gpt_helper
+
+## Main
+
+## Oauth2
+
+## openAIHelper
+
+## Schemas
+
+## Tools
+
+## Yolov8 Detector
+
+## Yolov8 Router
+
 ## YouTubeVideo
 Class Purpose: Pydantic model for validating user-supplied YouTube URLs with common formats.
 
@@ -191,3 +223,4 @@ A pipeline to break a YouTube video into frames, feed them to YOLOv7 for object 
     * Exceptions:
 
         * Raises Exception if the TTS conversion fails (e.g., due to network issues or invalid input).
+    

@@ -1,19 +1,24 @@
-from .. import db_models
-# from fastapi import FastAPI
+# backend/routers/crud_test.py
+
 from fastapi import APIRouter, status, HTTPException, Response, Depends
 from sqlalchemy.orm import Session
-from ..database import get_db
-from ..schemas import YouTubeVideo
+from backend import db_models
+from backend.database import get_db
+from backend.schemas import YouTubeVideo
 
 router = APIRouter()
-
 
 @router.get("/")
 def read_root():
     return {"message": "Welcome"}
 
+# Test SQLAlchemy connection
+@router.get("/sqlalchemy")
+def test_url(db: Session = Depends(get_db)):
+    engagement = db.query(db_models.User_engagment).all()
+    return {"data": engagement}
 
-# testing get data fromn table
+# Get engagement by video URL
 @router.get("/validateYT_URL/{video_url:path}")
 def get_URL(video_url: str, db: Session = Depends(get_db)):
     engagement = db.query(db_models.User_engagment).filter(
@@ -26,8 +31,7 @@ def get_URL(video_url: str, db: Session = Depends(get_db)):
         )
     return {"data": engagement}
 
-
-# testing adding data to table
+# Add video URL to engagements
 @router.post("/validateYT_URL")
 def add_URL(video: YouTubeVideo, db: Session = Depends(get_db)):
     existing = db.query(db_models.User_engagment).filter(
@@ -42,13 +46,14 @@ def add_URL(video: YouTubeVideo, db: Session = Depends(get_db)):
     db.add(new_engagement)
     db.commit()
     db.refresh(new_engagement)
-    return {"message": "Valid URL", "url": video.url,
-            "new row": new_engagement}
+    return {
+        "message": "Valid URL",
+        "url": video.url,
+        "new_row": new_engagement
+    }
 
-
-# testing deleting data from table
-@router.delete("/validateYT_URL/{video_url:path}",
-               status_code=status.HTTP_204_NO_CONTENT)
+# Delete video URL
+@router.delete("/validateYT_URL/{video_url:path}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_URL(video_url: str, db: Session = Depends(get_db)):
     engagement = db.query(db_models.User_engagment).filter(
         db_models.User_engagment.video_url == video_url
@@ -62,11 +67,9 @@ def delete_URL(video_url: str, db: Session = Depends(get_db)):
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
-
-# testing updating data in table
+# Update video URL
 @router.put("/validateYT_URL/{video_url:path}")
-def update_URL(video_url: str, video: YouTubeVideo,
-               db: Session = Depends(get_db)):
+def update_URL(video_url: str, video: YouTubeVideo, db: Session = Depends(get_db)):
     engagement = db.query(db_models.User_engagment).filter(
         db_models.User_engagment.video_url == video_url
     ).first()

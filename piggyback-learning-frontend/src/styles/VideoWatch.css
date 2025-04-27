@@ -1,0 +1,398 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+/* Base container */
+.video-watch-container {
+  font-family: 'Poppins', sans-serif;
+  background: url('https://getwallpapers.com/wallpaper/full/3/3/0/1115244-amazing-kids-desktop-background-1920x1200-images.jpg') center/cover no-repeat;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  color: #333;
+  overflow-x: hidden;
+}
+
+/* Header */
+.video-watch-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(90deg, #6ab9ff, #a8e6cf); /* Softer gradient */
+  padding: 16px 40px; /* Increased padding */
+  border-bottom: 4px solid #ffa000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Softer shadow */
+  position: fixed; /* Match page.css header */
+  width: 100%;
+  top: 0;
+  z-index: 1000;
+}
+
+.video-watch-logo-container {
+  display: flex;
+  align-items: center;
+}
+
+.video-watch-logo-animated {
+  width: 50px; /* Slightly larger */
+  height: 50px;
+  margin-right: 15px;
+  animation: bounce 2.5s ease-in-out infinite; /* Smoother animation */
+}
+
+.video-watch-site-title {
+  font-size: 1.9rem; /* Slightly larger */
+  font-weight: 700; /* Bolder */
+  color: #2e2e00; /* Darker for contrast */
+}
+
+.video-watch-nav-links a {
+  margin-left: 25px;
+  text-decoration: none;
+  color: #444;
+  font-weight: 600;
+  font-size: 1.1rem; /* Larger for readability */
+  transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.video-watch-nav-links a:hover {
+  color: #007bff;
+  transform: scale(1.05); /* Subtle scale effect */
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); } /* Slightly larger bounce */
+}
+
+/* Main content */
+.video-watch-content {
+  flex: 1;
+  padding: 120px 30px 100px; /* Adjusted for fixed header and footer */
+  text-align: center;
+  background: rgba(255, 255, 255, 0.95); /* Slightly more opaque */
+  margin: 40px auto; /* Increased margin */
+  border-radius: 25px; /* Softer corners */
+  max-width: 1000px; /* Wider for larger screens */
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2); /* Deeper shadow */
+}
+
+.video-watch-content h2 {
+  margin-bottom: 25px;
+  font-size: 2.4rem; /* Larger for emphasis */
+  color: #4a148c;
+  font-weight: 700;
+}
+
+/* Question Box */
+.question-box {
+  background: linear-gradient(135deg, #f3e7ff, #ffe7f0); /* Softer gradient */
+  border: 4px dashed #ff9800; /* Match page.css orange */
+  border-radius: 25px;
+  padding: 30px; /* More padding */
+  margin: 40px auto; /* Increased margin */
+  max-width: 800px; /* Wider for readability */
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  animation: floatIn 0.8s ease-out;
+  transition: transform 0.3s ease; /* Smooth hover */
+}
+
+.question-box:hover {
+  transform: scale(1.02); /* Subtle scale on hover */
+}
+
+/* Option Buttons */
+.option-button {
+  background: linear-gradient(90deg, #4fc3f7, #81c784); /* Match page.css green */
+  border: none;
+  color: #1b1b1b;
+  font-size: 1.2rem; /* Larger text */
+  padding: 15px 20px; /* More padding */
+  margin: 12px auto;
+  display: block;
+  border-radius: 15px; /* Softer corners */
+  cursor: pointer;
+  width: 85%; /* Slightly wider */
+  max-width: 450px;
+  font-weight: 600;
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.25);
+  transition: transform 0.2s ease, background 0.3s ease, box-shadow 0.3s ease;
+}
+
+.option-button:hover {
+  transform: scale(1.08); /* Slightly larger scale */
+  background: linear-gradient(90deg, #29b6f6, #66bb6a);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Skip Button */
+.skip-button {
+  background: #ff7043; /* Brighter orange */
+  border: none;
+  color: white;
+  font-size: 1.1rem;
+  padding: 12px 25px; /* More padding */
+  margin-top: 20px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.skip-button:hover {
+  background: #f4511e;
+  transform: scale(1.05);
+}
+
+/* Detect Button */
+.video-watch-detect-button {
+  margin-top: 30px; /* More space */
+  background: #4CAF50; /* Match page.css --primary-green */
+  color: white;
+  border: none;
+  padding: 15px 30px; /* Larger padding */
+  font-size: 1.2rem;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+  width: 85%;
+  max-width: 400px;
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.25);
+}
+
+.video-watch-detect-button:hover {
+  background: #388e3c;
+  transform: scale(1.08);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Bounding box (detection) */
+.bounding-box {
+  position: absolute;
+  border: 3px solid #4caf50; /* cleaner and more visible */
+  color: #fff;
+  font-size: 1rem;
+  font-weight: bold;
+  background-color: rgba(76, 175, 80, 0.35); /* semi-transparent green */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  z-index: 20;
+  border-radius: 8px;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  transition: transform 0.1s ease;
+}
+
+/* Video */
+.video-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 720px; /* Slightly larger */
+  height: auto;
+  margin: 0 auto 40px; /* Added bottom margin */
+  border-radius: 15px; /* Rounded corners */
+  overflow: hidden; /* Prevent overflow */
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2); /* Add shadow */
+}
+
+video {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Feedback */
+.feedback {
+  font-size: 1.3rem; /* Larger text */
+  margin-top: 20px;
+  font-weight: 600;
+  color: #d81b60; /* Brighter pink for emphasis */
+  background-color: #fff3e0; /* Softer background */
+  padding: 12px 20px; /* More padding */
+  border-radius: 10px;
+  width: fit-content;
+  margin-left: auto;
+  margin-right: auto;
+  animation: fadeIn 0.5s ease-out; /* Fade-in effect */
+}
+
+/* Footer */
+.footer-enhanced {
+  background: #4CAF50; /* Match page.css --primary-green */
+  padding: 20px; /* More padding */
+  color: white;
+  font-size: 1.1rem;
+  border-top-left-radius: 30px;
+  border-top-right-radius: 30px;
+  text-align: center;
+  position: fixed; /* Match page.css */
+  bottom: 0;
+  width: 100%;
+  z-index: 1000;
+}
+
+/* Animation */
+@keyframes floatIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .video-watch-content {
+    padding: 100px 20px 80px; /* Adjust for smaller screens */
+    margin: 20px auto;
+  }
+  .video-watch-header {
+    padding: 12px 20px;
+  }
+  .video-watch-site-title {
+    font-size: 1.6rem;
+  }
+  .video-watch-logo-animated {
+    width: 40px;
+    height: 40px;
+  }
+  .video-wrapper {
+    max-width: 100%;
+  }
+  .question-box {
+    padding: 20px;
+    max-width: 90%;
+  }
+  .option-button,
+  .video-watch-detect-button {
+    width: 90%;
+    font-size: 1.1rem;
+  }
+}
+
+/* Processing UI */
+.processing-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  z-index: 1000;
+}
+
+.spinner {
+  border: 4px solid rgba(255,255,255,0.3);
+  border-radius: 50%;
+  border-top: 4px solid white;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Summary Box Styling */
+.summary-overlay-on-video {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 1000;
+}
+
+.summary-box {
+  background: linear-gradient(135deg, #2a2a72 0%, #2e2e8a 100%);
+  border-radius: 15px;
+  padding: 25px;
+  width: 80%;
+  max-width: 500px;
+  box-shadow: 0 5px 25px rgba(0, 0, 255, 0.3);
+  color: white;
+  text-align: center;
+  animation: glow 1.5s infinite alternate;
+}
+
+.summary-box h2 {
+  color: #ffeb3b;
+  margin-bottom: 20px;
+  font-size: 28px;
+}
+
+.results-summary {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.results-summary p {
+  font-size: 18px;
+  margin: 10px 0;
+  text-align: left;
+}
+
+.results-summary strong {
+  color: #a0e4ff;
+}
+
+.summary-buttons {
+  display: flex;
+  justify-content: space-around;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.summary-buttons .fancy-button {
+  padding: 12px 24px;
+  background: linear-gradient(45deg, #4a00e0, #8e2de2);
+  border: none;
+  border-radius: 25px;
+  color: white;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex: 1;
+  max-width: 200px;
+}
+
+.summary-buttons .fancy-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 7px 15px rgba(142, 45, 226, 0.4);
+}
+
+/* Dynamic glow effect for question boxes and summary */
+.dynamic-glow {
+  animation: glow 1.5s infinite alternate;
+}
+
+@keyframes glow {
+  from {
+    box-shadow: 0 0 10px #5433FF, 0 0 20px #20BDFF;
+  }
+  to {
+    box-shadow: 0 0 20px #5433FF, 0 0 30px #A5FECB;
+  }
+}

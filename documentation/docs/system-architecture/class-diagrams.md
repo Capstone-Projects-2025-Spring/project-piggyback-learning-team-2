@@ -49,9 +49,9 @@ These components are external services that the AI Engine uses to achieve it's f
 
 #### Figure 1.3 Video Interaction and Progress Tracking
 
-Figure 1.2 shows the backend components that make up VideoPage, which is the frontend component that handles displaying videos to users and making them interactive.
+Figure 1.2 shows the backend components that make up VideoWatch, which is the frontend component that handles displaying videos to users and making them interactive.
 
-### VideoPlayer
+### VideoWatch
 
 This component handles the playing, stopping, and starting of the video. A video will start when a user hits the play button, and will stop at the appropriate timestamp to ask a question. Once that is complete, it will start again, and this will continue until the video's end.
 

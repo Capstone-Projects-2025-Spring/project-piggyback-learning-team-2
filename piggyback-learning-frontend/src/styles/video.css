@@ -7,6 +7,15 @@ body {
     font-family: Arial, sans-serif;
 }
 
+.video-page-background {
+    background-image: url('https://getwallpapers.com/wallpaper/full/3/3/0/1115244-amazing-kids-desktop-background-1920x1200-images.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    min-height: 100vh;
+    width: 100%;
+}
+
 /* Header */
 header {
     background-color: #4CAF50;
@@ -17,6 +26,7 @@ header {
 
 header h1 {
     font-size: 2em;
+    text-align: center;
     text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.2); /* Soft shadow for header */
 }
 
