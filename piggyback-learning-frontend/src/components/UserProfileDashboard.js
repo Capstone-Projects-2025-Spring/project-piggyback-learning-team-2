@@ -5,11 +5,12 @@ import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import logo from '../images/Mob_Iron_Hog.png';
 import '../styles/UserProfileDashboard.css';
-import { Doughnut } from 'react-chartjs-2';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Doughnut, Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from 'chart.js';
 import { FaMoon, FaLightbulb } from 'react-icons/fa';
 
-ChartJS.register(ArcElement, Tooltip, Legend);
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
+
 
 function UserProfile() {
   const navigate = useNavigate();
@@ -67,17 +68,49 @@ function UserProfile() {
 
   const fetchQuizStats = async (userId) => {
     const { data, error } = await supabase
-      .from('quiz_history')
-      .select('video_title, question_text, selected, correct, created_at')
+      .from('quiz_results')
+      .select('video_title, total_questions, correct_answers, created_at')
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
-    if (error) return;
+  
+    if (error) {
+      console.error('Error fetching quiz results:', error.message);
+      return;
+    }
+  
     setQuizHistory(data || []);
-    const total = data.length;
-    const correct = data.filter(q => q.correct).length;
-    const accuracy = total === 0 ? 0 : Math.round((correct / total) * 100);
-    setQuizStats({ total, correct, accuracy });
+  
+    const totalQuestions = data.reduce((sum, q) => sum + (q.total_questions || 0), 0);
+    const correctAnswers = data.reduce((sum, q) => sum + (q.correct_answers || 0), 0);
+    const accuracy = totalQuestions === 0 ? 0 : Math.round((correctAnswers / totalQuestions) * 100);
+  
+    setQuizStats({ total: totalQuestions, correct: correctAnswers, accuracy });
   };
+  
+  const fetchWeeklyQuizActivity = async (userId) => {
+    const { data, error } = await supabase
+      .from('quiz_results')
+      .select('created_at')
+      .eq('user_id', userId);
+  
+    if (error) {
+      console.error('Error fetching weekly quiz data:', error.message);
+      return [];
+    }
+  
+    const dayCounts = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 };
+  
+    data.forEach((entry) => {
+      const date = new Date(entry.created_at);
+      const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+      if (dayCounts[dayName] !== undefined) {
+        dayCounts[dayName]++;
+      }
+    });
+  
+    return dayCounts;
+  };
+  
 
   useEffect(() => {
     const init = async () => {
@@ -118,13 +151,18 @@ function UserProfile() {
       await Promise.all([
         fetchVideoHistory(profileData.id),
         fetchSavedVideos(profileData.id),
-        fetchQuizStats(profileData.id)
+        fetchQuizStats(profileData.id),
+        fetchWeeklyQuizActivity(profileData.id).then(data => setWeeklyQuizData(data)) // 👈 add this
       ]);
-
+      
       setLoading(false);
     };
     init();
+    
   }, [navigate]);
+
+  const [weeklyQuizData, setWeeklyQuizData] = useState({ Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 });
+
 
   const handleInputChange = (e) => setEditValues({ ...editValues, [e.target.name]: e.target.value });
   const handleSaveProfile = async () => {
@@ -144,6 +182,13 @@ function UserProfile() {
 
   if (loading) return <div className="loading">Loading Profile...</div>;
   if (!profile) return <div className="error">Error loading profile.</div>;
+
+  
+  
+
+ 
+  
+
 
   return (
     <div className="profile-container">
@@ -336,6 +381,49 @@ function UserProfile() {
         }]
       }} />
     </div>
+    <h4 style={{ marginTop: '30px' }}>📅 Weekly Progress</h4>
+<div style={{ width: '500px', margin: '20px auto' }}>
+<Bar
+  data={{
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    datasets: [{
+      label: 'Quizzes Taken',
+      data: [
+        weeklyQuizData.Mon,
+        weeklyQuizData.Tue,
+        weeklyQuizData.Wed,
+        weeklyQuizData.Thu,
+        weeklyQuizData.Fri,
+        weeklyQuizData.Sat,
+        weeklyQuizData.Sun
+      ],
+      backgroundColor: '#42A5F5',
+    }]
+  }}
+  options={{
+    responsive: true,
+    scales: {
+      y: {
+        beginAtZero: true
+      }
+    }
+  }}
+/>
+
+</div>
+<h4 style={{ marginTop: '30px' }}>🏆 Achievements</h4>
+<ul style={{ listStyle: 'none', padding: 0 }}>
+  {progressStats.watched >= 10 && (
+    <li>🎉 Watched 10+ videos!</li>
+  )}
+  {quizStats.correct >= 20 && (
+    <li>🎯 Answered 20+ correct questions!</li>
+  )}
+  {quizStats.accuracy >= 90 && (
+    <li>🏆 90%+ Accuracy Master!</li>
+  )}
+</ul>
+
 
     {/* 📝 Recent Quiz Log */}
     {quizHistory.length > 0 && (
@@ -345,18 +433,15 @@ function UserProfile() {
           {quizHistory.slice(0, 5).map((entry, i) => (
             <li key={i} style={{ marginBottom: "10px" }}>
               <strong>{entry.video_title}</strong><br />
-              ❓ {entry.question_text}<br />
-              📝 You chose: <b>{entry.selected}</b> – {entry.correct ? '✅ Correct' : '❌ Wrong'}
+              🎯 Questions: {entry.total_questions} | ✅ Correct: {entry.correct_answers}
             </li>
           ))}
         </ul>
+
       </div>
     )}
   </div>
 )}
-
-
-
 
 <button className="back-home-btn" onClick={() => navigate("/")}>
   🏠 Back to Home

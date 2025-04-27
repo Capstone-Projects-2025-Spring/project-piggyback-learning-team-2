@@ -106,6 +106,36 @@ export default function InteractiveVideoQuiz() {
     }
   });
 
+  const saveQuizResults = async () => {
+    const { data: authData } = await supabase.auth.getUser();
+    const user = authData?.user;
+    if (!user) {
+      navigate('/signin');
+      return;
+    }
+  
+    const { correct, wrong, skipped, total, startTime, endTime } = session.stats;
+    const sessionDurationSec = Math.round((endTime - startTime) / 1000) || 0;
+  
+    const { error } = await supabase.from('quiz_results').insert([{
+      user_id: user.id,
+      video_title: videoTitle,
+      total_questions: total,
+      correct_answers: correct,
+      time_watched_sec: sessionDurationSec,
+      session_time_sec: sessionDurationSec,
+      created_at: new Date().toISOString(),
+      video_url: videoUrl
+    }]);
+  
+    if (error) {
+      console.error('Error saving quiz results:', error);
+    } else {
+      console.log('Quiz results saved successfully!');
+    }
+  };
+  
+
   // Derived state for easier access
   const {
     processing, quiz, player, session
@@ -584,24 +614,27 @@ export default function InteractiveVideoQuiz() {
   // Video ended handler
   const handleVideoEnded = () => {
     const now = Date.now();
-
-    // For summary, count unique questions
-    const uniqueQuestionCount = new Set(Object.keys(quiz.answeredQuestions)).size;
-
-    // For reporting, get raw counts from the stats
-    const { correct, wrong, skipped, total } = session.stats;
-
-    updateSessionState({
+  
+    // First update session time
+    updateSessionState(prev => ({
+      ...prev,
       end: now,
       stats: {
-        ...session.stats,
+        ...prev.stats,
         endTime: now,
-        uniqueCount: uniqueQuestionCount
+        uniqueCount: new Set(Object.keys(quiz.answeredQuestions)).size
       }
-    });
-
+    }));
+  
+    // Now save the result after updating session end time
+    setTimeout(() => {
+      saveQuizResults();
+    }, 500); // short delay to make sure state is updated
+    
+  
     updateQuizState({ showSummary: true });
   };
+  
 
   // Detection box calculation for object detection
   const calculateDetectionBoxStyle = (det) => {
