@@ -27,9 +27,6 @@ sidebar_position: 4
 #### Saved Videos
 - Users can save videos to the supabase database by extracting the video's metadata e.g. url, watchtime, etc.
 - Saved videos are accessible via the user's account.
-#### Search
-- User is aable to filter videos by title or topic.
-- Search results are displayed in a categorized list.
 
 ### Non-Functional
 

@@ -1,35 +1,35 @@
 ---
 sidebar_position: 7
-description: Yolov7 documentation
+description: Yolov8 documentation
 ---
 
-# YOLOv7 Specs
+# YOLOv8 Specs
 
 ## Notes:
 
 ### Library: 
-yolov7 (PyTorch-based).
+yolov8 (PyTorch-based).
 
 ### Authentication: 
 None required (local model).
 
 ## Endpoints for Object Detection
 
-Load YOLOv7 Model
+Load YOLOv8 Model
 
 ### Method: load_yolov7_model()
 
 #### Parameters:
 
-* string weights_path: Path to the YOLOv7 weights file (yolov7.pt).
+* string weights_path: Path to the YOLOv8 weights file (yolov8.pt).
 
 #### Example Usage:
 
-    model, device = load_yolov7_model()
+    model, device = load_yolov8_model()
 
 #### Returns:
 
-    * model: Loaded YOLOv7 model.
+    * model: Loaded YOLOv8 model.
 
     * device: The device (CPU/GPU) where the model is loaded.
 
@@ -41,7 +41,7 @@ Load YOLOv7 Model
 
 * numpy.ndarray frame: The image frame to process.
 
-* model: The loaded YOLOv7 model.
+* model: The loaded YOLOv8 model.
 
 * device: The device (CPU/GPU) to use for inference.
 

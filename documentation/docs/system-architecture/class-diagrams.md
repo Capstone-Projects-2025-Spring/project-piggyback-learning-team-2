@@ -1,67 +1,172 @@
 ---
-sidebar_position: 3
+sidebar_position: 2
 ---
-
-# Class Diagrams
+# Class Diagrams 
 
 ## Frontend Class Diagram
 
-![Alt Text](/img/Main_Class_Diagram.png)
+![Frontend Class Diagram]](image-4.png)
 
-#### Figure 1.1 All React Components
-Figure 1.1 shows all the React components that make up the frontend of the Piggyback Learning.
+#### Figure 1.1: Frontend Component Relationships
 
-### App
-The App component is the entire site broken into smaller components. It is the main point of entry and splits into four main classes, VideoPage, Authmanager, HomePage, and DashboardPage.
+The frontend class diagram illustrates the relationships between React components:
 
-#### HomePage
-The HomePage component is the landing page of the site, and owns SearchEngine which is used to search for videos on the site.
+### App Component
+The App component serves as the main entry point for the application, managing routing between different views through React Router. It coordinates navigation between the Home page, Video Watch page, User Profile Dashboard, and Authentication components.
 
-### VideoPage
-The VideoPage component handles display and access to videos for users, with video interaction and recording of progress being handled in the classes under this component.
+**Key features:**
 
-### AuthManager
-The AuthManager component handles authentication for users, which facilitates progress tracking and could potentially be used to faciliate recommended content.
+- Route management for navigation between components
+- Entry point for the application
+- Global state coordination
+
+### Home Component
+The Home component represents the landing page where users can discover content, search for videos, and begin their learning journey.
+
+**Key features:**
+
+- Video card display with thumbnails fetched from YouTube
+- YouTube URL input and validation
+- Video selection and navigation to the Watch page
+
+### VideoWatch Component
+
+The VideoWatch component is responsible for delivering the core interactive learning experience, handling video playback, question presentation, and user interactions.
+
+**Key features:**
+
+- Video player control (play, pause, restart)
+- Question display at predefined timestamps
+- Text-to-speech functionality for question reading
+- User answer processing and feedback
+- Detection box visualization for object recognition
+- Video progress tracking
+
+### Authentication Components
+
+The authentication system consists of SignIn, SignUp, and ResetPassword components that handle user registration, login, and password management.
+
+**Key features:**
+
+- Email/password authentication
+- Google OAuth integration
+- Password reset functionality
+- Form validation and error handling
+
+### UserProfileDashboard Component
+
+The UserProfileDashboard component provides users with a personalized space to view their learning progress, video history, and saved content.
+
+**Key features:**
+
+- User profile management
+- Quiz statistics and historical performance
+- Video history tracking
+- Saved video management
+- Learning progress visualization
+
+### SupabaseClient
+The SupabaseClient serves as the connection manager to the Supabase backend service, providing authentication and database functionality.
+
+**Key features:**
+
+- Client initialization and configuration
+- Connection management to Supabase services
 
 ## Backend Class Diagram
 
-The following section will cover the backend and component diagrams, showing the classes to be developed or used and their relationship.
+![Backend Class Diagram](image-2.png)
 
-### Question Generation
+#### Figure 1.2: Backend Class Diagram
+The backend class diagram shows the organization of FastAPI routes, services, and database interactions:
 
-![Alt Text](/img/Question_Generation.png)
 
-#### Figure 1.2 Question Generation
+### Main Application
+The main FastAPI application serves as the entry point for the backend, configuring middleware, routes, and providing health check endpoints.
 
-Figure 1.2 shows the components that make up AIEngine, which is the component that handles generating questions by analyzing videos.
+**Key Features:**
 
-### AI Engine
+- API route registration
+- CORS configuration
+- Logging middleware
+- Health check endpoints
 
-This component handles everything related to the AI and ML aspects of the project. It handles scanning videos and collecting frames from them, which are then manually labelled and then given to yolov7 within this component in order to analyze their content to create a question. This component then uses the OpenAI API to generate relevant questions based on the frames. This component is also responsible for collecting the timestamps for the questions so that the video will stop and start and the relevant times to ask the question to a user.
+### Authentication Router
+The authentication router handles user registration, login, and token management through secure OAuth2 and JWT implementation.
 
-### Yolov7 and OpenAI
+**Key features:**
 
-These components are external services that the AI Engine uses to achieve it's functionality, with Yolov7 being used to break down video and analyze the content of video frames, and OpenAI's API being used to generate questions based on the frames for users to answer as they watch a video.
+- User registration with email/password
+- Secure login with JWT token generation
+- Token validation and user retrieval
 
-### Video Interaction and Progress Tracking
+### Videos Router
+The videos router manages video processing, question generation, and user interaction with video content.
 
-![Alt Text](/img/Video_Interaction_And_Progress.png)
+**Key features:**
 
-#### Figure 1.3 Video Interaction and Progress Tracking
+- Video analysis with YOLOv8 and GPT
+- Question generation from video content
+- Processing state management
+- Answer validation and explanation
 
-Figure 1.2 shows the backend components that make up VideoPage, which is the frontend component that handles displaying videos to users and making them interactive.
+### CRUD Router
+The CRUD router provides basic database operations for video engagement tracking and testing.
 
-### VideoPlayer
+**Key features:**
 
-This component handles the playing, stopping, and starting of the video. A video will start when a user hits the play button, and will stop at the appropriate timestamp to ask a question. Once that is complete, it will start again, and this will continue until the video's end.
+- Create, read, update, and delete operations for video URLs
+- Database connection testing
+- Video engagement metrics
 
-### QuestionHandler
+### AI and Machine Learning Components
 
-This component handles the display of a question, validation of a user's answer, giving of feedback, and using reading questions aloud to users with the assistance of Google TTS. When the appropriate timestamp is reached, a question will be displayed and the video will pause for the user to answer. The user will then recieve feedback on their answer, whether it was correct or not and an explanation, and then the video will resume.
+#### YOLOv8 Object Detection
 
-### ProgressManager
+YOLOv8 is used for real-time object detection in video frames, identifying relevant content for question generation.
 
-This component handles tracking of a user's answers during a video, creating the progress summary at the ened of a video, and saving these details to the user's profile. When a user watches a video and answers all the questions, they will recieve a summary at the end that will give them a score and allow them to flip through each question and review them. The video and their answers will be saved to their "Video History" where they can review the video anytime they wish by going to that section of their profile.
+**Key features:**
 
-### Google TTS
-This component is an external service that comes from Google's text-to-speech API. It is used for reading questions aloud to users to make the application more accessible for emerging and early readers.
+- Object detection from base64-encoded images
+- Bounding box generation with confidence scores
+- Label identification for detected objects
+
+####  GPT Helper
+
+The GPT helper component interfaces with OpenAI's API to generate contextually relevant multiple-choice questions based on video content.
+
+**Key features:**
+
+- Question generation from video transcripts
+- Multiple-choice answer creation
+- JSON parsing and formatting
+
+####  YouTube Data Retrieval
+The YouTube component handles metadata and transcript retrieval from YouTube videos.
+
+**Key features:**
+
+- Video ID extraction from URLs
+- Metadata retrieval (title, duration, etc.)
+- Transcript fetching and processing
+
+####  Database Components
+
+The database models define the structure for storing user data, video information, and engagement metrics.
+
+**Key features:**
+
+- User authentication data (User_Login)
+- Video engagement tracking (User_engagement)
+- Question storage for videos (VideoQuestion)
+
+#### Schema Definitions
+The schema definitions provide validation rules for API requests and responses using Pydantic models.
+
+**Key features:**
+
+- Request validation
+- Response formatting
+- Data type enforcement
+
+

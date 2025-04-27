@@ -4,7 +4,7 @@ sidebar_position: 8
 description: "OpenAI API documentation"
 ---
 
-# OpenAI API Specs
+# OpenAI API Specs (Version 1.75)
 
 ## Base URL
 

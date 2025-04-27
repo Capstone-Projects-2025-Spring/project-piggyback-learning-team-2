@@ -35,7 +35,3 @@ Users can create accounts, log in, and save their progress. They will have acces
 ### Real-Time Feedback
 After completing a quiz during the video, users will immediately receive feedback on their answers. Correct answers will trigger positive reinforcement, and incorrect answers will prompt a brief explanation to help the learner understand the mistake.
 
-## Dependencies
-- **YouTube API**: The system depends on the YouTube Iframe API for embedding videos and controlling playback.
-- **React and Node.js**: React.js for building interactive UI components and Node.js for backend services.
-- **Database**: A reliable database system (e.g., PostgreSQL) will be used for storing user data and video interactions.
