@@ -311,6 +311,7 @@ Displays question and pauses video
 
 **Returns:** void
 
+**
 **handleCancelProcessing()**
 
 Cancels video processing
@@ -382,6 +383,40 @@ Calculates position for object detection boxes
 - det: Object - Detection data
 
 **Returns:** Object - CSS style object
+
+**fetchSavedVideos(userId)**
+
+Fetches the user's saved videos and calculates the progress statistics (watched vs. saved).
+
+**Arguments:**
+
+- userId: String - User identifier
+
+**Returns:** Promise&lt;void&gt;
+
+**Exceptions:**
+
+- Error: When saved videos or watch history cannot be fetched
+
+**saveCurrentVideo(videoUrl, title)**
+
+Saves the current video for the authenticated user, avoiding duplicates.
+
+**Arguments:**
+
+- videoUrl: String - URL of the video to save
+
+- title: String - Title of the video to save
+
+**Returns:** Promise&lt;void&gt;
+
+**Exceptions:**
+
+- Error: When user is not authenticated
+
+- Error: When checking for existing saved videos fails
+
+- Error: When inserting the new saved video fails
 
 ## UserProfileDashboard
 

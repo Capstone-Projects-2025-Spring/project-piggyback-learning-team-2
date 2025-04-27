@@ -10,406 +10,297 @@ description: Backend API documentation
 ## Routers
 
 ### Authentication
+Class Purpose: Handles user authentication including login and registration.
+
+**Methods:**
+
+* __login(userCredentials, db)__
+
+    * Purpose Authenticates user and returns access token
+
+    * Pre-conditions:
+
+        * Database connection must be valid
+
+        * User credentials must be provided in OAuth2 format
+
+    * Post-conditions:
+
+        * Returns JWT token if credentials are valid
+
+        * Raises error if authentication fails
+
+    * Parameters:
+
+        * userCredentials: OAuth2PasswordRequestForm - Contains username/password
+
+        *  db: Session - Database session
+
+    * Return Value:
+
+        * Dictionary with access token and type
+
+    * Exceptions:
+
+        * HTTPException (403): For invalid credentials
+
+* __register_user(user, db)__
+
+    * Purpose: Creates new user account
+
+    * Pre-conditions:
+
+        * Email must not already exist in database
+
+        * Password must meet security requirements
+
+    * Post-conditions:
+
+        * New user record created in database
+
+        * Hashed password stored instead of plaintext
+
+    * Parameters:
+
+        * user: schemas.UserCredentials - User registration data
+
+        * db: Session - Database session
+
+    * Return Value:
+        
+        * schemas.UserResponse - Registered user data
+
+    *  Exceptions:
+
+        * HTTPException (400): If email already exists
 
 ### Crud_test
+Class Purpose: Provides basic CRUD operations for video engagement tracking.
 
-### Videos
+#### Methods:
 
-## Database
-Set up SQLAlchemy database engine, session, and base class for ORM models. Load database credentials from environment variables.
+__get_URL(video_url, db)__
 
-Data Fields:
+    * Purpose: Retrieves engagement by video URL
 
-SQLAlchemy_Database_URL
+    * Pre-conditions:
 
-Type: str
+        * Database connection must be valid
 
-Purpose: Store the database connection string from environment variables.
+        * URL must be properly formatted
 
-engine
+    * Post-conditions:
 
-Type: sqlalchemy.engine.base.Engine
+    * Returns engagement data if found
 
-Purpose: SQLAlchemy engine connected to the database.
+        * Raises 404 if URL not found
 
-SessionLocal
+    * Parameters:
 
-Type: sqlalchemy.orm.session.sessionmaker
+        * video_url: String - Video URL to lookup
 
-Purpose: Factory for creating database sessions.
+        * db: Session - Database session
 
-Base
+    * Return Value:
 
-Type: sqlalchemy.ext.declarative.api.DeclarativeMeta
+        * Engagement data dictionary
 
-Purpose: Base class for ORM models.
+    * Exceptions:
 
-Functions:
+        * HTTPException (404): If URL not found
 
-get_db()
+* __add_URL(video, db)__
 
-Purpose: Dependency function to get a database session for use in FastAPI routes.
+    * Pupose: Adds new video URL to tracking
 
-Pre-conditions:
+    * Pre-conditions:
 
-Database URL must be properly loaded from environment variables.
+        * URL must not already exist in database
 
-Post-conditions:
+        * YouTubeVideo payload must be valid
 
-Yields a database session and ensures it is closed after usage.
+    * Post-conditions:
 
-Return Value:
+        * New engagement record created
 
-Generator that yields a Session object.
+        * Returns success message
 
-## Db_Models
-Define the database ORM models for user login, user engagement, and video questions.
+    * Parameters:
 
-User_engagment
-Class Purpose:
-Represents a user's progress interacting with a YouTube video.
+        * video: YouTubeVideo - Video data
 
-Data Fields:
+        * db: Session - Database session
 
-id (Primary Key)
+    * Return Value:
+        
+        * Dictionary with operation results
 
-user_id (Foreign Key to users.id)
+    * Exceptions:
 
-video_id
+        * HTTPException (400): If URL already exists
 
-progress
+## Videos
 
-timestamp
-
-Relationships:
-
-user
-
-Relationship to User_Login.
-
-User_Login
-Class Purpose:
-Stores user account information including email, password, and creation timestamp.
-
-Data Fields:
-
-id (Primary Key)
-
-email (Unique)
-
-password
-
-name
-
-created_at
-
-Relationships:
-
-engagements
-
-Relationship to User_engagment.
-
-VideoQuestion
-Class Purpose:
-Stores questions generated for YouTube videos, including metadata about the video.
-
-Data Fields:
-
-video_id (Primary Key)
-
-video_link
-
-video_title
-
-video_thumbnail
-
-video_duration
-
-questions_json
-
-created_at
-
-## Gpt_Helper
-Functions:
-
-safe_parse_json(json_str: str) -> dict or None
-
-Purpose: Safely remove markdown code fences and parse GPT responses into JSON.
-
-Exceptions: Prints error if JSON parsing fails.
-
-generate_mcq_from_labels(labels: list) -> dict
-
-Purpose: Generate an MCQ from a list of detected video labels using GPT-4o.
-
-Pre-conditions:
-
-labels must be a list of objects with "label" keys.
-
-Post-conditions:
-
-Returns a dictionary with "text", "options", and "answer" keys.
-
-Exceptions:
-
-If GPT fails or response is invalid, returns a fallback message.
-
-generate_questions_from_transcript(title: str, transcript: str) -> dict
-
-Purpose: Generate an MCQ based on a YouTube transcript using GPT-4o.
-
-Pre-conditions:
-
-Transcript should not exceed 1000 characters for prompt clarity.
-
-Post-conditions:
-
-Returns a valid question dictionary.
-
-Exceptions:
-
-If parsing fails or GPT errors occur, returns a fallback question.
-
-## Main
-Set up and run the main FastAPI application, register routers, set up CORS, and logging.
-
-*__Components:__*
-
-* __app__
-
-    * Type: FastAPI
-
-    * Purpose: Main FastAPI application instance.
-
-* __Logger Configuration__
-
-Purpose: Logs incoming requests and responses for monitoring.
-
-* __CORS Middleware__
-
-Purpose: Allow cross-origin requests from specified frontend URLs (e.g., React app on localhost:3000).
-
-__Routers Included:__
-
-* crud_test.router
-
-* authentication.router
-
-* video_router.router (with /api/v1/video prefix)
-
-* yolo_router (from yolov8_router)
-
-* __Middleware: log_requests(request: Request, call_next)__
-
-Purpose: Logs details of each incoming HTTP request and its response status.
-
-__API Endpoint:__
-
-* __GET /health__
-
-Purpose: Basic health check endpoint to verify backend is running.
-
-Return Value:
-
-*   JSON containing status ("healthy"), version, and current timestamp.
-
-## Oauth2
-
-## OpenAIHelper
-Generate multiple-choice questions (MCQs) from video object labels or transcripts using OpenAI GPT models.
-
-## Schemas
-
-## Tools
-
-## Yolov8 Detector
-
-## Yolov8 Router
-
-## YouTubeVideo
-Class Purpose: Pydantic model for validating user-supplied YouTube URLs with common formats.
+Purpose: Handles video processing and question generation.
 
 __Data Fields:__
 
-* __url__
+* processing_results: Dict - Tracks active processing jobs
 
-    * Type: HttpUrl
+* cancellation_events: Dict - Manages cancellation states
 
-    * Purpose: Store the YouTube URL.
+* processing_tasks: Dict - Stores active processing tasks
 
 __Methods:__
 
-* __check_YouTubeVideoURL(cls, v: HttpUrl) -> HttpUrl:__
+* __run_full_analysis(video_id, youtube_url, title, num_questions, keyframe_interval)__
 
-    * Purpose: Validate that the URL matches a regex pattern for YouTube video URLs.
-
-    * Pre-conditions:
-
-    * v must be a string representing a URL.
-
-    * Post-conditions:
-
-        * If the URL matches the regex pattern, return the URL.
-
-        * If the URL does not match, raise a ValueError.
-
-    * Parameters:
-
-        * v - (HttpUrl): The URL to validate.
-
-    * Return Value:
-
-        * Validated YouTube video URL (HttpUrl).
-
-    * Exceptions:
-
-        * Raises ValueError if the URL does not match the regex pattern.
-
-* __valid_YTvideo (API Endpoint)__
-
-    * Purpose: API endpoint for validating YouTube video URLs. It accepts a JSON payload containing a YouTube video URL.
-
-    * Parameters:
-
-        * video (YouTubeVideo): A Pydantic model instance containing the YouTube URL.
-
-    * Return Value:
-
-        * Dictionary with a message and the validated URL.
-
-    * Exceptions:
-
-    * Raises HTTPException (422) if the provided data is not a valid URL.
-
-## Video_Scanning
-
-__Purpose:__
-A pipeline to break a YouTube video into frames, feed them to YOLOv7 for object detection, generate questions using OpenAI API based on the analyzed frames, and use Google TTS to read the questions aloud.
-
-* __load_yolov7_model()__
-    * Purpose: Load the YOLOv7 model with PyTorch 2.6 compatibility.
+    * Purpose: Performs comprehensive video analysis
 
     * Pre-conditions:
 
-        * YOLOv7 weights file (yolov7.pt) must exist at the specified path.
+        * Valid YouTube video ID
+
+    * Backend services available
+
+        * Post-conditions:
+
+        * Transcript and keyframes processed
+
+        * Questions generated and stored
+
+    * Parameters:
+
+        * video_id: String - YouTube video ID
+
+        * youtube_url: String - Video URL
+
+        * title: String - Video title
+
+        * num_questions: Integer - Questions to generate
+
+        * keyframe_interval: Integer - Analysis interval
+
+    * Return Value:
+        
+        * List of generated questions
+
+    * Exceptions:
+
+        * HTTPException (404): No transcript available
+
+        * asyncio.TimeoutError: Processing timeout
+
+* __cancel_processing(video_id)__
+
+    * Purpose: Cancels active processing job
+
+    * Pre-conditions:
+
+        * Processing job must exist for video_id
 
     * Post-conditions:
 
-        * The YOLOv7 model is loaded and set to evaluation mode.
+        * Processing stopped
 
-    * Return Value:
-
-        * model: The loaded YOLOv7 model.
-
-        * device: The device (CPU, GPU, or MPS) where the model is loaded.
-
-    * Exceptions:
-
-        * Raises FileNotFoundError if the weights file is missing.
-
-        * Raises ValueError if the model fails to load.
-
-* __stream_youtube_video(url)__
-
-    * Purpose: Extract the best available video stream URL from a YouTube video.
+        * Resources cleaned up
 
     * Parameters:
 
-        * url (str): The YouTube video URL.
+        * video_id: String - Video identifier
 
     * Return Value:
 
-        * The best available video stream URL.
+        * Dictionary with cancellation confirmation
 
-    * Exceptions:
+### Database
 
-        * Raises ValueError if the video info cannot be extracted or no valid formats are found.
+Purpose: Manages database connections and sessions.
 
-* __clear_frames_folder()__
+__Data Fields:__
 
-    * Purpose: Clear the frames directory and recreate it.
+* SQLAlchemy_Database_URL: str - Database connection string
+
+* engine: sqlalchemy.engine - Database engine instance
+
+* SessionLocal: sessionmaker - Session factory
+
+__Methods:__
+
+* __get_db()__
+
+    * Purpose: Provides database sessions
+
+    * Pre-conditions:
+
+        * Database URL properly configured
 
     * Post-conditions:
 
-        * The frames directory is empty and ready for new frames.
+        * Yields usable session
 
-* __load_training_videos()__
+        * Ensures session closure
 
-    * Purpose: Load training videos from a JSON file.
+    *  Return Value:
+        
+        * Generator yielding Session objects
 
-    * Return Value:
+### Schemas
+Purpose: Defines data validation models.
 
-        * A list of training videos.
+__Main Models:__
 
-    * Exceptions:
+* YouTubeVideo: Validates YouTube URLs
 
-        * Raises ValueError if the JSON structure is invalid.
+* UserCredentials: User registration data
 
-* __process_video(video_url, video_id, frame_interval=30)__
+* VideoQuestion: Video question structure
 
-    * Purpose: Process a YouTube video by extracting frames at specified intervals and saving them to a directory.
+### Tools
 
-    * Parameters:
+Purpose: Security and utility functions.
 
-        * video_url (str): The URL of the video stream.
+__Methods:__
 
-        * video_id (str): A unique identifier for the video.
+__hash(password)__
 
-        * frame_interval (int): The interval (in frames) at which to extract frames. Default is 30.
+    * Purpose: Securely hashes passwords
 
-    * Return Value:
+    * Pre-conditions:
 
-        * A list of timestamps corresponding to the extracted frames.
+        * Password string provided
 
-    * Exceptions:
+    * Post-conditions:
 
-        * Raises ValueError if the video stream cannot be opened.
-
-* __generate_questions(timestamps)__
-
-    * Purpose: Generate questions based on the timestamps of extracted frames.
-
-    * Parameters:
-
-        * timestamps (list): A list of timestamps.
-
-    * Return Value:
-
-        * A list of questions, e.g., "What is happening at X seconds?"
-
-* __speak_questions(timestamps, video_id, language='en')__
-
-    * Purpose: Generate questions based on timestamps and convert them to speech using Google Text-to-Speech (TTS).
+        * Returns irreversible hash
 
     * Parameters:
 
-        * timestamps (list):
+        * password: String - Plaintext password
 
-            * Type: List of floats.
 
-            * Purpose: Timestamps of the extracted frames from the video.
+    * Return Value:
 
-        * video_id (str):
+        * Hashed password string
 
-            * Type: String.
+* __verify(plain_password, hashed_password)__
 
-            * Purpose: Unique identifier for the video (used to organize audio files).
+    * Purpose: Verifies password against hash
 
-        * language (str):
+    *  Pre-conditions:
 
-            * Type: String.
+`   * Both plain and hashed passwords provided
 
-            * Purpose: Language code for the TTS engine (default is 'en' for English).
+    * Post-conditions:
 
-            * Return Value:
+`   * Returns boolean match result
 
-        * audio_files (list):
+    * Parameters:
 
-            * Type: List of strings.
+        * plain_password: String
 
-            * Purpose: File paths to the generated audio files (e.g., ['audio/video_1/question_1.mp3', 'audio/video_1/question_2.mp3']).
+            * hashed_password: String
 
-    * Exceptions:
+    * Return Value:
 
-        * Raises Exception if the TTS conversion fails (e.g., due to network issues or invalid input).
-    
+        * Boolean verification result

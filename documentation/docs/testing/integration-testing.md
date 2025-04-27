@@ -4,7 +4,7 @@ sidebar_position: 2
 # Integration Testing
 To ensure the functionality of our application aligns with the defined use cases, we will implement integration tests that simulate user interactions with the system. These tests will validate the end-to-end workflow, from user input to system response, without requiring manual data entry or result interpretation.
 
-We will use FastAPI’s TestClient to simulate API requests and validate backend responses. For frontend testing, we will use Jest, a JavaScript testing framework, to test React components and user interactions. This approach allows us to test the full stack without relying on browser automation tools like Selenium.
+We will use FastAPI’s TestClient (version 0.115.8) to simulate API requests and validate backend responses. For frontend testing, we will use Jest, a JavaScript testing framework, to test React components and user interactions. This approach allows us to test the full stack without relying on browser automation tools like Selenium.
 
 To maintain consistency and avoid contamination of production data, we will use a clean instance of our production build and database for testing. A set of reserved user IDs will be allocated specifically for integration testing purposes.
 
@@ -56,7 +56,7 @@ FastAPI’s TestClient will be used to send HTTP requests to the API endpoints a
         assert response.json() == {"message": "Account created successfully"}
 ```
 ### Frontend Testing with Jest:
-Jest will be used to test React components and user interactions. We will mock API responses to ensure the frontend behaves as expected when interacting with the backend.
+Jest (version 29.x) will be used to test React components and user interactions. We will mock API responses to ensure the frontend behaves as expected when interacting with the backend.
 
 #### Example Jest Test Script:
 
@@ -209,7 +209,7 @@ Jest will be used to test React components and user interactions. We will mock A
 
 4. On the video watching page, the video is processed to generate questions and then automatically starts playing.
 
-5. The user can interact with the video and, if they want to keep it for later, save it from this page.
+5. The user can interact with the video and, if they want to keep it for later, save it from this page by clicking the ""Save This Video" button.
 
 ## Assertions:
 
@@ -231,7 +231,7 @@ Jest will be used to test React components and user interactions. We will mock A
 
 2. After adding a video and being navigated to the video watching page, the user can watch or preview the video.
 
-3. If the user decides they want to save the video for future interaction, they can click the save button displayed under the video.
+3. If the user decides they want to save the video for future interaction, they can click the "Save This Video" button displayed under the video.
 
 4. The video is then saved into the user's personal library.
 
@@ -245,7 +245,7 @@ Jest will be used to test React components and user interactions. We will mock A
 
 4. Saved videos are available in the user's account for future access and interaction.
 
-## Use Case 9 - Accessing Saved Videos
+## Use Case 8 - Accessing Saved Videos
 *As a user, I want to be able to access the videos I have saved and interact with them.*
 
 1. The user clicks their profile icon in the top right corner of the application (which will either have a profile picture or a default picture) to go to their profile.
@@ -266,7 +266,7 @@ Jest will be used to test React components and user interactions. We will mock A
 
 4. Upon clicking a saved video, the video starts playing.
 
-## Use Case 10 - Seeing Results from a Video Previously Watched
+## Use Case 9 - Seeing Results from a Video Previously Watched
 *As a user, I want to be able to see a record of the videos I have watched in the past and a complete summary of how I answered the questions in those videos.*
 
 1. The user clicks the "Profile" button in the top right corner of the application to go to their profile.

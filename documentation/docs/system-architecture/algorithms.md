@@ -21,6 +21,3 @@ OpenAI’s GPT model is employed to process the information about the detected o
 
 ### Natural Language Understanding: 
 The system is designed to understand the relationship between detected objects and generate questions that challenge the user’s understanding. For instance, if the object detected is a ball, the system might ask, "What is the name of the object in the video?" or "How many balls are there?"
-
-## SynthesisSpeech API: Question Reading
-After generating the questions, the browser's built-in Speech Synthesis API is used to read the questions aloud, creating a more interactive and accessible experience. This API is compatible with several browswers, including Chrome, Microsoft Edge, and Mozilla Firefox, and  converts text into spoken words using the device's available voices, allowing for immediate and natural-sounding audio without requiring external services. By reading the questions aloud, the application supports users who prefer listening, have visual impairments, or simply benefit from multimodal learning.
