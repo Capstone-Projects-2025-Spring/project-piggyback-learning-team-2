@@ -442,15 +442,23 @@ async def initialize_cache():
         return
 
     try:
-        # Configure Redis with SSL for Render.com
-        redis_client = redis.from_url(
+        # For Redis 4.x+ connections (newer versions)
+        redis_client = redis.Redis.from_url(
             redis_url,
             decode_responses=True,
-            socket_timeout=10,  # Increase timeout for Render
+            socket_timeout=10,
             socket_connect_timeout=10,
-            ssl=True,  # Required for Render Redis
-            ssl_cert_reqs=None,  # Disable strict SSL verification
+            ssl_cert_reqs=None  # This is the correct parameter for SSL
         )
+
+        # Potential Alternative if above doesn't work:
+        # redis_client = redis.StrictRedis.from_url(
+        #     redis_url,
+        #     decode_responses=True,
+        #     socket_timeout=10,
+        #     socket_connect_timeout=10,
+        #     ssl_cert_reqs=None
+        # )
 
         # Test connection
         if not redis_client.ping():
