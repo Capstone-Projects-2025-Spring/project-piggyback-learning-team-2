@@ -435,22 +435,20 @@ async def run_quick_processing(video_id: str, payload: VideoInput):
 # API Endpoints
 @router.on_event("startup")
 async def initialize_cache():
-    """Initialize cache with proper error handling"""
     try:
         redis_url = os.getenv("REDIS_URL")
         if redis_url:
-            # Use a sync Redis client instead of async
             redis_client = redis.Redis.from_url(
                 redis_url,
                 decode_responses=True,
                 socket_timeout=5,
                 socket_connect_timeout=5
             )
-            # Test connection
             if not redis_client.ping():
                 raise ConnectionError("Redis ping failed")
-            FastAPICache.init(InMemoryBackend(), prefix="video-cache")
-            logger.info("Redis test successful, using in-memory cache for compatibility")
+            # ACTUALLY USE Redis backend if connection succeeds
+            FastAPICache.init(RedisBackend(redis_client), prefix="video-cache")
+            logger.info("Redis connected successfully")
         else:
             FastAPICache.init(InMemoryBackend(), prefix="video-cache")
             logger.info("Using in-memory cache")
