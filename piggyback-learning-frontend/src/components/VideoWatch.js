@@ -106,6 +106,65 @@ export default function InteractiveVideoQuiz() {
     }
   });
 
+  const saveQuizResults = async () => {
+    const { data: authData } = await supabase.auth.getUser();
+    const user = authData?.user;
+    if (!user) {
+      navigate('/signin');
+      return;
+    }
+  
+    const total = Object.keys(quiz.answeredQuestions).length;
+    const correct = Object.values(quiz.answeredQuestions).filter(q => q.correct).length;
+    const wrong = Object.values(quiz.answeredQuestions).filter(q => q.correct === false).length;
+    const skipped = Object.values(quiz.answeredQuestions).filter(q => q.skipped).length;
+  
+    const now = Date.now();
+    const startTime = session.stats.startTime || now;
+    const sessionDurationSec = Math.max(1, Math.round((now - startTime) / 1000));
+
+    console.log('Saving quiz results:', {
+      user_id: user.id,
+      video_title: videoTitle,
+      total_questions: total,
+      correct_answers: correct,
+      wrong_answers: wrong,
+      skipped_questions: skipped,
+      session_time_sec: sessionDurationSec
+    });
+  
+    const { error } = await supabase.from('quiz_results').insert([{
+      user_id: user.id,
+      video_title: videoTitle,
+      total_questions: total,
+      correct_answers: correct,
+      wrong_answers: wrong,
+      skipped_questions: skipped,
+      time_watched_sec: sessionDurationSec,
+      session_time_sec: sessionDurationSec,
+      created_at: new Date().toISOString(),
+      video_url: videoUrl
+    }]);
+  
+    if (error) {
+      console.error('Error saving quiz results:', error.message);
+    } else {
+      console.log('Quiz results saved successfully!');
+      // Add this line to trigger a refresh
+      //navigate('/profile', { state: { refresh: true } });
+    }
+  };
+  
+
+  const handleGoToProfile = async () => {
+    await saveQuizResults();
+    setTimeout(() => {
+      navigate('/profile', { state: { refresh: true } });
+    }, 1000);
+  };
+    
+  
+
   // Derived state for easier access
   const {
     processing, quiz, player, session
@@ -392,7 +451,7 @@ export default function InteractiveVideoQuiz() {
     if (nextQuestion) {
       showQuestion(nextQuestion);
     }
-  }, [player, quiz, getCurrentTime, pauseVideo]);
+  }, [player, quiz, getCurrentTime, pauseVideo, showQuestion, updateQuizState]);
 
   // Lets users rewind video
   const handleWatchAgain = () => {
@@ -507,6 +566,7 @@ export default function InteractiveVideoQuiz() {
         total: session.stats.total + 1
       };
       updateSessionState({ stats: newStats });
+
     }
 
     // Track this answer
@@ -581,27 +641,30 @@ export default function InteractiveVideoQuiz() {
     }
   };
 
-  // Video ended handler
-  const handleVideoEnded = () => {
+  const handleVideoEnded = async () => {
     const now = Date.now();
-
-    // For summary, count unique questions
+    const startTime = session.stats.startTime || now;
+    const sessionDuration = Math.round((now - startTime) / 1000);
     const uniqueQuestionCount = new Set(Object.keys(quiz.answeredQuestions)).size;
-
-    // For reporting, get raw counts from the stats
-    const { correct, wrong, skipped, total } = session.stats;
-
+  
     updateSessionState({
       end: now,
       stats: {
         ...session.stats,
         endTime: now,
-        uniqueCount: uniqueQuestionCount
+        uniqueCount: uniqueQuestionCount,
+        sessionDuration, 
       }
     });
-
+  
+    await new Promise(resolve => setTimeout(resolve, 300)); // wait to let React update
+  
+    await saveQuizResults();  
+  
     updateQuizState({ showSummary: true });
   };
+  
+  
 
   // Detection box calculation for object detection
   const calculateDetectionBoxStyle = (det) => {
@@ -685,8 +748,8 @@ export default function InteractiveVideoQuiz() {
     updateSessionState({ start: Date.now(), stats: { ...session.stats, startTime: Date.now() } });
   }, []);
 
-  const [savedVideos, setSavedVideos] = useState([]);
-  const [progressStats, setProgressStats] = useState({});
+  const [ setSavedVideos] = useState([]);
+  const [ setProgressStats] = useState({});
 
   const fetchSavedVideos = async (userId) => {
       const { data, error } = await supabase
@@ -915,25 +978,38 @@ export default function InteractiveVideoQuiz() {
                 <div className="summary-box dynamic-glow">
                   <h2>🌟 You're Amazing! 🌟</h2>
                   <div className="results-summary">
-                    <p>🎯 <strong>Total Questions:</strong> {quiz.questions.length}</p>
-                    <p>✅ <strong>Correct:</strong> {session.stats.correct}</p>
-                    <p>❌ <strong>Wrong:</strong> {session.stats.wrong}</p>
-                    <p>⏭️ <strong>Skipped:</strong> {session.stats.skipped}</p>
-                    <p>⏱️ <strong>Time
-                      Watched:</strong> {Math.round((session.stats.endTime - session.stats.startTime) / 1000)}s</p>
-                    {session.start && session.end && (
-                        <p>🕒 <strong>Session Time:</strong> {Math.round((session.end - session.start) / 1000)}s</p>
-                    )}
-                  </div>
+                  <p>🎯 <strong>Total Questions:</strong> {quiz.questions.length}</p>
+                  <p>✅ <strong>Correct:</strong> {session.stats.correct}</p>
+                  <p>❌ <strong>Wrong:</strong> {session.stats.wrong}</p>
+                  <p>⏭️ <strong>Skipped:</strong> {session.stats.skipped}</p>
+                  
+                  <p>⏱️ <strong>Time Watched:</strong> 
+                    {session.stats.startTime && session.stats.endTime 
+                      ? `${Math.max(0, Math.round((session.stats.endTime - session.stats.startTime) / 1000))}s`
+                      : '0s'
+                    }
+                  </p>
+
+                  {session.start && session.end && (
+                    <p>🕒 <strong>Session Time:</strong> 
+                      {`${Math.max(0, Math.round((session.end - session.start) / 1000))}s`}
+                    </p>
+                  )}
+                </div>
+
 
                   <div className="summary-buttons">
-                    <button className="fancy-button" onClick={handleRestartVideo}>
-                      🔁 Watch Again
-                    </button>
-                    <button className="fancy-button" onClick={() => navigate("/profile")}>
-                    🏠 Go to Profile
-                    </button>
-                  </div>
+                  <button className="fancy-button" onClick={handleRestartVideo}>
+                    🔁 Watch Again
+                  </button>
+
+                  <button className="fancy-button" onClick={handleGoToProfile}>
+  🏠 Go to Profile
+</button>
+
+
+                </div>
+
                 </div>
               </div>
           )}

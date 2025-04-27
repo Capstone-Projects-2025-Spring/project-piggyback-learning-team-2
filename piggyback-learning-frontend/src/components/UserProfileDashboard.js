@@ -5,14 +5,17 @@ import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from './supabaseClient';
 import logo from '../images/Mob_Iron_Hog.png';
 import '../styles/UserProfileDashboard.css';
-import { Doughnut } from 'react-chartjs-2';
-import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import { Doughnut, Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from 'chart.js';
 import { FaMoon, FaLightbulb } from 'react-icons/fa';
+import { useLocation } from 'react-router-dom';
 
-ChartJS.register(ArcElement, Tooltip, Legend);
+ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
+
 
 function UserProfile() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
@@ -30,7 +33,7 @@ function UserProfile() {
   useEffect(() => {
     document.body.classList.toggle('dark-mode', darkMode);
   }, [darkMode]);
-
+      
   const fetchVideoHistory = async (userId) => {
     const { data, error } = await supabase
       .from('video_history')
@@ -67,29 +70,92 @@ function UserProfile() {
 
   const fetchQuizStats = async (userId) => {
     const { data, error } = await supabase
-      .from('quiz_history')
-      .select('video_title, question_text, selected, correct, created_at')
+      .from('quiz_results')
+      .select('*') 
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
-    if (error) return;
+  
+    if (error) {
+      console.error('Error fetching quiz results:', error.message);
+      return;
+    }
+  
+    console.log('Quiz results from DB:', data); 
+  
     setQuizHistory(data || []);
-    const total = data.length;
-    const correct = data.filter(q => q.correct).length;
-    const accuracy = total === 0 ? 0 : Math.round((correct / total) * 100);
-    setQuizStats({ total, correct, accuracy });
+  
+    const totalQuestions = data.reduce((sum, q) => sum + (q.total_questions || 0), 0);
+    const correctAnswers = data.reduce((sum, q) => sum + (q.correct_answers || 0), 0);
+    const accuracy = totalQuestions === 0 ? 0 : Math.round((correctAnswers / totalQuestions) * 100);
+  
+    setQuizStats({ 
+      total: totalQuestions, 
+      correct: correctAnswers, 
+      accuracy,
+      wrong: data.reduce((sum, q) => sum + (q.wrong_answers || 0), 0),
+      skipped: data.reduce((sum, q) => sum + (q.skipped_questions || 0), 0)
+    });
+  };
+  
+  const fetchWeeklyQuizActivity = async (userId) => {
+    const { data, error } = await supabase
+      .from('quiz_results')
+      .select('created_at')
+      .eq('user_id', userId);
+  
+    if (error) {
+      console.error('Error fetching weekly quiz data:', error.message);
+      return [];
+    }
+  
+    const dayCounts = { Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 };
+  
+    data.forEach((entry) => {
+      const date = new Date(entry.created_at);
+      const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+      if (dayCounts[dayName] !== undefined) {
+        dayCounts[dayName]++;
+      }
+    });
+    
+  
+    return dayCounts;
+  };
+
+  const refreshProfileProgress = async () => {
+    if (!profile) return;
+  
+    await Promise.all([
+      fetchVideoHistory(profile.id),
+      fetchSavedVideos(profile.id),
+      fetchQuizStats(profile.id),
+      fetchWeeklyQuizActivity(profile.id).then(data => setWeeklyQuizData(data))
+    ]);
   };
 
   useEffect(() => {
-    const init = async () => {
-      const { data: authData } = await supabase.auth.getUser();
-      const user = authData?.user;
-      if (!user) return navigate('/signin');
+    if (!profile) return; 
+  
+    refreshProfileProgress();
+  
+    if (location.state?.refresh) {
+      window.history.replaceState({}, document.title);
+    }
+  }, [profile, location.state]);
+  
 
-      let { data: profileData } = await supabase
-        .from('profiles')
-        .select('id, first_name, last_name, email, avatar_url, bio')
-        .eq('id', user.id)
-        .single();
+
+  useEffect(() => {
+  const init = async () => {
+    const { data: authData } = await supabase.auth.getUser();
+    const user = authData?.user;
+    if (!user) return navigate('/signin');
+
+    let { data: profileData } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
 
       if (!profileData) {
         const { data: newProfile } = await supabase
@@ -118,13 +184,18 @@ function UserProfile() {
       await Promise.all([
         fetchVideoHistory(profileData.id),
         fetchSavedVideos(profileData.id),
-        fetchQuizStats(profileData.id)
+        fetchQuizStats(profileData.id),
+        fetchWeeklyQuizActivity(profileData.id).then(data => setWeeklyQuizData(data))
       ]);
-
+      
       setLoading(false);
     };
+  
     init();
-  }, [navigate]);
+  }, [navigate, location.state?.refresh]);
+
+  const [weeklyQuizData, setWeeklyQuizData] = useState({ Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 });
+
 
   const handleInputChange = (e) => setEditValues({ ...editValues, [e.target.name]: e.target.value });
   const handleSaveProfile = async () => {
@@ -144,6 +215,7 @@ function UserProfile() {
 
   if (loading) return <div className="loading">Loading Profile...</div>;
   if (!profile) return <div className="error">Error loading profile.</div>;
+
 
   return (
     <div className="profile-container">
@@ -251,18 +323,36 @@ function UserProfile() {
                       <p>{video.title}</p>
                     </Link>
                     {isWatched
-                      ? <p>✅ Already Watched</p>
-                      : <button onClick={async () => {
-                          const { data: u } = await supabase.auth.getUser();
-                          if (!u?.user) return;
-                          const userId = u.user.id;
-                          const { data: existing } = await supabase.from('video_history').select('id').eq('user_id', userId).eq('video_url', video.video_url);
-                          if (existing.length) return alert('Already marked');
-                          await supabase.from('video_history').insert([{ user_id: userId, video_url: video.video_url, title: video.title, watched_at: new Date().toISOString() }]);
-                          fetchVideoHistory(userId);
-                          setProgressStats(ps => ({ ...ps, watched: ps.watched + 1 }));
-                        }}>Mark as Watched</button>
-                    }
+  ? <p>✅ Already Watched</p>
+  : <button onClick={async () => {
+      const { data: authData } = await supabase.auth.getUser();
+      const userId = authData?.user?.id;
+      if (!userId) return;
+
+      const { data: existing } = await supabase
+        .from('video_history')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('video_url', video.video_url);
+
+      if (Array.isArray(existing) && existing.length > 0) {
+        return alert('Already marked');
+      }
+
+      await supabase.from('video_history').insert([{
+        user_id: userId,
+        video_url: video.video_url,
+        title: video.title,
+        watched_at: new Date().toISOString()
+      }]);
+
+      await fetchVideoHistory(userId);
+      setProgressStats(ps => ({ ...ps, watched: ps.watched + 1 }));
+    }}>
+    Mark as Watched
+  </button>
+}
+
                   </div>
                 );
               })}
@@ -336,6 +426,49 @@ function UserProfile() {
         }]
       }} />
     </div>
+    <h4 style={{ marginTop: '30px' }}>📅 Weekly Progress</h4>
+<div style={{ width: '500px', margin: '20px auto' }}>
+<Bar
+  data={{
+    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    datasets: [{
+      label: 'Quizzes Taken',
+      data: [
+        weeklyQuizData.Mon,
+        weeklyQuizData.Tue,
+        weeklyQuizData.Wed,
+        weeklyQuizData.Thu,
+        weeklyQuizData.Fri,
+        weeklyQuizData.Sat,
+        weeklyQuizData.Sun
+      ],
+      backgroundColor: '#42A5F5',
+    }]
+  }}
+  options={{
+    responsive: true,
+    scales: {
+      y: {
+        beginAtZero: true
+      }
+    }
+  }}
+/>
+
+</div>
+<h4 style={{ marginTop: '30px' }}>🏆 Achievements</h4>
+<ul style={{ listStyle: 'none', padding: 0 }}>
+  {progressStats.watched >= 10 && (
+    <li>🎉 Watched 10+ videos!</li>
+  )}
+  {quizStats.correct >= 20 && (
+    <li>🎯 Answered 20+ correct questions!</li>
+  )}
+  {quizStats.accuracy >= 90 && (
+    <li>🏆 90%+ Accuracy Master!</li>
+  )}
+</ul>
+
 
     {/* 📝 Recent Quiz Log */}
     {quizHistory.length > 0 && (
@@ -345,22 +478,24 @@ function UserProfile() {
           {quizHistory.slice(0, 5).map((entry, i) => (
             <li key={i} style={{ marginBottom: "10px" }}>
               <strong>{entry.video_title}</strong><br />
-              ❓ {entry.question_text}<br />
-              📝 You chose: <b>{entry.selected}</b> – {entry.correct ? '✅ Correct' : '❌ Wrong'}
+              🎯 Questions: {entry.total_questions} | ✅ Correct: {entry.correct_answers}
             </li>
+
           ))}
         </ul>
+
       </div>
     )}
   </div>
 )}
 
-
-
-
-<button className="back-home-btn" onClick={() => navigate("/")}>
-  🏠 Back to Home
+<button
+  className="fancy-button"
+  onClick={() => navigate("/", { state: { refresh: true } })}
+>
+  🏠 Go to Home
 </button>
+
 
 
           <button className="signout-button" onClick={handleSignOut}>
