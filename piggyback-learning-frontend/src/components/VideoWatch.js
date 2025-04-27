@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { supabase } from './supabaseClient';
 import '../styles/VideoWatch.css';
 import ReactPlayer from 'react-player';
 import logo from '../images/Mob_Iron_Hog.png';
@@ -683,6 +684,75 @@ export default function InteractiveVideoQuiz() {
   useEffect(() => {
     updateSessionState({ start: Date.now(), stats: { ...session.stats, startTime: Date.now() } });
   }, []);
+
+  const [savedVideos, setSavedVideos] = useState([]);
+  const [progressStats, setProgressStats] = useState({});
+
+  const fetchSavedVideos = async (userId) => {
+      const { data, error } = await supabase
+        .from('saved_videos')
+        .select('video_url, title')
+        .eq('user_id', userId);
+      if (error) {
+        console.error('Error fetching saved videos:', error);
+        setSavedVideos([]);
+      } else {
+        setSavedVideos(data ?? []);
+      }
+  
+      const { data: watchedData = [], error: watchedError } = await supabase
+        .from('video_history')
+        .select('video_url')
+        .eq('user_id', userId);
+      if (watchedError) {
+        console.error('Error fetching watch history:', watchedError);
+      }
+      const watchedCount = watchedData?.length || 0;
+      const savedCount = data?.length || 0;
+      const percent = savedCount === 0 ? 0 : Math.round((watchedCount / savedCount) * 100);
+      setProgressStats({ saved: savedCount, watched: watchedCount, percent });
+    };
+
+  const saveCurrentVideo = async (videoUrl, title) => {
+    const { data: authData } = await supabase.auth.getUser();
+    const user = authData?.user;
+    if (!user) {
+      navigate('/signin');
+      return;
+    }
+  
+    // Check if already saved
+    const { data: existing, error: fetchError } = await supabase
+      .from('saved_videos')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('video_url', videoUrl)
+      .maybeSingle();
+  
+    if (fetchError) {
+      console.error('Error checking saved videos:', fetchError);
+      return;
+    }
+    if (existing) {
+      alert('Video already saved!');
+      return;
+    }
+  
+    // Insert if not already saved
+    const { error: insertError } = await supabase
+      .from('saved_videos')
+      .insert([{ user_id: user.id, video_url: videoUrl, title }]);
+  
+    if (insertError) {
+      console.error('Error saving video:', insertError);
+      alert('Error saving video.');
+      return;
+    }
+  
+    // Refresh saved videos and progress
+    await fetchSavedVideos(user.id);
+    alert('Video saved!');
+  };
 
   // Render
   return (
