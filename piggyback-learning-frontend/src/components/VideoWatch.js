@@ -793,7 +793,7 @@ export default function InteractiveVideoQuiz() {
               <p>{processing.error}</p>
               <button onClick={() => window.location.reload()}>Reload Page</button>
               <button onClick={() => navigate('/')}>Go Home</button>
-              <button onClick={() => saveCurrentVideo(videoUrl, videoTitle)}>📥 Save This Video</button>
+              <button onClick={() => saveCurrentVideo(videoUrl, videoTitle)}>💾 Save This Video</button>
             </div>
         )}
 
