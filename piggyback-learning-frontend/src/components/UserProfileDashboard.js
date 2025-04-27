@@ -8,12 +8,14 @@ import '../styles/UserProfileDashboard.css';
 import { Doughnut, Bar } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement } from 'chart.js';
 import { FaMoon, FaLightbulb } from 'react-icons/fa';
+import { useLocation } from 'react-router-dom';
 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, BarElement);
 
 
 function UserProfile() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
@@ -31,7 +33,7 @@ function UserProfile() {
   useEffect(() => {
     document.body.classList.toggle('dark-mode', darkMode);
   }, [darkMode]);
-
+      
   const fetchVideoHistory = async (userId) => {
     const { data, error } = await supabase
       .from('video_history')
@@ -107,9 +109,26 @@ function UserProfile() {
         dayCounts[dayName]++;
       }
     });
+    
   
     return dayCounts;
   };
+  
+  
+  useEffect(() => {
+    if (location.state?.refresh) {
+      refreshProfileProgress();
+    }
+  }, [location.state]);
+  
+  
+  const refreshProfileProgress = async () => {
+    if (!profile) return;
+    await fetchQuizStats(profile.id);
+    await fetchWeeklyQuizActivity(profile.id).then(data => setWeeklyQuizData(data));
+  };
+  
+  
   
 
   useEffect(() => {
@@ -182,12 +201,6 @@ function UserProfile() {
 
   if (loading) return <div className="loading">Loading Profile...</div>;
   if (!profile) return <div className="error">Error loading profile.</div>;
-
-  
-  
-
- 
-  
 
 
   return (
@@ -296,24 +309,36 @@ function UserProfile() {
                       <p>{video.title}</p>
                     </Link>
                     {isWatched
-                      ? <p>✅ Already Watched</p>
-                      : <button onClick={async () => {
-                          const { data: u } = await supabase.auth.getUser();
-                          if (!u?.user) return;
-                          const userId = u.user.id;
-                          const { data: existing } = await supabase
-                          .from('video_history')
-                          .select('id')
-                          .eq('user_id', userId)
-                          .eq('video_url', video.video_url);
-                        
-                        if (existing && existing.length) return alert('Already marked');
-                        
-                          await supabase.from('video_history').insert([{ user_id: userId, video_url: video.video_url, title: video.title, watched_at: new Date().toISOString() }]);
-                          fetchVideoHistory(userId);
-                          setProgressStats(ps => ({ ...ps, watched: ps.watched + 1 }));
-                        }}>Mark as Watched</button>
-                    }
+  ? <p>✅ Already Watched</p>
+  : <button onClick={async () => {
+      const { data: authData } = await supabase.auth.getUser();
+      const userId = authData?.user?.id;
+      if (!userId) return;
+
+      const { data: existing } = await supabase
+        .from('video_history')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('video_url', video.video_url);
+
+      if (Array.isArray(existing) && existing.length > 0) {
+        return alert('Already marked');
+      }
+
+      await supabase.from('video_history').insert([{
+        user_id: userId,
+        video_url: video.video_url,
+        title: video.title,
+        watched_at: new Date().toISOString()
+      }]);
+
+      await fetchVideoHistory(userId);
+      setProgressStats(ps => ({ ...ps, watched: ps.watched + 1 }));
+    }}>
+    Mark as Watched
+  </button>
+}
+
                   </div>
                 );
               })}
@@ -449,9 +474,13 @@ function UserProfile() {
   </div>
 )}
 
-<button className="back-home-btn" onClick={() => navigate("/")}>
-  🏠 Back to Home
+<button
+  className="fancy-button"
+  onClick={() => navigate("/profile", { state: { refresh: true } })}
+>
+  🏠 Go to Profile
 </button>
+
 
 
           <button className="signout-button" onClick={handleSignOut}>

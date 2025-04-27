@@ -115,13 +115,16 @@ export default function InteractiveVideoQuiz() {
     }
   
     const { correct, wrong, skipped, total, startTime, endTime } = session.stats;
-    const sessionDurationSec = Math.round((endTime - startTime) / 1000) || 0;
+  
+    const safeStart = startTime || Date.now();
+    const safeEnd = endTime || Date.now();
+    const sessionDurationSec = Math.max(0, Math.round((safeEnd - safeStart) / 1000)); 
   
     const { error } = await supabase.from('quiz_results').insert([{
       user_id: user.id,
       video_title: videoTitle,
-      total_questions: total,
-      correct_answers: correct,
+      total_questions: total || 0, 
+      correct_answers: correct || 0,
       time_watched_sec: sessionDurationSec,
       session_time_sec: sessionDurationSec,
       created_at: new Date().toISOString(),
@@ -129,11 +132,12 @@ export default function InteractiveVideoQuiz() {
     }]);
   
     if (error) {
-      console.error('Error saving quiz results:', error);
+      console.error('❌ Error saving quiz results:', error.message);
     } else {
-      console.log('Quiz results saved successfully!');
+      console.log('✅ Quiz results saved successfully!');
     }
   };
+  
   
 
   // Derived state for easier access
@@ -612,28 +616,33 @@ export default function InteractiveVideoQuiz() {
   };
 
   // Video ended handler
-  const handleVideoEnded = () => {
+  const handleVideoEnded = async () => {
+    await saveQuizResults();  
+  
     const now = Date.now();
+      const startTime = session.stats.startTime || now;
+
+      const sessionDuration = Math.round((now - startTime) / 1000);
   
-    // First update session time
-    updateSessionState(prev => ({
-      ...prev,
-      end: now,
-      stats: {
-        ...prev.stats,
-        endTime: now,
-        uniqueCount: new Set(Object.keys(quiz.answeredQuestions)).size
-      }
-    }));
-  
-    // Now save the result after updating session end time
-    setTimeout(() => {
-      saveQuizResults();
-    }, 500); // short delay to make sure state is updated
+    // For summary, count unique questions
     
+  const uniqueQuestionCount = new Set(Object.keys(quiz.answeredQuestions)).size;
+
+  updateSessionState({
+    end: now,
+    stats: {
+      ...session.stats,
+      endTime: now,
+      uniqueCount: uniqueQuestionCount,
+      sessionDuration, 
+    }
+  });
   
     updateQuizState({ showSummary: true });
+    navigate("/profile", { state: { refresh: true } });
+
   };
+  
   
 
   // Detection box calculation for object detection
@@ -948,16 +957,25 @@ export default function InteractiveVideoQuiz() {
                 <div className="summary-box dynamic-glow">
                   <h2>🌟 You're Amazing! 🌟</h2>
                   <div className="results-summary">
-                    <p>🎯 <strong>Total Questions:</strong> {quiz.questions.length}</p>
-                    <p>✅ <strong>Correct:</strong> {session.stats.correct}</p>
-                    <p>❌ <strong>Wrong:</strong> {session.stats.wrong}</p>
-                    <p>⏭️ <strong>Skipped:</strong> {session.stats.skipped}</p>
-                    <p>⏱️ <strong>Time
-                      Watched:</strong> {Math.round((session.stats.endTime - session.stats.startTime) / 1000)}s</p>
-                    {session.start && session.end && (
-                        <p>🕒 <strong>Session Time:</strong> {Math.round((session.end - session.start) / 1000)}s</p>
-                    )}
-                  </div>
+                  <p>🎯 <strong>Total Questions:</strong> {quiz.questions.length}</p>
+                  <p>✅ <strong>Correct:</strong> {session.stats.correct}</p>
+                  <p>❌ <strong>Wrong:</strong> {session.stats.wrong}</p>
+                  <p>⏭️ <strong>Skipped:</strong> {session.stats.skipped}</p>
+                  
+                  <p>⏱️ <strong>Time Watched:</strong> 
+                    {session.stats.startTime && session.stats.endTime 
+                      ? `${Math.max(0, Math.round((session.stats.endTime - session.stats.startTime) / 1000))}s`
+                      : '0s'
+                    }
+                  </p>
+
+                  {session.start && session.end && (
+                    <p>🕒 <strong>Session Time:</strong> 
+                      {`${Math.max(0, Math.round((session.end - session.start) / 1000))}s`}
+                    </p>
+                  )}
+                </div>
+
 
                   <div className="summary-buttons">
                     <button className="fancy-button" onClick={handleRestartVideo}>
