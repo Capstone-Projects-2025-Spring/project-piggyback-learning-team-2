@@ -50,7 +50,7 @@ const speakQuestion = (question) => {
 
 export default function InteractiveVideoQuiz() {
   // Constants and refs
-  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://fastapi-latest-7dcj.onrender.com/' ||'http://localhost:8000';
+  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://fastapi-latest-7dcj.onrender.com';
   const videoRef = useRef(null);
   const playerRef = useRef(null);
   const videoWrapperRef = useRef(null);
