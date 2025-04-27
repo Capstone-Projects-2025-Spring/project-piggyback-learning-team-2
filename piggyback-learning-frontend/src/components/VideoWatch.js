@@ -50,7 +50,8 @@ const speakQuestion = (question) => {
 
 export default function InteractiveVideoQuiz() {
   // Constants and refs
-  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://fastapi-latest-7dcj.onrender.com';
+  //const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://fastapi-latest-7dcj.onrender.com';
+  const BACKEND_URL= 'http://localhost:8000'
   const videoRef = useRef(null);
   const playerRef = useRef(null);
   const videoWrapperRef = useRef(null);
@@ -64,6 +65,7 @@ export default function InteractiveVideoQuiz() {
   const isProcessing = queryParams.get("processing") === "true";
   const isYouTube = videoUrl?.includes("youtube.com") || videoUrl?.includes("youtu.be");
   const videoId = getYouTubeVideoId(videoUrl);
+  const [explanation, setExplanation] = useState(null);
 
   // State management
   const [state, setState] = useState({
@@ -113,12 +115,12 @@ export default function InteractiveVideoQuiz() {
       navigate('/signin');
       return;
     }
-  
+
     const total = Object.keys(quiz.answeredQuestions).length;
     const correct = Object.values(quiz.answeredQuestions).filter(q => q.correct).length;
     const wrong = Object.values(quiz.answeredQuestions).filter(q => q.correct === false).length;
     const skipped = Object.values(quiz.answeredQuestions).filter(q => q.skipped).length;
-  
+
     const now = Date.now();
     const startTime = session.stats.startTime || now;
     const sessionDurationSec = Math.max(1, Math.round((now - startTime) / 1000));
@@ -132,7 +134,7 @@ export default function InteractiveVideoQuiz() {
       skipped_questions: skipped,
       session_time_sec: sessionDurationSec
     });
-  
+
     const { error } = await supabase.from('quiz_results').insert([{
       user_id: user.id,
       video_title: videoTitle,
@@ -145,7 +147,7 @@ export default function InteractiveVideoQuiz() {
       created_at: new Date().toISOString(),
       video_url: videoUrl
     }]);
-  
+
     if (error) {
       console.error('Error saving quiz results:', error.message);
     } else {
@@ -154,7 +156,7 @@ export default function InteractiveVideoQuiz() {
       //navigate('/profile', { state: { refresh: true } });
     }
   };
-  
+
 
   const handleGoToProfile = async () => {
     await saveQuizResults();
@@ -162,8 +164,8 @@ export default function InteractiveVideoQuiz() {
       navigate('/profile', { state: { refresh: true } });
     }, 1000);
   };
-    
-  
+
+
 
   // Derived state for easier access
   const {
@@ -570,6 +572,80 @@ export default function InteractiveVideoQuiz() {
         total: session.stats.total + 1
       };
       updateSessionState({ stats: newStats });
+    }
+
+    // Track this answer
+    const newAnsweredQuestions = {
+      ...quiz.answeredQuestions,
+      [questionId]: {
+        answered: true,
+        correct: isCorrect,
+        selectedAnswer: label,
+        timestamp: Date.now(),
+        questionTime: getCurrentTime(),
+        statsUpdated: true
+      }
+    };
+
+    // Set initial feedback
+    updateQuizState({
+      answeredQuestions: newAnsweredQuestions,
+      feedback: isCorrect ? "✅ Correct!" : `❌ That's not correct. The answer is "${correctAnswer}".`,
+      retryOption: !isCorrect
+    });
+
+    // Fetch explanation for wrong answers
+    if (!isCorrect) {
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/v1/videos/explain`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            question: quiz.currentQuestion.text,
+            selected_label: label,
+            answer: correctAnswer,
+            options: quiz.currentQuestion.options || []
+          })
+        });
+
+        const data = await response.json();
+        setExplanation(data.message);
+      } catch (error) {
+        console.error("Error fetching explanation:", error);
+        setExplanation("Let's try that again!");
+      }
+    } else {
+      setExplanation(null); // Clear any previous explanation
+      setTimeout(() => {
+        updateQuizState({ currentQuestion: null, detections: [], feedback: "" });
+        playVideo();
+      }, 2000);
+    }
+  };
+
+  /*
+  const handleAnswer = async (label) => {
+    if (!quiz.currentQuestion?.id || !label) return;
+
+    const questionId = quiz.currentQuestion.id;
+    const correctAnswer = quiz.currentQuestion.answer || quiz.currentQuestion.options?.[0] || "";
+    const isCorrect = label.toLowerCase() === correctAnswer.toLowerCase();
+
+    // Check if this is the first time answering this question
+    const isFirstInteraction = !quiz.answeredQuestions[questionId] &&
+        (!quiz.questionHistory || !quiz.questionHistory[questionId]);
+
+    // Only update stats if this is the first interaction
+    if (isFirstInteraction) {
+      const newStats = {
+        ...session.stats,
+        correct: isCorrect ? session.stats.correct + 1 : session.stats.correct,
+        wrong: !isCorrect ? session.stats.wrong + 1 : session.stats.wrong,
+        total: session.stats.total + 1
+      };
+      updateSessionState({ stats: newStats });
 
     }
 
@@ -599,7 +675,7 @@ export default function InteractiveVideoQuiz() {
       }, 2000);
     }
   };
-
+*/
 
   // Skip question
   const handleSkip = () => {
@@ -650,25 +726,25 @@ export default function InteractiveVideoQuiz() {
     const startTime = session.stats.startTime || now;
     const sessionDuration = Math.round((now - startTime) / 1000);
     const uniqueQuestionCount = new Set(Object.keys(quiz.answeredQuestions)).size;
-  
+
     updateSessionState({
       end: now,
       stats: {
         ...session.stats,
         endTime: now,
         uniqueCount: uniqueQuestionCount,
-        sessionDuration, 
+        sessionDuration,
       }
     });
-  
+
     await new Promise(resolve => setTimeout(resolve, 300)); // wait to let React update
-  
-    await saveQuizResults();  
-  
+
+    await saveQuizResults();
+
     updateQuizState({ showSummary: true });
   };
-  
-  
+
+
 
   // Detection box calculation for object detection
   const calculateDetectionBoxStyle = (det) => {
@@ -756,29 +832,29 @@ export default function InteractiveVideoQuiz() {
   const [ setProgressStats] = useState({});
 
   const fetchSavedVideos = async (userId) => {
-      const { data, error } = await supabase
+    const { data, error } = await supabase
         .from('saved_videos')
         .select('video_url, title')
         .eq('user_id', userId);
-      if (error) {
-        console.error('Error fetching saved videos:', error);
-        setSavedVideos([]);
-      } else {
-        setSavedVideos(data ?? []);
-      }
-  
-      const { data: watchedData = [], error: watchedError } = await supabase
+    if (error) {
+      console.error('Error fetching saved videos:', error);
+      setSavedVideos([]);
+    } else {
+      setSavedVideos(data ?? []);
+    }
+
+    const { data: watchedData = [], error: watchedError } = await supabase
         .from('video_history')
         .select('video_url')
         .eq('user_id', userId);
-      if (watchedError) {
-        console.error('Error fetching watch history:', watchedError);
-      }
-      const watchedCount = watchedData?.length || 0;
-      const savedCount = data?.length || 0;
-      const percent = savedCount === 0 ? 0 : Math.round((watchedCount / savedCount) * 100);
-      setProgressStats({ saved: savedCount, watched: watchedCount, percent });
-    };
+    if (watchedError) {
+      console.error('Error fetching watch history:', watchedError);
+    }
+    const watchedCount = watchedData?.length || 0;
+    const savedCount = data?.length || 0;
+    const percent = savedCount === 0 ? 0 : Math.round((watchedCount / savedCount) * 100);
+    setProgressStats({ saved: savedCount, watched: watchedCount, percent });
+  };
 
   const saveCurrentVideo = async (videoUrl, title) => {
     const { data: authData } = await supabase.auth.getUser();
@@ -787,15 +863,15 @@ export default function InteractiveVideoQuiz() {
       navigate('/signin');
       return;
     }
-  
+
     // Check if already saved
     const { data: existing, error: fetchError } = await supabase
-      .from('saved_videos')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('video_url', videoUrl)
-      .maybeSingle();
-  
+        .from('saved_videos')
+        .select('id')
+        .eq('user_id', user.id)
+        .eq('video_url', videoUrl)
+        .maybeSingle();
+
     if (fetchError) {
       console.error('Error checking saved videos:', fetchError);
       return;
@@ -804,18 +880,18 @@ export default function InteractiveVideoQuiz() {
       alert('Video already saved!');
       return;
     }
-  
+
     // Insert if not already saved
     const { error: insertError } = await supabase
-      .from('saved_videos')
-      .insert([{ user_id: user.id, video_url: videoUrl, title }]);
-  
+        .from('saved_videos')
+        .insert([{ user_id: user.id, video_url: videoUrl, title }]);
+
     if (insertError) {
       console.error('Error saving video:', insertError);
       alert('Error saving video.');
       return;
     }
-  
+
     // Refresh saved videos and progress
     await fetchSavedVideos(user.id);
     alert('Video saved!');
@@ -911,7 +987,22 @@ export default function InteractiveVideoQuiz() {
                               </div>
                           )
                       )}
-                      {quiz.feedback && <p className="feedback colorful-feedback">{quiz.feedback}</p>}
+                      {quiz.feedback && (
+                          <p className={`feedback ${quiz.feedback.includes("✅") ? "correct" : "incorrect"}`}>
+                            {quiz.feedback}
+                            {explanation && !quiz.feedback.includes("✅") && (
+                                <span className="explanation"><br/>💡 {explanation}</span>
+                            )}
+                          </p>
+                      )}
+
+                      {/* Add this section for explanations */}
+                      {explanation && !quiz.feedback.includes("✅") && (
+                          <div className="explanation-box">
+                            <p className="explanation-text">💡 {explanation}</p>
+                          </div>
+                      )}
+
                       <button onClick={handleSkip} className="skip-button fancy-skip">⏭️ Skip</button>
 
                       {quiz.retryOption && (
@@ -982,37 +1073,37 @@ export default function InteractiveVideoQuiz() {
                 <div className="summary-box dynamic-glow">
                   <h2>🌟 You're Amazing! 🌟</h2>
                   <div className="results-summary">
-                  <p>🎯 <strong>Total Questions:</strong> {quiz.questions.length}</p>
-                  <p>✅ <strong>Correct:</strong> {session.stats.correct}</p>
-                  <p>❌ <strong>Wrong:</strong> {session.stats.wrong}</p>
-                  <p>⏭️ <strong>Skipped:</strong> {session.stats.skipped}</p>
-                  
-                  <p>⏱️ <strong>Time Watched:</strong> 
-                    {session.stats.startTime && session.stats.endTime 
-                      ? `${Math.max(0, Math.round((session.stats.endTime - session.stats.startTime) / 1000))}s`
-                      : '0s'
-                    }
-                  </p>
+                    <p>🎯 <strong>Total Questions:</strong> {quiz.questions.length}</p>
+                    <p>✅ <strong>Correct:</strong> {session.stats.correct}</p>
+                    <p>❌ <strong>Wrong:</strong> {session.stats.wrong}</p>
+                    <p>⏭️ <strong>Skipped:</strong> {session.stats.skipped}</p>
 
-                  {session.start && session.end && (
-                    <p>🕒 <strong>Session Time:</strong> 
-                      {`${Math.max(0, Math.round((session.end - session.start) / 1000))}s`}
+                    <p>⏱️ <strong>Time Watched:</strong>
+                      {session.stats.startTime && session.stats.endTime
+                          ? `${Math.max(0, Math.round((session.stats.endTime - session.stats.startTime) / 1000))}s`
+                          : '0s'
+                      }
                     </p>
-                  )}
-                </div>
+
+                    {session.start && session.end && (
+                        <p>🕒 <strong>Session Time:</strong>
+                          {`${Math.max(0, Math.round((session.end - session.start) / 1000))}s`}
+                        </p>
+                    )}
+                  </div>
 
 
                   <div className="summary-buttons">
-                  <button className="fancy-button" onClick={handleRestartVideo}>
-                    🔁 Watch Again
-                  </button>
+                    <button className="fancy-button" onClick={handleRestartVideo}>
+                      🔁 Watch Again
+                    </button>
 
-                  <button className="fancy-button" onClick={handleGoToProfile}>
-  🏠 Go to Profile
-</button>
+                    <button className="fancy-button" onClick={handleGoToProfile}>
+                      🏠 Go to Profile
+                    </button>
 
 
-                </div>
+                  </div>
 
                 </div>
               </div>

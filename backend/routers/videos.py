@@ -43,9 +43,8 @@ load_dotenv()
 
 # Constants and Configuration
 class Config:
-    PROXY_USERNAME = os.getenv("WEBSHARE_USERNAME", "hvmlptke")
-    PROXY_PASSWORD = os.getenv("WEBSHARE_PASSWORD", "0wsd704fu1go")
-    PROXIES = [f"http://{PROXY_USERNAME}:{PROXY_PASSWORD}@185.199.228.220:7300"]
+    PROXY_URL = os.getenv("PROXY_URL", f"http://{os.getenv('WEBSHARE_USERNAME')}:{os.getenv('WEBSHARE_PASSWORD')}@185.199.228.220:7300")
+    PROXIES = [PROXY_URL] if PROXY_URL else []
     MAX_TRANSCRIPT_LENGTH = 5000
     IMAGE_PROCESSING_SIZE = (320, 320)
     PROCESSING_TIME_ESTIMATES = {
@@ -659,7 +658,7 @@ def explain_wrong_answer(payload: dict):
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
     prompt = f"""
-You are an AI tutor for kids. A student gave a wrong answer to the following quiz:
+You are a friendly and kind teach for young children. A student gave a wrong answer to the following quiz:
 
 ❓ Question: {payload['question']}
 🟰 Their Answer: {payload['selected_label']}
@@ -667,7 +666,7 @@ You are an AI tutor for kids. A student gave a wrong answer to the following qui
 
 Options: {', '.join(payload['options'])}
 
-If the answer is incorrect, please explain *briefly* and kindly why the answer is incorrect, and encourage them to try again or rewatch the video.
+If the answer is incorrect, please explain *briefly* and kindly why the answer is incorrect, not just state they are wrong, and encourage them to try again or rewatch the video.
 If the answer is correct, please explain *briefly* and kindly why the answer is correct. Respond with a single friendly sentence.
 """
 
