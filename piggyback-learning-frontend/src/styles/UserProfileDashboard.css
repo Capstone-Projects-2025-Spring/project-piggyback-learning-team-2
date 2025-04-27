@@ -434,5 +434,11 @@ body.dark-mode .video-box {
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
+/* Dark Toggle Button */
+.dark-toggle-wrapper {
+  top: 100px;
+  right: 20px;
+}
+
 
 
