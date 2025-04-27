@@ -13,21 +13,210 @@ description: Backend API documentation
 
 ### Crud_test
 
-### Video_process
-
 ### Videos
 
 ## Database
+Set up SQLAlchemy database engine, session, and base class for ORM models. Load database credentials from environment variables.
 
-## Db_models
+Data Fields:
 
-## Gpt_helper
+SQLAlchemy_Database_URL
+
+Type: str
+
+Purpose: Store the database connection string from environment variables.
+
+engine
+
+Type: sqlalchemy.engine.base.Engine
+
+Purpose: SQLAlchemy engine connected to the database.
+
+SessionLocal
+
+Type: sqlalchemy.orm.session.sessionmaker
+
+Purpose: Factory for creating database sessions.
+
+Base
+
+Type: sqlalchemy.ext.declarative.api.DeclarativeMeta
+
+Purpose: Base class for ORM models.
+
+Functions:
+
+get_db()
+
+Purpose: Dependency function to get a database session for use in FastAPI routes.
+
+Pre-conditions:
+
+Database URL must be properly loaded from environment variables.
+
+Post-conditions:
+
+Yields a database session and ensures it is closed after usage.
+
+Return Value:
+
+Generator that yields a Session object.
+
+## Db_Models
+Define the database ORM models for user login, user engagement, and video questions.
+
+User_engagment
+Class Purpose:
+Represents a user's progress interacting with a YouTube video.
+
+Data Fields:
+
+id (Primary Key)
+
+user_id (Foreign Key to users.id)
+
+video_id
+
+progress
+
+timestamp
+
+Relationships:
+
+user
+
+Relationship to User_Login.
+
+User_Login
+Class Purpose:
+Stores user account information including email, password, and creation timestamp.
+
+Data Fields:
+
+id (Primary Key)
+
+email (Unique)
+
+password
+
+name
+
+created_at
+
+Relationships:
+
+engagements
+
+Relationship to User_engagment.
+
+VideoQuestion
+Class Purpose:
+Stores questions generated for YouTube videos, including metadata about the video.
+
+Data Fields:
+
+video_id (Primary Key)
+
+video_link
+
+video_title
+
+video_thumbnail
+
+video_duration
+
+questions_json
+
+created_at
+
+## Gpt_Helper
+Functions:
+
+safe_parse_json(json_str: str) -> dict or None
+
+Purpose: Safely remove markdown code fences and parse GPT responses into JSON.
+
+Exceptions: Prints error if JSON parsing fails.
+
+generate_mcq_from_labels(labels: list) -> dict
+
+Purpose: Generate an MCQ from a list of detected video labels using GPT-4o.
+
+Pre-conditions:
+
+labels must be a list of objects with "label" keys.
+
+Post-conditions:
+
+Returns a dictionary with "text", "options", and "answer" keys.
+
+Exceptions:
+
+If GPT fails or response is invalid, returns a fallback message.
+
+generate_questions_from_transcript(title: str, transcript: str) -> dict
+
+Purpose: Generate an MCQ based on a YouTube transcript using GPT-4o.
+
+Pre-conditions:
+
+Transcript should not exceed 1000 characters for prompt clarity.
+
+Post-conditions:
+
+Returns a valid question dictionary.
+
+Exceptions:
+
+If parsing fails or GPT errors occur, returns a fallback question.
 
 ## Main
+Set up and run the main FastAPI application, register routers, set up CORS, and logging.
+
+*__Components:__*
+
+* __app__
+
+    * Type: FastAPI
+
+    * Purpose: Main FastAPI application instance.
+
+* __Logger Configuration__
+
+Purpose: Logs incoming requests and responses for monitoring.
+
+* __CORS Middleware__
+
+Purpose: Allow cross-origin requests from specified frontend URLs (e.g., React app on localhost:3000).
+
+__Routers Included:__
+
+* crud_test.router
+
+* authentication.router
+
+* video_router.router (with /api/v1/video prefix)
+
+* yolo_router (from yolov8_router)
+
+* __Middleware: log_requests(request: Request, call_next)__
+
+Purpose: Logs details of each incoming HTTP request and its response status.
+
+__API Endpoint:__
+
+* __GET /health__
+
+Purpose: Basic health check endpoint to verify backend is running.
+
+Return Value:
+
+*   JSON containing status ("healthy"), version, and current timestamp.
 
 ## Oauth2
 
-## openAIHelper
+## OpenAIHelper
+Generate multiple-choice questions (MCQs) from video object labels or transcripts using OpenAI GPT models.
 
 ## Schemas
 
