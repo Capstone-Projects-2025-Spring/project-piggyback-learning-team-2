@@ -71,7 +71,7 @@ function UserProfile() {
   const fetchQuizStats = async (userId) => {
     const { data, error } = await supabase
       .from('quiz_results')
-      .select('video_title, total_questions, correct_answers, created_at')
+      .select('*') 
       .eq('user_id', userId)
       .order('created_at', { ascending: false });
   
@@ -80,13 +80,21 @@ function UserProfile() {
       return;
     }
   
+    console.log('Quiz results from DB:', data); 
+  
     setQuizHistory(data || []);
   
     const totalQuestions = data.reduce((sum, q) => sum + (q.total_questions || 0), 0);
     const correctAnswers = data.reduce((sum, q) => sum + (q.correct_answers || 0), 0);
     const accuracy = totalQuestions === 0 ? 0 : Math.round((correctAnswers / totalQuestions) * 100);
   
-    setQuizStats({ total: totalQuestions, correct: correctAnswers, accuracy });
+    setQuizStats({ 
+      total: totalQuestions, 
+      correct: correctAnswers, 
+      accuracy,
+      wrong: data.reduce((sum, q) => sum + (q.wrong_answers || 0), 0),
+      skipped: data.reduce((sum, q) => sum + (q.skipped_questions || 0), 0)
+    });
   };
   
   const fetchWeeklyQuizActivity = async (userId) => {
@@ -113,35 +121,41 @@ function UserProfile() {
   
     return dayCounts;
   };
-  
-  
-  useEffect(() => {
-    if (location.state?.refresh) {
-      refreshProfileProgress();
-    }
-  }, [location.state]);
-  
-  
+
   const refreshProfileProgress = async () => {
     if (!profile) return;
-    await fetchQuizStats(profile.id);
-    await fetchWeeklyQuizActivity(profile.id).then(data => setWeeklyQuizData(data));
+  
+    await Promise.all([
+      fetchVideoHistory(profile.id),
+      fetchSavedVideos(profile.id),
+      fetchQuizStats(profile.id),
+      fetchWeeklyQuizActivity(profile.id).then(data => setWeeklyQuizData(data))
+    ]);
   };
-  
-  
-  
 
   useEffect(() => {
-    const init = async () => {
-      const { data: authData } = await supabase.auth.getUser();
-      const user = authData?.user;
-      if (!user) return navigate('/signin');
+    if (!profile) return; 
+  
+    refreshProfileProgress();
+  
+    if (location.state?.refresh) {
+      window.history.replaceState({}, document.title);
+    }
+  }, [profile, location.state]);
+  
 
-      let { data: profileData } = await supabase
-        .from('profiles')
-        .select('id, first_name, last_name, email, avatar_url, bio')
-        .eq('id', user.id)
-        .single();
+
+  useEffect(() => {
+  const init = async () => {
+    const { data: authData } = await supabase.auth.getUser();
+    const user = authData?.user;
+    if (!user) return navigate('/signin');
+
+    let { data: profileData } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', user.id)
+      .single();
 
       if (!profileData) {
         const { data: newProfile } = await supabase
@@ -171,14 +185,14 @@ function UserProfile() {
         fetchVideoHistory(profileData.id),
         fetchSavedVideos(profileData.id),
         fetchQuizStats(profileData.id),
-        fetchWeeklyQuizActivity(profileData.id).then(data => setWeeklyQuizData(data)) // 👈 add this
+        fetchWeeklyQuizActivity(profileData.id).then(data => setWeeklyQuizData(data))
       ]);
       
       setLoading(false);
     };
+  
     init();
-    
-  }, [navigate]);
+  }, [navigate, location.state?.refresh]);
 
   const [weeklyQuizData, setWeeklyQuizData] = useState({ Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0, Sun: 0 });
 
@@ -466,6 +480,7 @@ function UserProfile() {
               <strong>{entry.video_title}</strong><br />
               🎯 Questions: {entry.total_questions} | ✅ Correct: {entry.correct_answers}
             </li>
+
           ))}
         </ul>
 

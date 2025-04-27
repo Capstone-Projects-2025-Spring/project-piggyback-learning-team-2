@@ -114,26 +114,32 @@ export default function InteractiveVideoQuiz() {
       return;
     }
   
-    const { correct, wrong, skipped, total, startTime, endTime } = session.stats;
+    const total = Object.keys(quiz.answeredQuestions).length;
+    const correct = Object.values(quiz.answeredQuestions).filter(q => q.correct).length;
+    const wrong = Object.values(quiz.answeredQuestions).filter(q => q.correct === false).length;
+    const skipped = Object.values(quiz.answeredQuestions).filter(q => q.skipped).length;
   
-    const safeStart = startTime || Date.now();
-    const safeEnd = endTime || Date.now();
-    const sessionDurationSec = Math.max(0, Math.round((safeEnd - safeStart) / 1000)); 
-    
-    console.log('Saving Quiz Result', {
+    const now = Date.now();
+    const startTime = session.stats.startTime || now;
+    const sessionDurationSec = Math.max(1, Math.round((now - startTime) / 1000));
+
+    console.log('Saving quiz results:', {
       user_id: user.id,
       video_title: videoTitle,
       total_questions: total,
       correct_answers: correct,
-      sessionDurationSec,
-      video_url: videoUrl
+      wrong_answers: wrong,
+      skipped_questions: skipped,
+      session_time_sec: sessionDurationSec
     });
-    
+  
     const { error } = await supabase.from('quiz_results').insert([{
       user_id: user.id,
       video_title: videoTitle,
-      total_questions: total || 0, 
-      correct_answers: correct || 0,
+      total_questions: total,
+      correct_answers: correct,
+      wrong_answers: wrong,
+      skipped_questions: skipped,
       time_watched_sec: sessionDurationSec,
       session_time_sec: sessionDurationSec,
       created_at: new Date().toISOString(),
@@ -141,12 +147,22 @@ export default function InteractiveVideoQuiz() {
     }]);
   
     if (error) {
-      console.error('❌ Error saving quiz results:', error.message);
+      console.error('Error saving quiz results:', error.message);
     } else {
-      console.log('✅ Quiz results saved successfully!');
+      console.log('Quiz results saved successfully!');
+      // Add this line to trigger a refresh
+      //navigate('/profile', { state: { refresh: true } });
     }
   };
   
+
+  const handleGoToProfile = async () => {
+    await saveQuizResults();
+    setTimeout(() => {
+      navigate('/profile', { state: { refresh: true } });
+    }, 1000);
+  };
+    
   
 
   // Derived state for easier access
@@ -435,7 +451,7 @@ export default function InteractiveVideoQuiz() {
     if (nextQuestion) {
       showQuestion(nextQuestion);
     }
-  }, [player, quiz, getCurrentTime, pauseVideo]);
+  }, [player, quiz, getCurrentTime, pauseVideo, showQuestion, updateQuizState]);
 
   // Lets users rewind video
   const handleWatchAgain = () => {
@@ -550,6 +566,7 @@ export default function InteractiveVideoQuiz() {
         total: session.stats.total + 1
       };
       updateSessionState({ stats: newStats });
+
     }
 
     // Track this answer
@@ -624,31 +641,27 @@ export default function InteractiveVideoQuiz() {
     }
   };
 
-  // Video ended handler
   const handleVideoEnded = async () => {
+    const now = Date.now();
+    const startTime = session.stats.startTime || now;
+    const sessionDuration = Math.round((now - startTime) / 1000);
+    const uniqueQuestionCount = new Set(Object.keys(quiz.answeredQuestions)).size;
+  
+    updateSessionState({
+      end: now,
+      stats: {
+        ...session.stats,
+        endTime: now,
+        uniqueCount: uniqueQuestionCount,
+        sessionDuration, 
+      }
+    });
+  
+    await new Promise(resolve => setTimeout(resolve, 300)); // wait to let React update
+  
     await saveQuizResults();  
   
-    const now = Date.now();
-      const startTime = session.stats.startTime || now;
-
-      const sessionDuration = Math.round((now - startTime) / 1000);
-  
-    // For summary, count unique questions
-    
-  const uniqueQuestionCount = new Set(Object.keys(quiz.answeredQuestions)).size;
-
-  updateSessionState({
-    end: now,
-    stats: {
-      ...session.stats,
-      endTime: now,
-      uniqueCount: uniqueQuestionCount,
-      sessionDuration, 
-    }
-  });
-  
     updateQuizState({ showSummary: true });
-
   };
   
   
@@ -735,8 +748,8 @@ export default function InteractiveVideoQuiz() {
     updateSessionState({ start: Date.now(), stats: { ...session.stats, startTime: Date.now() } });
   }, []);
 
-  const [savedVideos, setSavedVideos] = useState([]);
-  const [progressStats, setProgressStats] = useState({});
+  const [ setSavedVideos] = useState([]);
+  const [ setProgressStats] = useState({});
 
   const fetchSavedVideos = async (userId) => {
       const { data, error } = await supabase
@@ -990,12 +1003,11 @@ export default function InteractiveVideoQuiz() {
                     🔁 Watch Again
                   </button>
 
-                  <button className="fancy-button" onClick={async () => {
-                    await saveQuizResults();  
-                    navigate("/profile", { state: { refresh: true } });  
-                  }}>
-                    🏠 Go to Profile
-                  </button>
+                  <button className="fancy-button" onClick={handleGoToProfile}>
+  🏠 Go to Profile
+</button>
+
+
                 </div>
 
                 </div>
