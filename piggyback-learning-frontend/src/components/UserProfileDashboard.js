@@ -231,7 +231,7 @@ function UserProfile() {
 
          {/* Saved Videos */}
 <div className="profile-sections">
-<button onClick={() => setShowSaved(!showSaved)}>📁 Saved Videos</button>
+<button className="profile-section-btn" onClick={() => setShowSaved(!showSaved)}>📁 Saved Videos</button>
         {showSaved && (
           <div className="video-scroll-container">
             <div className="video-grid">
