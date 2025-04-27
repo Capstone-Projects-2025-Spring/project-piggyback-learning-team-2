@@ -6,7 +6,7 @@ import time
 import logging
 
 
-from . import db_models, schemas, tools
+from backend import db_models, schemas, tools, routers, youtube, yolov8_router
 from backend.database import engine, get_db
 from backend.routers import crud_test, authentication
 from backend.routers import videos as video_router

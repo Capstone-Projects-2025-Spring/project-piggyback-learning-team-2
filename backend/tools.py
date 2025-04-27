@@ -7,6 +7,7 @@ import os
 # Load .env variables
 load_dotenv()
 
+
 # Password hashing config
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

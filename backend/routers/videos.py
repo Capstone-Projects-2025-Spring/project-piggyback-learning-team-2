@@ -640,9 +640,9 @@ def answer_question(payload: AnswerInput):
 @router.post("/explain")
 def explain_wrong_answer(payload: dict):
     """Generate explanation for wrong answer"""
-    from openai import ChatCompletion
-    import openai
-    openai.api_key = os.getenv("OPENAI_API_KEY")
+    from openai import OpenAI
+    import os
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
     prompt = f"""
 You are an AI tutor for kids. A student gave a wrong answer to the following quiz:
@@ -658,7 +658,7 @@ If the answer is correct, please explain *briefly* and kindly why the answer is 
 """
 
     try:
-        response = ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-4o",
             messages=[{"role": "user", "content": prompt}],
             temperature=0.7,

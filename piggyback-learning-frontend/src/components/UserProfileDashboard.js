@@ -9,8 +9,6 @@ import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { FaMoon, FaLightbulb } from 'react-icons/fa';
 
-
-
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 function UserProfile() {
@@ -19,41 +17,15 @@ function UserProfile() {
   const [loading, setLoading] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
   const [quizStats, setQuizStats] = useState({ total: 0, correct: 0, accuracy: 0 });
-  const [quizHistory] = useState([]);
+  const [quizHistory, setQuizHistory] = useState([]);
+  const [videoHistory, setVideoHistory] = useState([]);
+  const [savedVideos, setSavedVideos] = useState([]);
+  const [progressStats, setProgressStats] = useState({ saved: 0, watched: 0, percent: 0 });
   const [showSaved, setShowSaved] = useState(false);
   const [showHistory, setShowHistory] = useState(false);
   const [showProgress, setShowProgress] = useState(false);
   const [editing, setEditing] = useState(false);
-  const [editValues, setEditValues] = useState({
-    first_name: '',
-    last_name: '',
-    bio: '',
-    avatar_url: ''
-  });
-
-  const [youtubeUrls] = useState([
-    {
-      src: "https://youtu.be/DR-cfDsHCGA", // YouTube link
-      //src: "/videos/counting_1_10.mp4",
-      title: "Counting 1-10 (Interactive)"
-    },
-    {
-      //src: "https://youtu.be/a2rIL8VLWuk", // YouTube link
-      src: "/videos/Animal_learning.mp4",
-    title: "Animal Adventure (Interactive)"
-    }
-    ,
-    {
-      src: "https://jhjwdzfcsodthaszqvcv.supabase.co/storage/v1/object/public/videos//Vehicle_Names.mp4",
-      title: "Vehicles for Kids (Interactive)"
-    }
-  ]);
-  
-
-
-
-  const [videoHistory, setVideoHistory] = useState([]);
-  const [progressStats, setProgressStats] = useState({ saved: 0, watched: 0, percent: 0 });
+  const [editValues, setEditValues] = useState({ first_name: '', last_name: '', bio: '', avatar_url: '' });
 
   useEffect(() => {
     document.body.classList.toggle('dark-mode', darkMode);
@@ -65,56 +37,53 @@ function UserProfile() {
       .select('video_url, title, watched_at')
       .eq('user_id', userId)
       .order('watched_at', { ascending: false });
-
     if (!error) setVideoHistory(data);
   };
 
+  const fetchSavedVideos = async (userId) => {
+    const { data, error } = await supabase
+      .from('saved_videos')
+      .select('video_url, title')
+      .eq('user_id', userId);
+    if (error) {
+      console.error('Error fetching saved videos:', error);
+      setSavedVideos([]);
+    } else {
+      setSavedVideos(data ?? []);
+    }
 
-  const calculateProgress = React.useCallback(async (userId) => {
-    const { data: watched } = await supabase
+    const { data: watchedData = [], error: watchedError } = await supabase
       .from('video_history')
       .select('video_url')
       .eq('user_id', userId);
-
-    const watchedCount = watched?.length || 0;
-    const savedCount = youtubeUrls.length;
+    if (watchedError) {
+      console.error('Error fetching watch history:', watchedError);
+    }
+    const watchedCount = watchedData?.length || 0;
+    const savedCount = data?.length || 0;
     const percent = savedCount === 0 ? 0 : Math.round((watchedCount / savedCount) * 100);
-
     setProgressStats({ saved: savedCount, watched: watchedCount, percent });
-  }, [youtubeUrls]);
+  };
 
   const fetchQuizStats = async (userId) => {
     const { data, error } = await supabase
       .from('quiz_history')
-      .select('correct')
-      .eq('user_id', userId);
-
+      .select('video_title, question_text, selected, correct, created_at')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
     if (error) return;
-
+    setQuizHistory(data || []);
     const total = data.length;
     const correct = data.filter(q => q.correct).length;
     const accuracy = total === 0 ? 0 : Math.round((correct / total) * 100);
-
     setQuizStats({ total, correct, accuracy });
   };
 
   useEffect(() => {
-    const fetchData = async () => {
+    const init = async () => {
       const { data: authData } = await supabase.auth.getUser();
       const user = authData?.user;
-      if (user) {
-        await fetchQuizStats(user.id);
-      }
-    };
-    fetchData();
-  }, []);
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      setLoading(true);
-      const { data: authData } = await supabase.auth.getUser();
-      const user = authData?.user;
-      if (!user) return navigate('/login');
+      if (!user) return navigate('/signin');
 
       let { data: profileData } = await supabase
         .from('profiles')
@@ -125,13 +94,13 @@ function UserProfile() {
       if (!profileData) {
         const { data: newProfile } = await supabase
           .from('profiles')
-          .insert([{
+          .insert([{ 
             id: user.id,
             email: user.email,
-            avatar_url: user.user_metadata?.avatar_url || "https://via.placeholder.com/150",
-            bio: "This is my profile!",
-            first_name: user.user_metadata?.full_name?.split(" ")[0] || "First",
-            last_name: user.user_metadata?.full_name?.split(" ")[1] || "Last"
+            avatar_url: user.user_metadata?.avatar_url || 'https://via.placeholder.com/150',
+            bio: 'This is my profile!',
+            first_name: user.user_metadata?.full_name?.split(' ')[0] || 'First',
+            last_name: user.user_metadata?.full_name?.split(' ')[1] || 'Last'
           }])
           .select()
           .single();
@@ -140,60 +109,38 @@ function UserProfile() {
 
       setProfile(profileData);
       setEditValues({
-        first_name: profileData.first_name || '',
-        last_name: profileData.last_name || '',
-        avatar_url: profileData.avatar_url || '',
-        bio: profileData.bio || ''
+        first_name: profileData.first_name,
+        last_name: profileData.last_name,
+        avatar_url: profileData.avatar_url,
+        bio: profileData.bio
       });
-      fetchVideoHistory(profileData.id);
-      calculateProgress(profileData.id);
+
+      await Promise.all([
+        fetchVideoHistory(profileData.id),
+        fetchSavedVideos(profileData.id),
+        fetchQuizStats(profileData.id)
+      ]);
+
       setLoading(false);
     };
+    init();
+  }, [navigate]);
 
-   fetchProfile();
-}, [navigate, calculateProgress]);
-
-  const handleInputChange = (e) => {
-    setEditValues({ ...editValues, [e.target.name]: e.target.value });
-  };
-
+  const handleInputChange = (e) => setEditValues({ ...editValues, [e.target.name]: e.target.value });
   const handleSaveProfile = async () => {
     const { error } = await supabase
       .from('profiles')
-      .update({
-        first_name: editValues.first_name,
-        last_name: editValues.last_name,
-        bio: editValues.bio,
-        avatar_url: editValues.avatar_url
-      })
+      .update(editValues)
       .eq('id', profile.id);
-
-    if (error) {
-      alert("Error updating profile");
-    } else {
-      alert("Profile updated!");
-      setProfile({ ...profile, ...editValues });
-      setEditing(false);
-    }
+    if (error) return alert('Error updating profile');
+    setProfile({ ...profile, ...editValues });
+    setEditing(false);
+    alert('Profile updated!');
   };
-
   const handleSignOut = async () => {
     const { error } = await supabase.auth.signOut();
     if (!error) navigate('/signin');
   };
-
-  const chartData = {
-    labels: ['Watched', 'Remaining'],
-    datasets: [{
-      label: 'Video Progress',
-      data: [progressStats.watched, progressStats.saved - progressStats.watched],
-      backgroundColor: ['#4CAF50', '#E0E0E0'],
-      borderWidth: 1
-    }]
-  };
-
-
-  
 
   if (loading) return <div className="loading">Loading Profile...</div>;
   if (!profile) return <div className="error">Error loading profile.</div>;
@@ -284,91 +231,44 @@ function UserProfile() {
 
          {/* Saved Videos */}
 <div className="profile-sections">
-  <button className="profile-section-btn" onClick={() => setShowSaved(!showSaved)}>
-    📁 Saved Videos
-  </button>
-
-  {showSaved && (
-    <div className="video-scroll-container">
-      <div className="video-grid">
-        {youtubeUrls.map((video, index) => {
-          const isWatched = videoHistory.some(v => v.video_url === video.src);
-          const isYouTube = video.src.includes("youtube.com");
-          const videoId = isYouTube ? video.src.split("/embed/")[1] : null;
-
-          return (
-            <div key={index} className="video-box">
-              {/* Navigate to /watch with video and title */}
-              <Link to={`/watch?video=${encodeURIComponent(video.src)}&title=${encodeURIComponent(video.title)}`}>
-                <img
-                  src={
-                    isYouTube
-                      ? `https://img.youtube.com/vi/${videoId}/0.jpg`
-                      : "https://img.icons8.com/color/480/video.png" // fallback thumbnail
-                  }
-                  alt={video.title}
-                  width="300"
-                  height="180"
-                  style={{ borderRadius: "12px", cursor: "pointer", objectFit: "cover" }}
-                />
-                <p>{video.title}</p>
-                <p style={{ fontSize: "14px", color: "#ccc" }}>▶️ Click to Watch & Learn</p>
-              </Link>
-
-              {/* Mark as Watched Button */}
-              {isWatched ? (
-                <p>✅ Already Watched</p>
-              ) : (
-                <button
-                  className="watch-button"
-                  onClick={async () => {
-                    const { data: userData } = await supabase.auth.getUser();
-                    const userId = userData?.user?.id;
-                    if (!userId) return;
-
-                    const { data: existing, error: checkError } = await supabase
-                      .from('video_history')
-                      .select('id')
-                      .eq('user_id', userId)
-                      .eq('video_url', video.src);
-
-                    if (checkError) {
-                      alert("Failed to check watch status.");
-                      return;
+<button onClick={() => setShowSaved(!showSaved)}>📁 Saved Videos</button>
+        {showSaved && (
+          <div className="video-scroll-container">
+            <div className="video-grid">
+              {savedVideos.map((video, idx) => {
+                const isWatched = videoHistory.some(v => v.video_url === video.video_url);
+                const isYouTube = video.video_url.includes('youtube.com');
+                const videoId = isYouTube ? video.video_url.split('/embed/')[1] : null;
+                return (
+                  <div key={idx} className="video-box">
+                    <Link to={`/watch?video=${encodeURIComponent(video.video_url)}&title=${encodeURIComponent(video.title)}`}>
+                      <img
+                        src={isYouTube ? `https://img.youtube.com/vi/${videoId}/0.jpg` : 'https://img.icons8.com/color/480/video.png'}
+                        alt={video.title}
+                        width="300" height="180"
+                        style={{ borderRadius: '12px', objectFit: 'cover' }}
+                      />
+                      <p>{video.title}</p>
+                    </Link>
+                    {isWatched
+                      ? <p>✅ Already Watched</p>
+                      : <button onClick={async () => {
+                          const { data: u } = await supabase.auth.getUser();
+                          if (!u?.user) return;
+                          const userId = u.user.id;
+                          const { data: existing } = await supabase.from('video_history').select('id').eq('user_id', userId).eq('video_url', video.video_url);
+                          if (existing.length) return alert('Already marked');
+                          await supabase.from('video_history').insert([{ user_id: userId, video_url: video.video_url, title: video.title, watched_at: new Date().toISOString() }]);
+                          fetchVideoHistory(userId);
+                          setProgressStats(ps => ({ ...ps, watched: ps.watched + 1 }));
+                        }}>Mark as Watched</button>
                     }
-
-                    if (existing.length > 0) {
-                      alert("Already marked as watched.");
-                      return;
-                    }
-
-                    const { error } = await supabase
-                      .from('video_history')
-                      .insert([{
-                        user_id: userId,
-                        video_url: video.src,
-                        title: video.title,
-                        watched_at: new Date().toISOString()
-                      }]);
-
-                    if (error) {
-                      alert("Error marking as watched");
-                    } else {
-                      alert("Marked as watched!");
-                      fetchVideoHistory(userId);
-                      calculateProgress(userId);
-                    }
-                  }}
-                >
-                  ✅ Mark as Watched
-                </button>
-              )}
+                  </div>
+                );
+              })}
             </div>
-          );
-        })}
-      </div>
-    </div>
-  )}
+          </div>
+        )}
 
 
             {/* Video History */}
