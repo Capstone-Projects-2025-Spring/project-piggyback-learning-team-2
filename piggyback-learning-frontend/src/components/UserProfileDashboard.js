@@ -301,8 +301,14 @@ function UserProfile() {
                           const { data: u } = await supabase.auth.getUser();
                           if (!u?.user) return;
                           const userId = u.user.id;
-                          const { data: existing } = await supabase.from('video_history').select('id').eq('user_id', userId).eq('video_url', video.video_url);
-                          if (existing.length) return alert('Already marked');
+                          const { data: existing } = await supabase
+                          .from('video_history')
+                          .select('id')
+                          .eq('user_id', userId)
+                          .eq('video_url', video.video_url);
+                        
+                        if (existing && existing.length) return alert('Already marked');
+                        
                           await supabase.from('video_history').insert([{ user_id: userId, video_url: video.video_url, title: video.title, watched_at: new Date().toISOString() }]);
                           fetchVideoHistory(userId);
                           setProgressStats(ps => ({ ...ps, watched: ps.watched + 1 }));
