@@ -50,7 +50,7 @@ app.include_router( video_router.router,
 app.include_router(yolo_router)
 
 # Add middleware to log all requests
-@app.middleware("http")
+@app.middleware("https")
 async def log_requests(request: Request, call_next):
     logger.info(f"Incoming request: {request.method} {request.url}")
     try:
