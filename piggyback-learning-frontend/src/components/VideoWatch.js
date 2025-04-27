@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { supabase } from './supabaseClient';
 import '../styles/VideoWatch.css';
 import ReactPlayer from 'react-player';
 import logo from '../images/Mob_Iron_Hog.png';
@@ -17,6 +18,35 @@ function formatTime(seconds) {
   const remainingSeconds = Math.floor(seconds % 60);
   return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
 }
+
+// Text to Speech for Questions
+const speakQuestion = (question) => {
+  // Check if speech synthesis is supported
+  if ('speechSynthesis' in window) {
+    // Stop any currently speaking
+    window.speechSynthesis.cancel();
+
+    // Create the main question utterance
+    const questionUtterance = new SpeechSynthesisUtterance(question.text);
+
+    // If it's a multiple choice question, add the options
+    if (question.type !== 'object_detection' && question.options?.length > 0) {
+      const optionsText = `Options are: ${question.options.join(', ')}`;
+      const optionsUtterance = new SpeechSynthesisUtterance(optionsText);
+
+      // Queue them to speak one after another
+      window.speechSynthesis.speak(questionUtterance);
+      questionUtterance.onend = () => {
+        window.speechSynthesis.speak(optionsUtterance);
+      };
+    } else {
+      // Just speak the question for object detection
+      window.speechSynthesis.speak(questionUtterance);
+    }
+  } else {
+    console.warn("Speech synthesis not supported in this browser");
+  }
+};
 
 export default function InteractiveVideoQuiz() {
   // Constants and refs
@@ -130,8 +160,8 @@ export default function InteractiveVideoQuiz() {
     updateQuizState({
       currentQuestion: question,
       detections: filteredDetections,
-      feedback: "", // Clear any existing feedback
-      retryOption: false // Reset retry option
+      feedback: "",
+      retryOption: false
     });
 
     updatePlayerState({
@@ -139,8 +169,12 @@ export default function InteractiveVideoQuiz() {
       lastQuestionId: question.id
     });
 
+    // Automatically read the question when it appears
+    speakQuestion(question);
+
     pauseVideo();
   }, [getCurrentTime, pauseVideo]);
+
 
   // Processing cancellation function
   const handleCancelProcessing = async () => {
@@ -651,6 +685,75 @@ export default function InteractiveVideoQuiz() {
     updateSessionState({ start: Date.now(), stats: { ...session.stats, startTime: Date.now() } });
   }, []);
 
+  const [savedVideos, setSavedVideos] = useState([]);
+  const [progressStats, setProgressStats] = useState({});
+
+  const fetchSavedVideos = async (userId) => {
+      const { data, error } = await supabase
+        .from('saved_videos')
+        .select('video_url, title')
+        .eq('user_id', userId);
+      if (error) {
+        console.error('Error fetching saved videos:', error);
+        setSavedVideos([]);
+      } else {
+        setSavedVideos(data ?? []);
+      }
+  
+      const { data: watchedData = [], error: watchedError } = await supabase
+        .from('video_history')
+        .select('video_url')
+        .eq('user_id', userId);
+      if (watchedError) {
+        console.error('Error fetching watch history:', watchedError);
+      }
+      const watchedCount = watchedData?.length || 0;
+      const savedCount = data?.length || 0;
+      const percent = savedCount === 0 ? 0 : Math.round((watchedCount / savedCount) * 100);
+      setProgressStats({ saved: savedCount, watched: watchedCount, percent });
+    };
+
+  const saveCurrentVideo = async (videoUrl, title) => {
+    const { data: authData } = await supabase.auth.getUser();
+    const user = authData?.user;
+    if (!user) {
+      navigate('/signin');
+      return;
+    }
+  
+    // Check if already saved
+    const { data: existing, error: fetchError } = await supabase
+      .from('saved_videos')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('video_url', videoUrl)
+      .maybeSingle();
+  
+    if (fetchError) {
+      console.error('Error checking saved videos:', fetchError);
+      return;
+    }
+    if (existing) {
+      alert('Video already saved!');
+      return;
+    }
+  
+    // Insert if not already saved
+    const { error: insertError } = await supabase
+      .from('saved_videos')
+      .insert([{ user_id: user.id, video_url: videoUrl, title }]);
+  
+    if (insertError) {
+      console.error('Error saving video:', insertError);
+      alert('Error saving video.');
+      return;
+    }
+  
+    // Refresh saved videos and progress
+    await fetchSavedVideos(user.id);
+    alert('Video saved!');
+  };
+
   // Render
   return (
       <div className="video-watch-container">
@@ -690,6 +793,7 @@ export default function InteractiveVideoQuiz() {
               <p>{processing.error}</p>
               <button onClick={() => window.location.reload()}>Reload Page</button>
               <button onClick={() => navigate('/')}>Go Home</button>
+              <button onClick={() => saveCurrentVideo(videoUrl, videoTitle)}>💾 Save This Video</button>
             </div>
         )}
 
@@ -716,6 +820,13 @@ export default function InteractiveVideoQuiz() {
                 {quiz.currentQuestion && (
                     <div className="question-box dynamic-glow">
                       <h3 className="question-text">🧠 {quiz.currentQuestion.text}</h3>
+                      <button
+                          className="speaker-button"
+                          onClick={() => speakQuestion(quiz.currentQuestion)}
+                          title="Read question aloud"
+                      >
+                        🔊
+                      </button>
                       {quiz.currentQuestion.type === 'object_detection' ? (
                           <p className="instruction">Click on the object in the video!</p>
                       ) : (
@@ -758,7 +869,8 @@ export default function InteractiveVideoQuiz() {
                 )}
 
                 {/* Video Player */}
-                <div className="video-wrapper" ref={videoWrapperRef} style={{position: "relative", width: "640px", height: "360px"}}>
+                <div className="video-wrapper" ref={videoWrapperRef}
+                     style={{position: "relative", width: "640px", height: "360px"}}>
                   {!isYouTube ? (
                       <video
                           ref={videoRef}

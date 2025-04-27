@@ -5,7 +5,7 @@ import '../styles/page.css';
 import { supabase } from './supabaseClient';
 
 function Home() {
-  const [selectedGrade, setSelectedGrade] = useState("");
+  //const [selectedGrade, setSelectedGrade] = useState("");
   const navigate = useNavigate();
   const videoCardsRef = useRef(null);
   const [responseData, setResponseData] = useState("");
@@ -169,7 +169,10 @@ function Home() {
               <input type="text" id="youtubeUrl" placeholder="Paste YouTube URL here..." />
             </div>
             <div>
-              <button onClick={handleYoutubeVideo} className="submit-btn">Add Video</button>
+            <div className="button-container">
+              <button className="btn" onClick={handleYoutubeVideo}>Add Video</button>
+            </div>
+
             </div>
             <section className="processing-results">
               {responseData && (

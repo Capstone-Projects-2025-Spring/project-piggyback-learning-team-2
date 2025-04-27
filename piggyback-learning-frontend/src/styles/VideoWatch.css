@@ -396,3 +396,25 @@ video {
     box-shadow: 0 0 20px #5433FF, 0 0 30px #A5FECB;
   }
 }
+
+/* CSS for text to speech */
+.question-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.speaker-button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.speaker-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: scale(1.1);
+}
