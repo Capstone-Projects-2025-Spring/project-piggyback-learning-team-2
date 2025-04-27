@@ -100,9 +100,7 @@ const Signup = () => {
           <nav>
             <ul>
               <li><Link to="/">Home</Link></li>
-              <li><Link to="/how-to-join">How to Join</Link></li>
               <li><Link to="/signin">Sign In</Link></li>
-              <li><Link to="/store">Store</Link></li>
             </ul>
           </nav>
         </header>
