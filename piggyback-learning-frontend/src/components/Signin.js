@@ -108,7 +108,7 @@ const Signin = () => {
             <ul className={styles.navList}>
               <li><Link to="/">Home</Link></li>
               <li><Link to="/signup">Sign Up</Link></li>
-            </ul>
+n               </ul>
           </nav>
         </header>
 

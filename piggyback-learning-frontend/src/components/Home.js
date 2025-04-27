@@ -5,7 +5,7 @@ import '../styles/page.css';
 import { supabase } from './supabaseClient';
 
 function Home() {
-  const [selectedGrade, setSelectedGrade] = useState("");
+  //const [selectedGrade, setSelectedGrade] = useState("");
   const navigate = useNavigate();
   const videoCardsRef = useRef(null);
   const [responseData, setResponseData] = useState("");

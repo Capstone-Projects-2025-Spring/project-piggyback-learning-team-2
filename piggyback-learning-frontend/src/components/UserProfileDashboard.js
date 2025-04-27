@@ -180,12 +180,43 @@ function UserProfile() {
 
             {editing ? (
               <>
-                <input name="first_name" value={editValues.first_name} onChange={handleInputChange} />
-                <input name="last_name" value={editValues.last_name} onChange={handleInputChange} />
-                <input name="avatar_url" value={editValues.avatar_url} onChange={handleInputChange} />
-                <textarea name="bio" value={editValues.bio} onChange={handleInputChange} />
-                <button className="watch-button" onClick={handleSaveProfile}>💾 Save</button>
-                <button className="signout-button" onClick={() => setEditing(false)}>❌ Cancel</button>
+              
+                <h2>Edit Your Profile</h2>
+
+                <label>First Name:</label>
+                <input
+                  name="first_name"
+                  value={editValues.first_name}
+                  onChange={handleInputChange}
+                  placeholder="Enter your first name"
+                />
+
+                <label>Last Name:</label>
+                <input
+                  name="last_name"
+                  value={editValues.last_name}
+                  onChange={handleInputChange}
+                  placeholder="Enter your last name"
+                />
+
+                <label>Profile Picture URL:</label>
+                <input
+                  name="avatar_url"
+                  value={editValues.avatar_url}
+                  onChange={handleInputChange}
+                  placeholder="Paste a public image URL (.jpg/.png)"
+                />
+
+                <label>About Me:</label>
+                <textarea
+                  name="bio"
+                  value={editValues.bio}
+                  onChange={handleInputChange}
+                  placeholder="Tell us something about yourself!"
+                />
+
+                <button className="watch-button" onClick={handleSaveProfile}>💾 Save Changes</button>
+                <button className="signout-button" onClick={() => setEditing(false)}>❌ Cancel Editing</button>
               </>
             ) : (
               <>
@@ -193,8 +224,10 @@ function UserProfile() {
                 <p>{profile.bio}</p>
                 <button className="watch-button" onClick={() => setEditing(true)}>✏️ Edit Profile</button>
               </>
-            )}
+              )}
           </div>
+
+
 
          {/* Saved Videos */}
 <div className="profile-sections">
@@ -325,9 +358,10 @@ function UserProfile() {
 
 
 
-          <button className="back-button" onClick={() => navigate('/')}>
-            ⬅️ Back to Home
-          </button>
+<button className="back-home-btn" onClick={() => navigate("/")}>
+  🏠 Back to Home
+</button>
+
 
           <button className="signout-button" onClick={handleSignOut}>
             🚪 Sign Out
