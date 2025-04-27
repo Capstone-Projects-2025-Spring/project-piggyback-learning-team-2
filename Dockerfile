@@ -13,7 +13,7 @@ RUN apt-get update && apt-get install -y \
 
 # Install Python dependencies
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements_render.txt
+RUN pip install --no-cache-dir -r render_requirements.txt
 
 # Copy application
 COPY . .
