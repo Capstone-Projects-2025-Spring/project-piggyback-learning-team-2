@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
-const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || 'https://project-piggyback-learning-team-2-hnwm.onrender.com'
+const API_BASE_URL = '';
 
 function VideoProcessor({ videoUrl, onProcessingComplete }) {
     const [status, setStatus] = useState('idle');
@@ -41,7 +41,7 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
             };
 
             // Log the request
-            console.log('Sending request to:', `${API_BASE_URL}/api/v1/video/process/${videoId}`);
+            console.log('Sending request to:', `/api/v1/video/process/${videoId}`);
             console.log('With payload:', {
                 youtube_url: videoUrl,
                 full_analysis: true,
@@ -51,7 +51,7 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
 
             // Start the initial processing request
             const response = await axios.post(
-                `${API_BASE_URL}/api/v1/video/process/${videoId}`,
+                `/api/v1/video/process/${videoId}`,
                 {
                     youtube_url: videoUrl,
                     full_analysis: true,
@@ -116,7 +116,7 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
         const interval = setInterval(async () => {
             try {
                 // This endpoint both checks status AND triggers the next processing step
-                const response = await axios.get(`${API_BASE_URL}/api/v1/video/polling/${videoId}`);
+                const response = await axios.get(`/api/v1/video/polling/${videoId}`);
                 const result = response.data;
 
                 // Update UI based on status
@@ -166,7 +166,7 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
         if (!processingId) return;
 
         try {
-            await axios.post(`${API_BASE_URL}/api/v1/video/cancel/${processingId}`);
+            await axios.post(`/api/v1/video/cancel/${processingId}`);
             setStatus('cancelled');
 
             // Stop polling

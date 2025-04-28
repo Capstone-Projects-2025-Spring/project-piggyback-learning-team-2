@@ -24,8 +24,6 @@ logger = logging.getLogger(__name__)
 # Initialize FastAPI app
 app = FastAPI()
 
-app.include_router(yolo_router)
-
 # Register database models
 db_models.Base.metadata.create_all(bind=engine)
 
@@ -42,6 +40,15 @@ app.add_middleware(
     expose_headers=["*"],
     # Add preflight request cache duration to improve performance
     max_age=86400)
+
+@app.middleware("http")
+async def add_cors_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["Access-Control-Allow-Origin"] = "*"
+    response.headers["Access-Control-Allow-Credentials"] = "true"
+    response.headers["Access-Control-Allow-Methods"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "*"
+    return response
 
 # Include routers
 app.include_router(crud_test.router)
