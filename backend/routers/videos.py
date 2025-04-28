@@ -122,46 +122,36 @@ def get_redis_client():
             retry_on_timeout=True,
             health_check_interval=30
         )
-        # Test connection immediately
-        if not client.ping():
-            raise ConnectionError("Redis ping failed")
+        # Add this ping test to verify connection works
+        client.ping()  # This will raise an exception if connection fails
+        logger.info("Redis connection successful")
         return client
     except Exception as e:
         logger.error(f"Redis connection failed: {e}")
         return None
 
+# In videos.py, modify the state handling:
 def get_processing_state_from_redis(video_id: str) -> Dict:
-    """Get processing state with validation"""
-    redis_client = get_redis_client()
-
-    # Fallback to in-memory if Redis not available
-    if not redis_client:
-        state = processing_results.get(video_id, {})
-        if not state:
-            logger.warning(f"No in-memory state for {video_id}")
-        return state
-
+    """Get processing state with better fallback handling"""
     try:
+        redis_client = get_redis_client()
+        if not redis_client:
+            return processing_results.get(video_id, {})
+
         key = f"{Config.REDIS_KEY_PREFIX}{video_id}"
         state_json = redis_client.get(key)
 
-        if not state_json:
-            logger.warning(f"No Redis state for {video_id}")
-            return processing_results.get(video_id, {})
+        if state_json:
+            try:
+                return json.loads(state_json)
+            except json.JSONDecodeError:
+                logger.error(f"Invalid JSON in Redis for {video_id}")
 
-        state = json.loads(state_json)
+        # Fallback to in-memory if Redis fails
+        return processing_results.get(video_id, {})
 
-        # Validate state structure
-        if not isinstance(state, dict):
-            raise ValueError(f"Invalid state format for {video_id}")
-
-        return state
-
-    except json.JSONDecodeError:
-        logger.error(f"Failed to decode state for {video_id}")
-        return {}
     except Exception as e:
-        logger.error(f"Error getting state for {video_id}: {e}")
+        logger.error(f"Error getting Redis state: {e}")
         return processing_results.get(video_id, {})
 
 def save_processing_state_to_redis(video_id: str, state: Dict):
@@ -595,6 +585,7 @@ async def quick_youtube_processing(video_id: str, youtube_url: str, title: str) 
 
 # API Endpoints
 @router.on_event("startup")
+# In videos.py, modify the Redis initialization:
 async def initialize_cache():
     redis_url = os.getenv("REDIS_URL")
     if not redis_url:
@@ -603,25 +594,22 @@ async def initialize_cache():
         return
 
     try:
-        # Simplified Redis connection
         redis_client = redis.Redis.from_url(
             redis_url,
             decode_responses=True,
             socket_timeout=10,
-            socket_connect_timeout=10
+            socket_connect_timeout=10,
+            health_check_interval=30,
+            retry_on_timeout=True
         )
 
-        # Test connection
-        if not redis_client.ping():
-            raise ConnectionError("Redis ping failed")
+        # Test connection with a simple command
+        redis_client.ping()
 
-        # Initialize FastAPI cache with Redis
         FastAPICache.init(RedisBackend(redis_client), prefix="video-cache")
         logger.info("✅ Redis connected successfully")
-
     except Exception as e:
         logger.error(f"❌ Redis connection failed: {e}")
-        logger.info("⚠️ Falling back to in-memory cache")
         FastAPICache.init(InMemoryBackend(), prefix="video-cache-fallback")
 
 @router.post("/process/{video_id}")
@@ -631,6 +619,7 @@ async def start_video_processing(
         background_tasks: BackgroundTasks,
         request: Request
 ):
+    logger.info(f"Starting processing for {video_id}")
     try:
         # Validate input
         if not payload.youtube_url:
@@ -691,6 +680,7 @@ async def start_video_processing(
         )
 
     except HTTPException:
+        logger.error(f"Processing failed: {str(e)}", exc_info=True)
         raise
     except Exception as e:
         logger.error(f"Processing failed: {str(e)}", exc_info=True)

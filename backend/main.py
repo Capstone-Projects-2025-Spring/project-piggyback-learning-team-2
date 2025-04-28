@@ -108,7 +108,7 @@ async def preflight_handler(request: Request, rest_of_path: str):
             "Access-Control-Max-Age": "86400"
         }
     )
-'''
+
 
 @app.options("/api/v1/video/process/{video_id}")
 async def options_process(video_id: str):
@@ -120,6 +120,7 @@ async def options_process(video_id: str):
             "Access-Control-Allow-Headers": "*",
         }
     )
+'''
 
 # Explicit error handling for API endpoint
 @app.exception_handler(Exception)

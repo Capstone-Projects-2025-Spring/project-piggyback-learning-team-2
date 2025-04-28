@@ -28,10 +28,20 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
             const videoId = generateProcessingId();
             setProcessingId(videoId);
 
+            const processUrl = `${API_BASE_URL}/api/v1/video/process/${videoId}`;
+            console.log(`Calling API endpoint: ${processUrl}`);
+
             console.log(`Starting video processing with ID: ${videoId}`);
             console.log(`Using API base URL: ${API_BASE_URL}`);
 
-            // Configure axios for this request with more robust CORS settings
+            //Health check
+            try {
+                const healthCheck = await axios.get(`${API_BASE_URL}/health`);
+                console.log("Health check response:", healthCheck.data);
+            } catch (healthErr) {
+                console.error("Health check failed:", healthErr);
+                // Continue anyway
+            }
 
             /*
             const axiosConfig = {
@@ -78,7 +88,7 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
 
             // Start the initial processing request
             const response = await axios.post(
-                `${API_BASE_URL}/api/v1/video/process/${videoId}`,
+                processUrl,
                 {
                     youtube_url: videoUrl,
                     full_analysis: true,
@@ -105,6 +115,14 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
             }
         } catch (err) {
             console.error('Failed to start processing:', err);
+            console.error('API call failed:', err);
+            
+            console.error('Request details:', {
+                url: `${API_BASE_URL}/api/v1/video/process/${videoId}`,
+                status: err.response?.status,
+                statusText: err.response?.statusText,
+                data: err.response?.data
+            });
 
             // More specific error handling
             let errorMessage = err.response?.data?.detail ||
