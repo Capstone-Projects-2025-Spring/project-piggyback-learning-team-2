@@ -170,7 +170,7 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
                 const response = await axios.get(
                     `${API_BASE_URL}/api/v1/video/polling/${videoId}`,
                     {
-                        timeout: 5000,
+                        timeout: 600000,
                         headers: { 'Accept': 'application/json' }
                     }
                 );
