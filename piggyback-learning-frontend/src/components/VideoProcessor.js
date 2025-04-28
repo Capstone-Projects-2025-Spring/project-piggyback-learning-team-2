@@ -28,7 +28,7 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
             setProcessingId(videoId);
 
             // Start the initial processing request
-            const response = await axios.post(`${API_BASE_URL}/api/video/process/${videoId}`, {
+            const response = await axios.post(`${API_BASE_URL}/api/v1/video/process/${videoId}`, {
                 youtube_url: videoUrl,
                 full_analysis: true,
                 num_questions: 5,
@@ -62,7 +62,7 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
         const interval = setInterval(async () => {
             try {
                 // This endpoint both checks status AND triggers the next processing step
-                const response = await axios.get(`${API_BASE_URL}/api/video/polling/${videoId}`);
+                const response = await axios.get(`${API_BASE_URL}/api/v1/video/polling/${videoId}`);
                 const result = response.data;
 
                 // Update UI based on status
@@ -103,7 +103,7 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
         if (!processingId) return;
 
         try {
-            await axios.post(`${API_BASE_URL}/api/video/cancel/${processingId}`);
+            await axios.post(`${API_BASE_URL}/api/v1/video/cancel/${processingId}`);
             setStatus('cancelled');
 
             // Stop polling
