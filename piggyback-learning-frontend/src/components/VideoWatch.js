@@ -548,16 +548,15 @@ export default function InteractiveVideoQuiz() {
   // Answer handling
   const handleAnswer = async (label) => {
     if (!quiz.currentQuestion?.id || !label) return;
-
+  
     const questionId = quiz.currentQuestion.id;
     const correctAnswer = quiz.currentQuestion.answer || quiz.currentQuestion.options?.[0] || "";
     const isCorrect = label.toLowerCase() === correctAnswer.toLowerCase();
-
+  
     // Check if this is the first time answering this question
     const isFirstInteraction = !quiz.answeredQuestions[questionId] &&
-        (!quiz.questionHistory || !quiz.questionHistory[questionId]);
-
-    // Only update stats if this is the first interaction
+      (!quiz.questionHistory || !quiz.questionHistory[questionId]);
+  
     if (isFirstInteraction) {
       const newStats = {
         ...session.stats,
@@ -566,10 +565,8 @@ export default function InteractiveVideoQuiz() {
         total: session.stats.total + 1
       };
       updateSessionState({ stats: newStats });
-
     }
-
-    // Track this answer
+  
     const newAnsweredQuestions = {
       ...quiz.answeredQuestions,
       [questionId]: {
@@ -581,22 +578,56 @@ export default function InteractiveVideoQuiz() {
         statsUpdated: true
       }
     };
-
-    updateQuizState({
-      answeredQuestions: newAnsweredQuestions,
-      feedback: isCorrect ? "✅ Correct!" : "❌ That's not correct. Try again!",
-      retryOption: !isCorrect
-    });
-
+  
     if (isCorrect) {
+      updateQuizState({
+        answeredQuestions: newAnsweredQuestions,
+        feedback: "✅ Correct!",
+        retryOption: false
+      });
+  
       setTimeout(() => {
         updateQuizState({ currentQuestion: null, detections: [], feedback: "" });
         playVideo();
       }, 2000);
+    } else {
+      // ❌ Wrong answer -> fetch GPT feedback
+      updateQuizState({
+        answeredQuestions: newAnsweredQuestions,
+        feedback: "❌ Checking why it's wrong...",  // Temporary
+        retryOption: false
+      });
+  
+      try {
+        const explainRes = await fetch(`${BACKEND_URL}/api/v1/video/explain`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            answer: correctAnswer,
+            selected_label: label,
+            question: quiz.currentQuestion.text,
+            options: quiz.currentQuestion.options
+          })
+        });
+  
+        const explainData = await explainRes.json();
+        const gptMessage = explainData?.message || "⚠️ Could not explain the wrong answer.";
+  
+        updateQuizState({
+          feedback: `❌ ${gptMessage}`,
+          retryOption: true
+        });
+  
+      } catch (error) {
+        console.error("GPT feedback error:", error);
+        updateQuizState({
+          feedback: "❌ Wrong answer. GPT explanation failed.",
+          retryOption: true
+        });
+      }
     }
   };
-
-
+  
   // Skip question
   const handleSkip = () => {
     if (quiz.currentQuestion) {
