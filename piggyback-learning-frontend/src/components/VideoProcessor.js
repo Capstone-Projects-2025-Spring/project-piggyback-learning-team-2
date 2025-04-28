@@ -116,12 +116,13 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
         } catch (err) {
             console.error('Failed to start processing:', err);
             console.error('API call failed:', err);
-            
+
             console.error('Request details:', {
-                url: `${API_BASE_URL}/api/v1/video/process/${videoId}`,
+                url: `${API_BASE_URL}/api/v1/video/process/${processingId}`, // Using state
                 status: err.response?.status,
                 statusText: err.response?.statusText,
-                data: err.response?.data
+                data: err.response?.data,
+                videoUrl: videoUrl // Adding context about what video failed
             });
 
             // More specific error handling
@@ -148,7 +149,7 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
             setError(errorMessage);
             setStatus('error');
         }
-    }, [videoUrl, generateProcessingId, API_BASE_URL]);
+    }, [videoUrl, generateProcessingId, API_BASE_URL, processingId]);
 
     // Start polling for updates and triggering next steps
     const startPolling = useCallback((videoId) => {
