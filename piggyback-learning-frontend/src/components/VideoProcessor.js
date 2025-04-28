@@ -28,25 +28,49 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
             setProcessingId(videoId);
 
             // Start the initial processing request
-            const response = await axios.post(`${API_BASE_URL}/api/v1/video/process/${videoId}`, {
-                youtube_url: videoUrl,
-                full_analysis: true,
-                num_questions: 5,
-                keyframe_interval: 30
-            });
+            const response = await axios.post(
+                `${API_BASE_URL}/api/v1/video/process/${videoId}`,
+                {
+                    youtube_url: videoUrl,
+                    full_analysis: true,
+                    num_questions: 5,
+                    keyframe_interval: 30
+                },
+                {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                }
+            );
 
-            if (response.data.status === 'processing' || response.data.status === 'already_processing') {
+            // Handle different response statuses
+            if (response.data.status === 'already_processing') {
                 setStatus('processing');
+                startPolling(videoId);
+                return;
+            }
 
-                // Start polling for updates
+            if (response.data.status === 'processing') {
+                setStatus('processing');
                 startPolling(videoId);
             } else {
-                setError('Failed to start processing');
-                setStatus('error');
+                throw new Error(response.data.error || 'Failed to start processing');
             }
         } catch (err) {
             console.error('Failed to start processing:', err);
-            setError(err.response?.data?.detail || err.message);
+
+            // More specific error handling
+            let errorMessage = err.response?.data?.detail ||
+                err.response?.data?.error ||
+                err.message ||
+                'Unknown processing error';
+
+            // Special case for CORS errors
+            if (err.message.includes('Network Error') && !err.response) {
+                errorMessage = 'Network error - please check CORS configuration';
+            }
+
+            setError(errorMessage);
             setStatus('error');
         }
     }, [videoUrl, generateProcessingId]);
@@ -57,6 +81,11 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
         if (pollingInterval) {
             clearInterval(pollingInterval);
         }
+
+        axios.interceptors.request.use(request => {
+            console.log('Starting Request', request);
+            return request;
+        });
 
         // Set up new polling interval
         const interval = setInterval(async () => {
@@ -88,6 +117,15 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
                     clearInterval(interval);
                     setStatus('cancelled');
                 }
+
+                axios.interceptors.response.use(response => {
+                    console.log('Response:', response);
+                    return response;
+                }, error => {
+                    console.error('Error Response:', error.response);
+                    return Promise.reject(error);
+                });
+
                 // Otherwise continue polling
             } catch (err) {
                 console.error('Polling error:', err);
