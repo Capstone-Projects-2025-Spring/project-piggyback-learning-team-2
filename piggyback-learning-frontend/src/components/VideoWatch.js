@@ -1,6 +1,7 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from './supabaseClient';
+import VideoProcessor from './VideoProcessor'; // Import the VideoProcessor component
 import '../styles/VideoWatch.css';
 import ReactPlayer from 'react-player';
 import logo from '../images/Mob_Iron_Hog.png';
@@ -67,21 +68,13 @@ export default function InteractiveVideoQuiz() {
 
   // State management
   const [state, setState] = useState({
-    processing: {
-      status: isProcessing ? 'processing' : 'idle',
-      progress: '',
-      elapsed: 0,
-      remaining: null,
-      error: null,
-      pollCount: 0
-    },
     quiz: {
       questions: [],
       currentQuestion: null,
       detections: [],
       feedback: "",
       answeredQuestions: {},
-      questionHistory: {},  // Add this line
+      questionHistory: {},
       retryOption: false,
       showSummary: false
     },
@@ -103,6 +96,25 @@ export default function InteractiveVideoQuiz() {
         startTime: null,
         endTime: null,
       }
+    }
+  });
+
+  // Initialize VideoProcessor hook
+  const {
+    startProcessing,
+    cancelProcessing,
+    status: processingStatus,
+    progress: processingProgress,
+    error: processingError,
+    questions: processedQuestions,
+    processingId
+  } = VideoProcessor({
+    videoUrl,
+    onProcessingComplete: (questions) => {
+      // When processing completes, update the quiz state with the new questions
+      updateQuizState({ questions });
+      localStorage.setItem(`video_${videoId}_questions`, JSON.stringify(questions));
+      playVideo();
     }
   });
 
@@ -150,11 +162,8 @@ export default function InteractiveVideoQuiz() {
       console.error('Error saving quiz results:', error.message);
     } else {
       console.log('Quiz results saved successfully!');
-      // Add this line to trigger a refresh
-      //navigate('/profile', { state: { refresh: true } });
     }
   };
-
 
   const handleGoToProfile = async () => {
     await saveQuizResults();
@@ -163,11 +172,9 @@ export default function InteractiveVideoQuiz() {
     }, 1000);
   };
 
-
-
   // Derived state for easier access
   const {
-    processing, quiz, player, session
+    quiz, player, session
   } = state;
 
   useEffect(() => {
@@ -181,7 +188,6 @@ export default function InteractiveVideoQuiz() {
 
   const updateQuizState = (value) => updateState('quiz', value);
   const updatePlayerState = (value) => updateState('player', value);
-  const updateProcessingState = (value) => updateState('processing', value);
   const updateSessionState = (value) => updateState('session', value);
 
   // Video control functions
@@ -238,160 +244,20 @@ export default function InteractiveVideoQuiz() {
     pauseVideo();
   }, [getCurrentTime, pauseVideo]);
 
-
-  // Processing cancellation function
-  const handleCancelProcessing = async () => {
-    try {
-      console.log(`Cancelling processing for ${videoId}`);
-
-      // First update UI immediately for better responsiveness
-      updateProcessingState({
-        status: 'cancelling',
-        progress: 'Cancelling processing...'
-      });
-
-      const response = await fetch(`${BACKEND_URL}/api/v1/video/cancel/${videoId}`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'}
-      });
-
-      if (response.ok) {
-        // Update the local state to reflect cancellation
-        updateProcessingState({
-          status: 'cancelled',
-          progress: 'Processing cancelled'
-        });
-
-        // Force a page reload after a short delay
-        setTimeout(() => {
-          window.location.href = '/'; // Redirect to home page after cancellation
-        }, 2000);
-      } else {
-        throw new Error(`Cancel failed: ${response.status}`);
-      }
-    } catch (error) {
-      console.error("Cancellation error:", error);
-
-      // Even if the cancellation API fails, update the UI to show cancellation
-      updateProcessingState({
-        status: 'cancelled',
-        progress: 'Processing cancelled (forced)',
-        error: `Failed to cancel: ${error.message}`
-      });
-
-      // Redirect anyway
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 2000);
-    }
-  };
-
-  // Processing effects
+  // Start processing if needed
   useEffect(() => {
-    if (!isProcessing || !videoId) return;
+    if (isProcessing && videoId && videoUrl && processingStatus === 'idle') {
+      startProcessing();
+    }
+  }, [isProcessing, videoId, videoUrl, processingStatus, startProcessing]);
 
-    let pollInterval = null;
-    let consecutiveErrors = 0;
-    const MAX_ERRORS = 5;
-    const POLL_INTERVAL_MS = 2000;
-    const MAX_POLL_COUNT = 150;
-
-    const processVideo = async () => {
-      updateProcessingState({
-        status: 'processing',
-        progress: 'Starting...',
-        elapsed: 0,
-        remaining: null
-      });
-
-      try {
-        const response = await fetch(`${BACKEND_URL}/api/v1/video/process/${videoId}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            youtube_url: videoUrl,
-            title: videoTitle,
-            full_analysis: true,
-            num_questions: 5,
-            keyframe_interval: 30
-          })
-        });
-
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      } catch (error) {
-        console.error("Processing error:", error);
-        updateProcessingState({ error: error.message });
-      }
-    };
-
-    const pollResults = async () => {
-      try {
-        updateProcessingState(prev => ({ pollCount: prev.pollCount + 1 }));
-
-        if (processing.pollCount > MAX_POLL_COUNT) {
-          clearInterval(pollInterval);
-          updateProcessingState({ error: "Processing timeout. Please try again later." });
-          return;
-        }
-
-        const resultsResponse = await fetch(`${BACKEND_URL}/api/v1/video/results/${videoId}`, {
-          method: 'GET',
-          cache: 'no-store'
-        });
-
-        if (!resultsResponse.ok) throw new Error(`HTTP error! status: ${resultsResponse.status}`);
-
-        const resultsData = await resultsResponse.json();
-        consecutiveErrors = 0;
-
-        updateProcessingState({
-          ...resultsData,
-          status: resultsData.status || processing.status
-        });
-
-        if (resultsData.status === 'complete') {
-          clearInterval(pollInterval);
-
-          if (resultsData.questions?.length) {
-            const validatedQuestions = resultsData.questions.map((q, index) => ({
-              id: q.id || `question-${index}`,
-              text: q.text || "What is shown in this frame?",
-              type: q.type || "text",
-              options: q.options || [],
-              answer: q.answer || "",
-              timestamp: q.timestamp || 0,
-              objects: q.objects || []
-            }));
-
-            updateQuizState({ questions: validatedQuestions });
-            localStorage.setItem(`video_${videoId}_questions`, JSON.stringify(validatedQuestions));
-            playVideo();
-          } else {
-            updateProcessingState({ error: "No questions were generated. Please try again." });
-          }
-        } else if (resultsData.status === 'error') {
-          clearInterval(pollInterval);
-          updateProcessingState({ error: resultsData.error || "Processing failed" });
-        }
-
-      } catch (error) {
-        console.error("Polling error:", error);
-        if (++consecutiveErrors >= MAX_ERRORS) {
-          clearInterval(pollInterval);
-          updateProcessingState({ error: "Connection to server lost. Please refresh the page." });
-        }
-      }
-    };
-
-    processVideo();
-    pollInterval = setInterval(pollResults, POLL_INTERVAL_MS);
-    const initialPollTimeout = setTimeout(pollResults, 1000);
-
-    return () => {
-      clearInterval(pollInterval);
-      clearTimeout(initialPollTimeout);
-    };
-  }, [isProcessing, videoId, videoUrl, videoTitle, BACKEND_URL]);
+  // Update question state when processor provides questions
+  useEffect(() => {
+    if (processedQuestions && processedQuestions.length > 0) {
+      updateQuizState({ questions: processedQuestions });
+      localStorage.setItem(`video_${videoId}_questions`, JSON.stringify(processedQuestions));
+    }
+  }, [processedQuestions, videoId]);
 
   // Load cached questions
   useEffect(() => {
@@ -455,7 +321,7 @@ export default function InteractiveVideoQuiz() {
     if (nextQuestion) {
       showQuestion(nextQuestion);
     }
-  }, [player, quiz, getCurrentTime, pauseVideo, showQuestion, updateQuizState]);
+  }, [player, quiz, getCurrentTime, showQuestion]);
 
   // Lets users rewind video
   const handleWatchAgain = () => {
@@ -699,8 +565,6 @@ export default function InteractiveVideoQuiz() {
     updateQuizState({ showSummary: true });
   };
 
-
-
   // Detection box calculation for object detection
   const calculateDetectionBoxStyle = (det) => {
     const wrapper = videoWrapperRef.current;
@@ -783,8 +647,8 @@ export default function InteractiveVideoQuiz() {
     updateSessionState({ start: Date.now(), stats: { ...session.stats, startTime: Date.now() } });
   }, []);
 
-  const [ setSavedVideos] = useState([]);
-  const [ setProgressStats] = useState({});
+  const [setSavedVideos] = useState([]);
+  const [setProgressStats] = useState({});
 
   const fetchSavedVideos = async (userId) => {
     const { data, error } = await supabase
@@ -864,20 +728,18 @@ export default function InteractiveVideoQuiz() {
             </div>
         )}
 
-        {processing.status === 'processing' && (
+        {processingStatus === 'processing' || processingStatus === 'starting' && (
             <div className="processing-overlay">
               <div className="spinner"></div>
               <h3>Processing Video: {videoTitle}</h3>
-              {processing.progress && <p>Step: {processing.progress}</p>}
-              <p>Elapsed: {formatTime(processing.elapsed || 0)}</p>
-              {processing.remaining && <p>Estimated remaining: {formatTime(processing.remaining)}</p>}
-              <button onClick={handleCancelProcessing} className="cancel-button">
+              {processingProgress && <p>Step: {processingProgress}</p>}
+              <button onClick={cancelProcessing} className="cancel-button">
                 Cancel Processing
               </button>
             </div>
         )}
 
-        {processing.status === 'cancelling' && (
+        {processingStatus === 'cancelling' && (
             <div className="processing-overlay">
               <div className="spinner"></div>
               <h3>Cancelling Processing...</h3>
@@ -885,10 +747,10 @@ export default function InteractiveVideoQuiz() {
             </div>
         )}
 
-        {processing.error && (
+        {processingError && (
             <div className="error-overlay">
               <h3>Processing Error</h3>
-              <p>{processing.error}</p>
+              <p>{processingError}</p>
               <button onClick={() => window.location.reload()}>Reload Page</button>
               <button onClick={() => navigate('/')}>Go Home</button>
               <button onClick={() => saveCurrentVideo(videoUrl, videoTitle)}>💾 Save This Video</button>

@@ -19,7 +19,7 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor, Future
 from functools import partial
 from youtube_transcript_api import YouTubeTranscriptApi
-from typing import List, Dict, Optional
+from typing import List, Dict, Optional, Any
 import math
 import requests
 import logging
@@ -27,6 +27,8 @@ from PIL import Image, ImageOps
 import io
 from io import BytesIO
 import threading
+import json
+import uuid
 
 from ..gpt_helper import generate_questions_from_transcript, generate_mcq_from_labels
 from ..youtube import retreiveYoutubeMetaData
@@ -63,6 +65,16 @@ class Config:
         "animal": "Welcome to the wild! Discover amazing animals...",
         "vehicle_names": "Let's learn vehicle names: car, jeep..."
     }
+    # Maximum processing time in seconds before we stop a task
+    MAX_PROCESSING_TIME = 20
+    # How many keyframes to process per batch
+    KEYFRAMES_PER_BATCH = 1
+    # Redis key prefix for storing processing state
+    REDIS_KEY_PREFIX = "video_processing:"
+    # Maximum number of questions to generate per transcript section
+    QUESTIONS_PER_SECTION = 1
+    # Webhook URL for calling back when processing is complete (if provided)
+    WEBHOOK_URL = os.getenv("WEBHOOK_URL", "")
 
 # Initialize FastAPI router
 router = APIRouter()
@@ -78,12 +90,70 @@ class VideoInput(BaseModel):
     full_analysis: bool = False
     num_questions: int = 5
     keyframe_interval: int = 30
+    webhook_url: Optional[str] = None
+
+class ProcessingStep(BaseModel):
+    step_id: str
+    video_id: str
+    step_type: str
+    params: Dict[str, Any]
+    status: str = "pending"
 
 class AnswerInput(BaseModel):
     answer: str
     question_id: str
     selected_label: str
     timestamp: float
+
+# Redis Helper Functions
+def get_redis_client():
+    """Get Redis client with error handling"""
+    redis_url = os.getenv("REDIS_URL")
+    if not redis_url:
+        return None
+
+    try:
+        return redis.Redis.from_url(
+            redis_url,
+            decode_responses=True,
+            socket_timeout=10,
+            socket_connect_timeout=10,
+            ssl_cert_reqs=None
+        )
+    except Exception as e:
+        logger.error(f"Redis connection error: {str(e)}")
+        return None
+
+def get_processing_state_from_redis(video_id: str) -> Dict:
+    """Get processing state from Redis"""
+    redis_client = get_redis_client()
+    if not redis_client:
+        return processing_results.get(video_id, {})
+
+    key = f"{Config.REDIS_KEY_PREFIX}{video_id}"
+    state_json = redis_client.get(key)
+    if not state_json:
+        return processing_results.get(video_id, {})
+
+    try:
+        return json.loads(state_json)
+    except:
+        return processing_results.get(video_id, {})
+
+def save_processing_state_to_redis(video_id: str, state: Dict):
+    """Save processing state to Redis"""
+    redis_client = get_redis_client()
+    if not redis_client:
+        processing_results[video_id] = state
+        return
+
+    key = f"{Config.REDIS_KEY_PREFIX}{video_id}"
+    try:
+        redis_client.set(key, json.dumps(state), ex=86400)  # 24 hour expiry
+        processing_results[video_id] = state  # Also keep in memory
+    except Exception as e:
+        logger.error(f"Failed to save state to Redis: {str(e)}")
+        processing_results[video_id] = state
 
 # Helper Functions
 async def get_transcript_with_retry(video_id: str, retries=3) -> str:
@@ -117,8 +187,10 @@ def process_image(image_base64: str) -> str:
 
 async def update_processing_state(video_id: str, **kwargs):
     """Helper to update processing state"""
-    if video_id in processing_results:
-        processing_results[video_id].update(kwargs)
+    state = get_processing_state_from_redis(video_id)
+    if state:
+        state.update(kwargs)
+        save_processing_state_to_redis(video_id, state)
 
 async def run_in_executor(func, *args):
     """Wrapper for running sync functions in executor"""
@@ -164,12 +236,110 @@ def extract_video_id(url: str) -> str:
             return match.group(1)
     raise HTTPException(status_code=400, detail="Invalid YouTube URL format")
 
-# Processing Functions
+async def send_webhook_notification(webhook_url: str, data: Dict):
+    """Send webhook notification with the processing result"""
+    if not webhook_url:
+        return
+
+    try:
+        headers = {"Content-Type": "application/json"}
+        async with asyncio.timeout(10):  # 10 second timeout for webhook
+            response = await run_in_executor(
+                lambda: requests.post(webhook_url, json=data, headers=headers)
+            )
+            if response.status_code >= 400:
+                logger.warning(f"Webhook notification failed with status {response.status_code}")
+    except Exception as e:
+        logger.error(f"Webhook notification error: {str(e)}")
+
+# Processing Functions - Split into smaller chunks
+async def fetch_transcript(video_id: str) -> Dict:
+    """Step 1: Fetch and process transcript"""
+    try:
+        with asyncio.timeout(Config.MAX_PROCESSING_TIME):
+            await update_processing_state(video_id, progress="Fetching transcript")
+
+            # Get transcript
+            transcript = await get_transcript_with_retry(video_id)
+            if not transcript:
+                raise HTTPException(status_code=404, detail="No transcript available")
+
+            # Save to state
+            await update_processing_state(
+                video_id,
+                status="transcript_ready",
+                transcript=transcript,
+                progress="Transcript ready"
+            )
+
+            return {"status": "success", "transcript": transcript}
+
+    except asyncio.TimeoutError:
+        logger.error(f"Transcript fetch timed out for {video_id}")
+        await update_processing_state(
+            video_id,
+            status="error",
+            error="Transcript fetch timed out"
+        )
+        return {"status": "error", "error": "Timeout"}
+    except Exception as e:
+        logger.error(f"Transcript fetch error: {str(e)}")
+        await update_processing_state(
+            video_id,
+            status="error",
+            error=f"Transcript error: {str(e)}"
+        )
+        return {"status": "error", "error": str(e)}
+
 async def generate_questions_for_section(title: str, section_text: str) -> Dict:
     """Generate questions for a transcript section"""
     return await run_in_executor(
         partial(generate_questions_from_transcript, title, section_text)
     )
+
+async def process_transcript_section(video_id: str, section_index: int, start_time: float, end_time: float, transcript: List[Dict], title: str) -> Dict:
+    """Step 2: Process a single transcript section"""
+    try:
+        with asyncio.timeout(Config.MAX_PROCESSING_TIME):
+            await update_processing_state(
+                video_id,
+                progress=f"Processing transcript section {section_index+1}"
+            )
+
+            # Get section text
+            section = [t for t in transcript if start_time <= t['start'] <= end_time]
+            section_text = " ".join([t['text'] for t in section])
+
+            if not section_text:
+                return {"status": "empty", "section_index": section_index}
+
+            # Generate questions
+            question = await generate_questions_for_section(title, section_text)
+
+            # Add timestamp
+            if question:
+                question['timestamp'] = start_time + (end_time - start_time) / 2 + 5
+                question['section_index'] = section_index
+
+            # Update state with this section's questions
+            state = get_processing_state_from_redis(video_id)
+            section_questions = state.get("section_questions", [])
+            if question:
+                section_questions.append(question)
+            await update_processing_state(
+                video_id,
+                section_questions=section_questions,
+                progress=f"Completed section {section_index+1}"
+            )
+
+            return {"status": "success", "question": question, "section_index": section_index}
+
+    except asyncio.TimeoutError:
+        logger.error(f"Section processing timed out for {video_id} section {section_index}")
+        return {"status": "timeout", "section_index": section_index}
+    except Exception as e:
+        logger.error(f"Section processing error: {str(e)}")
+        return {"status": "error", "error": str(e), "section_index": section_index}
 
 async def process_keyframe(video_id: str, timestamp: int) -> Optional[Dict]:
     """Process a single keyframe and generate question with improved object detection"""
@@ -226,210 +396,178 @@ async def process_keyframe(video_id: str, timestamp: int) -> Optional[Dict]:
         logger.error(f"Keyframe processing failed: {str(e)}")
         return None
 
-async def process_transcript_sections(transcript: List[Dict], title: str, num_questions: int) -> List[Dict]:
-    """Process transcript sections with time adjustments for MCQs"""
-    questions = []
-    total_duration = transcript[-1]['start'] + transcript[-1]['duration']
-    section_length = total_duration / num_questions
-
-    for i in range(num_questions):
-        start_time = i * section_length
-        end_time = (i + 1) * section_length
-
-        section = [t for t in transcript if start_time <= t['start'] <= end_time]
-        section_text = " ".join([t['text'] for t in section])
-
-        if section_text:
-            question = await generate_questions_for_section(title, section_text)
-            # Add 5 seconds to MCQ questions only
-            if question['type'] != 'object_detection':
-                question['timestamp'] = start_time + (section_length / 2) + 5
-            else:
-                question['timestamp'] = start_time + (section_length / 2)
-            questions.append(question)
-
-    return questions
-
-# Main Processing Functions
-async def run_full_analysis(
-        video_id: str,
-        youtube_url: str,
-        title: str,
-        num_questions: int,
-        keyframe_interval: int
-):
-    """Full analysis pipeline"""
-    entry = processing_results[video_id]
-    cancellation_event = threading.Event()
-    cancellation_events[video_id] = cancellation_event
-
+async def process_keyframe_batch(video_id: str, batch_index: int, timestamps: List[int]) -> Dict:
+    """Step 3: Process a batch of keyframes"""
     try:
-        # Set a shorter timeout for better responsiveness
-        async with asyncio.timeout(300):  # 5 minutes max
-            # Check for cancellation at every major step
-            await update_processing_state(video_id, progress="Fetching transcript")
-            if cancellation_event.is_set():
-                logger.info(f"Cancellation detected at transcript stage for {video_id}")
-                raise asyncio.CancelledError()
+        with asyncio.timeout(Config.MAX_PROCESSING_TIME):
+            await update_processing_state(
+                video_id,
+                progress=f"Processing keyframe batch {batch_index+1}"
+            )
 
-            transcript = await get_transcript_with_retry(video_id)
-            if not transcript:
-                raise HTTPException(status_code=404, detail="No transcript available")
-
-            # Process transcript in smaller chunks for better cancellation response
-            await update_processing_state(video_id, progress="Generating transcript questions")
-            if cancellation_event.is_set():
-                logger.info(f"Cancellation detected at question generation stage for {video_id}")
-                raise asyncio.CancelledError()
-
-            # Generate questions with better progress updates
-            transcript_questions = []
-            sections_count = min(num_questions, 5)  # Limit sections for faster processing
-            for i in range(sections_count):
-                if cancellation_event.is_set():
-                    raise asyncio.CancelledError()
-
-                progress_msg = f"Generating questions {i+1}/{sections_count}"
-                await update_processing_state(video_id, progress=progress_msg)
-
-                # Process section subset
-                start_idx = i * len(transcript) // sections_count
-                end_idx = (i + 1) * len(transcript) // sections_count
-                section = transcript[start_idx:end_idx]
-
-                section_text = " ".join([t['text'] for t in section])
-                if section_text:
-                    question = await generate_questions_for_section(title, section_text)
-                    question['timestamp'] = round(section[0]['start'] +
-                                                  (section[-1]['start'] + section[-1]['duration'] - section[0]['start']) / 2) + 5
-                    transcript_questions.append(question)
-
-            # Skip keyframe processing if cancelled
-            if cancellation_event.is_set():
-                raise asyncio.CancelledError()
-
-            # Update progress more frequently during keyframe analysis
-            await update_processing_state(video_id, progress="Analyzing keyframes")
+            # Process each keyframe in batch
             keyframe_questions = []
-
-            duration = await get_video_duration(video_id) or 300  # Default 5 min
-            max_keyframes = min(5, math.ceil(duration / keyframe_interval))
-            step = math.ceil((duration - 20) / max_keyframes)  # Leave first 10 seconds
-
-            # Start timestamps from 10 seconds in
-            timestamps = [20 + (i * step) for i in range(max_keyframes)]
-
-            # Process keyframes sequentially with cancellation checks
             for i, timestamp in enumerate(timestamps):
-                if cancellation_event.is_set():
-                    raise asyncio.CancelledError()
-
-                progress_msg = f"Analyzing keyframe {i+1}/{len(timestamps)}"
-                await update_processing_state(video_id, progress=progress_msg)
-
                 question = await process_keyframe(video_id, timestamp)
                 if question:
                     keyframe_questions.append(question)
 
-            # Final results
-            await update_processing_state(video_id, progress="Selecting questions")
+            # Update state with this batch's keyframe questions
+            state = get_processing_state_from_redis(video_id)
+            all_keyframe_questions = state.get("keyframe_questions", [])
+            all_keyframe_questions.extend(keyframe_questions)
+
+            await update_processing_state(
+                video_id,
+                keyframe_questions=all_keyframe_questions,
+                progress=f"Completed keyframe batch {batch_index+1}"
+            )
+
+            return {
+                "status": "success",
+                "questions": keyframe_questions,
+                "batch_index": batch_index
+            }
+
+    except asyncio.TimeoutError:
+        logger.error(f"Keyframe batch timed out for {video_id} batch {batch_index}")
+        return {"status": "timeout", "batch_index": batch_index}
+    except Exception as e:
+        logger.error(f"Keyframe batch error: {str(e)}")
+        return {"status": "error", "error": str(e), "batch_index": batch_index}
+
+async def combine_results(video_id: str, num_questions: int, webhook_url: Optional[str] = None) -> Dict:
+    """Step 4: Combine all results"""
+    try:
+        with asyncio.timeout(Config.MAX_PROCESSING_TIME):
+            await update_processing_state(video_id, progress="Combining results")
+
+            # Get current state
+            state = get_processing_state_from_redis(video_id)
+            section_questions = state.get("section_questions", [])
+            keyframe_questions = state.get("keyframe_questions", [])
+
+            # Combine and sort by timestamp
             all_questions = sorted(
-                [q for q in (transcript_questions + keyframe_questions) if q],
+                [q for q in (section_questions + keyframe_questions) if q],
                 key=lambda x: x['timestamp']
             )[:num_questions]
 
-            await update_processing_state(video_id,
-                                          status="complete",
-                                          questions=all_questions,
-                                          completed_at=datetime.now().isoformat()
-                                          )
+            # Final update
+            result = {
+                "status": "complete",
+                "questions": all_questions,
+                "completed_at": datetime.now().isoformat()
+            }
 
-            # Ensure questions are saved to local storage
-            return all_questions
+            await update_processing_state(video_id, **result)
+
+            # Send webhook if provided
+            if webhook_url:
+                await send_webhook_notification(webhook_url, result)
+
+            return result
 
     except asyncio.TimeoutError:
-        logger.error(f"Processing timed out for video {video_id}")
-        await update_processing_state(video_id,
-                                      status="timeout",
-                                      error="Processing took too long",
-                                      failed_at=datetime.now().isoformat())
-    except asyncio.CancelledError:
-        logger.info(f"Processing cancelled for video {video_id}")
-        await update_processing_state(video_id,
-                                      status="cancelled",
-                                      progress="Processing cancelled",
-                                      cancelled_at=datetime.now().isoformat())
+        logger.error(f"Combining results timed out for {video_id}")
+        await update_processing_state(
+            video_id,
+            status="error",
+            error="Combining results timed out"
+        )
+        return {"status": "error", "error": "Timeout"}
     except Exception as e:
-        logger.error(f"Full analysis failed: {str(e)}")
-        await update_processing_state(video_id,
-                                      status="error",
-                                      error=str(e),
-                                      failed_at=datetime.now().isoformat())
-    finally:
-        # Always clean up
-        if video_id in cancellation_events:
-            del cancellation_events[video_id]
+        logger.error(f"Combining results error: {str(e)}")
+        await update_processing_state(
+            video_id,
+            status="error",
+            error=f"Combining error: {str(e)}"
+        )
+        return {"status": "error", "error": str(e)}
 
-async def run_quick_processing(video_id: str, payload: VideoInput):
-    """Quick processing pipeline"""
-    entry = processing_results[video_id]
-
+async def quick_image_processing(video_id: str, image_base64: str) -> Dict:
+    """Quick processing for image"""
     try:
-        async with asyncio.timeout(600):  # 10 minute timeout
-            if payload.image_base64:
-                # Image processing path
-                await update_processing_state(video_id, progress="Processing image")
-                processed_image = await run_in_executor(process_image, payload.image_base64)
+        with asyncio.timeout(Config.MAX_PROCESSING_TIME):
+            await update_processing_state(video_id, progress="Processing image")
+            processed_image = await run_in_executor(process_image, image_base64)
 
-                await update_processing_state(video_id, progress="Detecting objects")
-                labels = await run_in_executor(detect_objects_from_base64, processed_image)
+            await update_processing_state(video_id, progress="Detecting objects")
+            labels = await run_in_executor(detect_objects_from_base64, processed_image)
 
-                await update_processing_state(video_id, progress="Generating questions")
-                question = await run_in_executor(generate_mcq_from_labels, labels)
+            await update_processing_state(video_id, progress="Generating questions")
+            question = await run_in_executor(generate_mcq_from_labels, labels)
 
-                await update_processing_state(video_id,
-                                              status="complete",
-                                              question=question,
-                                              objects=labels,
-                                              completed_at=datetime.now().isoformat()
-                                              )
+            result = {
+                "status": "complete",
+                "question": question,
+                "objects": labels,
+                "completed_at": datetime.now().isoformat()
+            }
 
-            elif payload.youtube_url:
-                # YouTube processing path
-                await update_processing_state(video_id, progress="Fetching transcript")
-                video_id = extract_video_id(payload.youtube_url)
-                transcript_raw = await get_transcript_with_retry(video_id)
-
-                await update_processing_state(video_id, progress="Processing transcript")
-                transcript = " ".join([t['text'] for t in transcript_raw])[:Config.MAX_TRANSCRIPT_LENGTH]
-
-                await update_processing_state(video_id, progress="Generating questions")
-                question = await run_in_executor(
-                    generate_questions_from_transcript,
-                    payload.title or "Video",
-                    transcript
-                )
-
-                await update_processing_state(video_id,
-                                              status="complete",
-                                              question=question,
-                                              completed_at=datetime.now().isoformat()
-                                              )
+            await update_processing_state(video_id, **result)
+            return result
 
     except asyncio.TimeoutError:
-        logger.error(f"Processing timed out for video {video_id}")
-        await update_processing_state(video_id,
-                                      status="timeout",
-                                      error="Processing took too long",
-                                      failed_at=datetime.now().isoformat()
-                                      )
+        logger.error(f"Image processing timed out for {video_id}")
+        await update_processing_state(
+            video_id,
+            status="error",
+            error="Image processing timed out"
+        )
+        return {"status": "error", "error": "Timeout"}
     except Exception as e:
-        logger.error(f"Quick processing failed: {str(e)}")
-        await update_processing_state(video_id,
-                                      status="error",
-                                      error=str(e),
-                                      failed_at=datetime.now().isoformat()
-                                      )
+        logger.error(f"Image processing error: {str(e)}")
+        await update_processing_state(
+            video_id,
+            status="error",
+            error=f"Image error: {str(e)}"
+        )
+        return {"status": "error", "error": str(e)}
+
+async def quick_youtube_processing(video_id: str, youtube_url: str, title: str) -> Dict:
+    """Quick processing for YouTube video"""
+    try:
+        with asyncio.timeout(Config.MAX_PROCESSING_TIME):
+            await update_processing_state(video_id, progress="Fetching transcript")
+            youtube_id = extract_video_id(youtube_url)
+            transcript_raw = await get_transcript_with_retry(youtube_id)
+
+            await update_processing_state(video_id, progress="Processing transcript")
+            transcript = " ".join([t['text'] for t in transcript_raw])[:Config.MAX_TRANSCRIPT_LENGTH]
+
+            await update_processing_state(video_id, progress="Generating question")
+            question = await run_in_executor(
+                generate_questions_from_transcript,
+                title or "Video",
+                transcript
+            )
+
+            result = {
+                "status": "complete",
+                "question": question,
+                "completed_at": datetime.now().isoformat()
+            }
+
+            await update_processing_state(video_id, **result)
+            return result
+
+    except asyncio.TimeoutError:
+        logger.error(f"YouTube quick processing timed out for {video_id}")
+        await update_processing_state(
+            video_id,
+            status="error",
+            error="YouTube processing timed out"
+        )
+        return {"status": "error", "error": "Timeout"}
+    except Exception as e:
+        logger.error(f"YouTube quick processing error: {str(e)}")
+        await update_processing_state(
+            video_id,
+            status="error",
+            error=f"YouTube error: {str(e)}"
+        )
+        return {"status": "error", "error": str(e)}
 
 # API Endpoints
 @router.on_event("startup")
@@ -449,15 +587,6 @@ async def initialize_cache():
             socket_connect_timeout=10,
             ssl_cert_reqs=None  # This is the correct parameter for SSL
         )
-
-        # Potential Alternative if above doesn't work:
-        # redis_client = redis.StrictRedis.from_url(
-        #     redis_url,
-        #     decode_responses=True,
-        #     socket_timeout=10,
-        #     socket_connect_timeout=10,
-        #     ssl_cert_reqs=None
-        # )
 
         # Test connection
         if not redis_client.ping():
@@ -479,111 +608,314 @@ async def start_video_processing(
         background_tasks: BackgroundTasks,
         request: Request
 ):
-    """Start video processing with comprehensive error handling"""
+    """Start video processing with chunking for render.com limits"""
     # Check if already processing
-    if video_id in processing_results and processing_results[video_id]["status"] == "processing":
+    state = get_processing_state_from_redis(video_id)
+    if state and state.get("status") == "processing":
         logger.info(f"Video {video_id} is already processing")
         return JSONResponse(
             content={"status": "already_processing"},
             status_code=200
         )
 
-    # Initialize processing state with better defaults
-    processing_results[video_id] = {
+    # Initialize processing state
+    initial_state = {
         "status": "processing",
         "start_time": time.time(),
         "progress": "Initializing",
         "mode": "full" if (payload.full_analysis and payload.youtube_url) else "quick",
         "last_updated": time.time(),
-        "elapsed_seconds": 0,
-        "estimated_remaining": 60  # Default estimate
+        "processing_steps": []
     }
 
-    # Create a new event for this task
-    cancellation_events[video_id] = threading.Event()
+    # Store webhook URL if provided
+    if payload.webhook_url:
+        initial_state["webhook_url"] = payload.webhook_url
+
+    save_processing_state_to_redis(video_id, initial_state)
     logger.info(f"Starting {'FULL' if payload.full_analysis else 'QUICK'} analysis for {video_id}")
-    logger.info(f"Current processing state: {processing_results}")
 
     try:
-        if payload.full_analysis and payload.youtube_url:
-            # Create and store the task
-            task = asyncio.create_task(
-                run_full_analysis(
-                    video_id,
-                    payload.youtube_url,
-                    payload.title or "Video",
-                    payload.num_questions,
-                    payload.keyframe_interval
-                )
+        if payload.image_base64:
+            # For image processing, we can handle it in one go
+            background_tasks.add_task(
+                quick_image_processing,
+                video_id,
+                payload.image_base64
             )
-            processing_tasks[video_id] = task
-        else:
-            task = asyncio.create_task(run_quick_processing(video_id, payload))
-            processing_tasks[video_id] = task
 
-        # Add cleanup callback
-        task.add_done_callback(lambda _: cleanup_task(video_id))
+        elif payload.youtube_url and not payload.full_analysis:
+            # For quick YouTube processing, we can handle it in one go
+            background_tasks.add_task(
+                quick_youtube_processing,
+                video_id,
+                payload.youtube_url,
+                payload.title or "Video"
+            )
+
+        elif payload.youtube_url and payload.full_analysis:
+            # First step for full analysis: fetch transcript
+            youtube_real_id = extract_video_id(payload.youtube_url)
+            background_tasks.add_task(
+                fetch_transcript,
+                youtube_real_id
+            )
+
+            # Store additional params for future steps
+            await update_processing_state(
+                video_id,
+                youtube_id=youtube_real_id,
+                youtube_url=payload.youtube_url,
+                title=payload.title or "Video",
+                num_questions=payload.num_questions,
+                keyframe_interval=payload.keyframe_interval
+            )
 
         return JSONResponse(
-            content=processing_results[video_id],
+            content={"status": "processing", "video_id": video_id},
             status_code=202
         )
 
     except Exception as e:
         logger.error(f"Processing failed: {str(e)}", exc_info=True)
-        cleanup_task(video_id)  # Clean up if initialization fails
+        await update_processing_state(
+            video_id,
+            status="error",
+            error=str(e)
+        )
         raise HTTPException(status_code=500, detail=str(e))
 
-# Add a GET method to make debugging easier
-@router.get("/process/{video_id}")
-async def get_processing_status(video_id: str):
-    """Get current processing status (debugging helper)"""
-    if video_id not in processing_results:
+@router.post("/process/{video_id}/next_step")
+async def process_next_step(video_id: str, background_tasks: BackgroundTasks):
+    """Process the next step for a video"""
+    state = get_processing_state_from_redis(video_id)
+    if not state:
         return JSONResponse(
-            content={"status": "not_found", "message": "No processing found for this video"},
+            content={"status": "not_found"},
             status_code=404
         )
 
-    return JSONResponse(
-        content=processing_results[video_id],
-        status_code=200
-    )
+    if state.get("status") == "complete" or state.get("status") == "error":
+        return JSONResponse(
+            content=state,
+            status_code=200
+        )
 
-# In the get_processing_results function
+    try:
+        # Different logic based on what's already been done
+        if state.get("status") == "transcript_ready" and "section_questions" not in state:
+            # Start processing transcript sections
+            transcript = state.get("transcript", [])
+            youtube_id = state.get("youtube_id")
+            title = state.get("title", "Video")
+            num_questions = state.get("num_questions", 5)
+
+            # Create empty section_questions array
+            await update_processing_state(video_id, section_questions=[])
+
+            # Calculate section boundaries
+            total_duration = transcript[-1]['start'] + transcript[-1]['duration']
+            section_length = total_duration / num_questions
+
+            # Process first section
+            background_tasks.add_task(
+                process_transcript_section,
+                video_id,
+                0,  # section_index
+                0,  # start_time
+                section_length,  # end_time
+                transcript,
+                title
+            )
+
+            # Store section info for future steps
+            await update_processing_state(
+                video_id,
+                current_section=0,
+                total_sections=num_questions,
+                section_length=section_length
+            )
+
+            return JSONResponse(
+                content={"status": "processing_section", "section": 0},
+                status_code=202
+            )
+
+        elif "current_section" in state and state["current_section"] < state["total_sections"] - 1:
+            # Process next transcript section
+            current_section = state["current_section"]
+            next_section = current_section + 1
+            section_length = state["section_length"]
+            transcript = state.get("transcript", [])
+            title = state.get("title", "Video")
+
+            # Process next section
+            background_tasks.add_task(
+                process_transcript_section,
+                video_id,
+                next_section,  # section_index
+                next_section * section_length,  # start_time
+                (next_section + 1) * section_length,  # end_time
+                transcript,
+                title
+            )
+
+            # Update current section
+            await update_processing_state(video_id, current_section=next_section)
+
+            return JSONResponse(
+                content={"status": "processing_section", "section": next_section},
+                status_code=202
+            )
+
+        elif "keyframe_questions" not in state and "current_section" in state and state["current_section"] >= state["total_sections"] - 1:
+            # All sections done, start processing keyframes
+            youtube_id = state.get("youtube_id")
+            keyframe_interval = state.get("keyframe_interval", 30)
+
+            # Create empty keyframe_questions array
+            await update_processing_state(video_id, keyframe_questions=[])
+
+            # Prepare keyframe timestamps
+            duration = await get_video_duration(youtube_id) or 300  # Default 5 min
+            max_keyframes = min(5, math.ceil(duration / keyframe_interval))
+            step = math.ceil((duration - 20) / max_keyframes) if max_keyframes > 0 else 60
+
+            # Start timestamps from 20 seconds in
+            all_timestamps = [20 + (i * step) for i in range(max_keyframes)]
+
+            # Process first batch of keyframes
+            first_batch = all_timestamps[:Config.KEYFRAMES_PER_BATCH]
+            background_tasks.add_task(
+                process_keyframe_batch,
+                video_id,
+                0,  # batch_index
+                first_batch
+            )
+
+            # Store keyframe info for future steps
+            await update_processing_state(
+                video_id,
+                current_keyframe_batch=0,
+                all_timestamps=all_timestamps,
+                total_keyframe_batches=math.ceil(len(all_timestamps) / Config.KEYFRAMES_PER_BATCH)
+            )
+
+            return JSONResponse(content={"status": "processing_keyframes", "batch": 0},
+                                status_code=202
+                                )
+
+        elif "current_keyframe_batch" in state and state["current_keyframe_batch"] < state["total_keyframe_batches"] - 1:
+            # Process next keyframe batch
+            current_batch = state["current_keyframe_batch"]
+            next_batch = current_batch + 1
+            all_timestamps = state.get("all_timestamps", [])
+
+            # Calculate batch slice
+            start_idx = next_batch * Config.KEYFRAMES_PER_BATCH
+            end_idx = min(start_idx + Config.KEYFRAMES_PER_BATCH, len(all_timestamps))
+            batch_timestamps = all_timestamps[start_idx:end_idx]
+
+            if batch_timestamps:
+                # Process next batch
+                background_tasks.add_task(
+                    process_keyframe_batch,
+                    video_id,
+                    next_batch,
+                    batch_timestamps
+                )
+
+                # Update current batch
+                await update_processing_state(video_id, current_keyframe_batch=next_batch)
+
+                return JSONResponse(
+                    content={"status": "processing_keyframes", "batch": next_batch},
+                    status_code=202
+                )
+            else:
+                # No more timestamps, proceed to final combination
+                background_tasks.add_task(
+                    combine_results,
+                    video_id,
+                    state.get("num_questions", 5),
+                    state.get("webhook_url")
+                )
+
+                return JSONResponse(
+                    content={"status": "combining_results"},
+                    status_code=202
+                )
+
+        elif "current_keyframe_batch" in state and state["current_keyframe_batch"] >= state["total_keyframe_batches"] - 1:
+            # All keyframes done, combine results
+            background_tasks.add_task(
+                combine_results,
+                video_id,
+                state.get("num_questions", 5),
+                state.get("webhook_url")
+            )
+
+            return JSONResponse(
+                content={"status": "combining_results"},
+                status_code=202
+            )
+
+        else:
+            # Not sure what step we're on, return current state
+            return JSONResponse(
+                content=state,
+                status_code=200
+            )
+
+    except Exception as e:
+        logger.error(f"Next step processing failed: {str(e)}", exc_info=True)
+        await update_processing_state(
+            video_id,
+            status="error",
+            error=f"Step processing error: {str(e)}"
+        )
+        return JSONResponse(
+            content={"status": "error", "error": str(e)},
+            status_code=500
+        )
+
 @router.get("/results/{video_id}")
 async def get_processing_results(video_id: str):
-    """Get processing results with better error handling"""
-    cleanup_old_entries()
+    """Get processing results with auto-continuation of steps"""
+    state = get_processing_state_from_redis(video_id)
 
-    if video_id not in processing_results:
+    if not state:
         return {"status": "not_started"}
 
-    result = processing_results[video_id].copy()
+    # If processing is not complete and not errored, trigger next step
+    if state.get("status") == "processing" or "current_section" in state or "current_keyframe_batch" in state:
+        # Create background task to process next step
+        background_tasks = BackgroundTasks()
+        background_tasks.add_task(lambda: asyncio.create_task(process_next_step(video_id, background_tasks)))
 
-    # Update the elapsed time every time results are requested
-    if result["status"] == "processing":
-        elapsed = time.time() - result.get("start_time", time.time())
-        current_step = result.get("progress", "Initializing")
+    # Update the elapsed time
+    if state.get("status") == "processing":
+        elapsed = time.time() - state.get("start_time", time.time())
+        current_step = state.get("progress", "Initializing")
 
-        # Update the processing result with current elapsed time
-        result.update({
+        # Get updated state with elapsed time
+        updated_state = state.copy()
+        updated_state.update({
             "elapsed": elapsed,
             "last_updated": time.time()
         })
 
-        # Also update the stored result
-        processing_results[video_id].update({
-            "elapsed": elapsed,
-            "last_updated": time.time()
-        })
+        # Also update the stored state
+        save_processing_state_to_redis(video_id, updated_state)
 
-        # Set a realistic remaining time based on current step
+        # Provide a realistic remaining time
         step_estimate = Config.PROCESSING_TIME_ESTIMATES.get(current_step, 30)
         remaining = max(5, step_estimate - (elapsed % step_estimate))
-        result["remaining"] = remaining
-        processing_results[video_id]["remaining"] = remaining
+        updated_state["remaining"] = remaining
 
-    return result
+        return updated_state
+
+    return state
 
 @router.get("/transcript/{video_id}")
 @cache(expire=int(timedelta(hours=24).total_seconds()))
@@ -596,47 +928,25 @@ async def get_cached_transcript(video_id: str):
         logger.error(f"Transcript error: {str(e)}")
         raise HTTPException(status_code=400, detail=str(e))
 
-# Improve cancel_processing function
 @router.post("/cancel/{video_id}")
 async def cancel_processing(video_id: str):
-    """Cancel video processing with improved handling"""
-    if video_id not in processing_results:
+    """Cancel video processing"""
+    state = get_processing_state_from_redis(video_id)
+    if not state:
         return {"status": "not_found", "message": "No processing found for this video"}
 
-    # Signal cancellation
+    # Update state to cancelled
+    await update_processing_state(
+        video_id,
+        status="cancelled",
+        cancelled_at=datetime.now().isoformat(),
+        progress="Cancelled by user"
+    )
+
+    # Signal cancellation to any active tasks
     if video_id in cancellation_events:
         cancellation_events[video_id].set()
-        logger.info(f"Cancellation event set for {video_id}")
 
-    # Forcefully update status immediately
-    processing_results[video_id].update({
-        "status": "cancelled",
-        "cancelled_at": datetime.now().isoformat(),
-        "progress": "Cancelled by user"
-    })
-
-    # Cancel the task if it exists
-    if video_id in processing_tasks:
-        try:
-            task = processing_tasks[video_id]
-            if not task.done() and not task.cancelled():
-                task.cancel()
-                logger.info(f"Processing task cancelled for {video_id}")
-
-            # Wait a bit to ensure cancellation has propagated
-            await asyncio.sleep(0.5)
-
-            # Remove from active tasks
-            if video_id in processing_tasks:
-                del processing_tasks[video_id]
-        except Exception as e:
-            logger.error(f"Error cancelling task: {str(e)}")
-
-    # Also remove from tracking
-    if video_id in cancellation_events:
-        del cancellation_events[video_id]
-
-    # Return the cancellation confirmation
     return {
         "status": "cancelled",
         "message": f"Processing for video {video_id} was cancelled",
@@ -658,7 +968,7 @@ def explain_wrong_answer(payload: dict):
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
     prompt = f"""
-You are a friendly and kind teach for young children. A student gave a wrong answer to the following quiz:
+You are a friendly and kind teacher for young children. A student gave a wrong answer to the following quiz:
 
 ❓ Question: {payload['question']}
 🟰 Their Answer: {payload['selected_label']}
@@ -683,10 +993,42 @@ If the answer is correct, please explain *briefly* and kindly why the answer is 
         logger.error(f"GPT explanation error: {e}")
         return {"message": "Oops! Something went wrong trying to explain the answer."}
 
-# Utility Functions
+# For frontend polling
+@router.get("/polling/{video_id}")
+async def poll_and_continue_processing(video_id: str, background_tasks: BackgroundTasks):
+    """Poll current status and trigger next step if needed"""
+    state = get_processing_state_from_redis(video_id)
+
+    if not state:
+        return JSONResponse(
+            content={"status": "not_found"},
+            status_code=404
+        )
+
+    # If not complete and not error, trigger next step
+    if state.get("status") == "processing" or "current_section" in state or "current_keyframe_batch" in state:
+        # Create task to process next step
+        background_tasks.add_task(
+            lambda: asyncio.create_task(process_next_step(video_id, background_tasks))
+        )
+
+    # Update time estimates
+    if state.get("status") == "processing":
+        elapsed = time.time() - state.get("start_time", time.time())
+        step = state.get("progress", "Initializing")
+        state["elapsed"] = elapsed
+
+        # Calculate a reasonable time estimate
+        step_time = Config.PROCESSING_TIME_ESTIMATES.get(step, 30)
+        state["eta"] = max(5, step_time - (elapsed % step_time))
+
+    return JSONResponse(content=state)
+
+# Clean-up utility
 def cleanup_old_entries():
-    """Cleanup old processing entries"""
+    """Cleanup old processing entries from memory"""
     now = time.time()
+    # Only clean in-memory cache, Redis handles its own expiry
     for vid in list(processing_results.keys()):
         entry = processing_results[vid]
         if "start_time" in entry and (now - entry["start_time"] > 3600):
