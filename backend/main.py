@@ -29,11 +29,7 @@ db_models.Base.metadata.create_all(bind=engine)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://piggyback-learning.onrender.com",
-        "http://localhost:3000",
-        "https://project-piggyback-learning-team-2-hnwm.onrender.com",
-    ],
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

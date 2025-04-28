@@ -2,8 +2,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
-const API_BASE_URL = '';
-
 function VideoProcessor({ videoUrl, onProcessingComplete }) {
     const [status, setStatus] = useState('idle');
     const [progress, setProgress] = useState('');
@@ -11,6 +9,9 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
     const [error, setError] = useState(null);
     const [questions, setQuestions] = useState([]);
     const [pollingInterval, setPollingInterval] = useState(null);
+
+    // Get the base URL from environment or use the default
+    const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || 'https://project-piggyback-learning-team-2-hnwm.onrender.com';
 
     // Generate a unique ID for this processing session
     const generateProcessingId = useCallback(() => {
@@ -36,12 +37,11 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
                 },
-                // Increase timeout for long-running operations
-                timeout: 60000 // 60 seconds
+                timeout: 120000 // 120 seconds - increased timeout for processing
             };
 
             // Log the request
-            console.log('Sending request to:', `/api/v1/video/process/${videoId}`);
+            console.log('Sending request to:', `${API_BASE_URL}/api/v1/video/process/${videoId}`);
             console.log('With payload:', {
                 youtube_url: videoUrl,
                 full_analysis: true,
@@ -51,7 +51,7 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
 
             // Start the initial processing request
             const response = await axios.post(
-                `/api/v1/video/process/${videoId}`,
+                `${API_BASE_URL}/api/v1/video/process/${videoId}`,
                 {
                     youtube_url: videoUrl,
                     full_analysis: true,
@@ -87,7 +87,7 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
 
             // Special case for CORS errors
             if (err.message.includes('Network Error') && !err.response) {
-                errorMessage = 'CORS error - Cannot connect to the API server. Please check CORS configuration or if the server is running.';
+                errorMessage = 'Network error - Cannot connect to the API server. Please check your connection or if the server is running.';
             }
 
             // Special case for 500 errors
@@ -98,7 +98,7 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
             setError(errorMessage);
             setStatus('error');
         }
-    }, [videoUrl, generateProcessingId]);
+    }, [videoUrl, generateProcessingId, API_BASE_URL]);
 
     // Start polling for updates and triggering next steps
     const startPolling = useCallback((videoId) => {
@@ -107,17 +107,16 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
             clearInterval(pollingInterval);
         }
 
-        axios.interceptors.request.use(request => {
-            console.log('Starting Request', request);
-            return request;
-        });
-
         // Set up new polling interval
         const interval = setInterval(async () => {
             try {
+                console.log(`Polling for status update: ${API_BASE_URL}/api/v1/video/polling/${videoId}`);
+
                 // This endpoint both checks status AND triggers the next processing step
-                const response = await axios.get(`/api/v1/video/polling/${videoId}`);
+                const response = await axios.get(`${API_BASE_URL}/api/v1/video/polling/${videoId}`);
                 const result = response.data;
+
+                console.log('Polling response:', result);
 
                 // Update UI based on status
                 if (result.progress) {
@@ -143,30 +142,23 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
                     setStatus('cancelled');
                 }
 
-                axios.interceptors.response.use(response => {
-                    console.log('Response:', response);
-                    return response;
-                }, error => {
-                    console.error('Error Response:', error.response);
-                    return Promise.reject(error);
-                });
-
                 // Otherwise continue polling
             } catch (err) {
                 console.error('Polling error:', err);
+                console.log('Error details:', err.response?.data || err.message);
                 // Don't stop polling on temporary errors
             }
         }, 3000); // Poll every 3 seconds
 
         setPollingInterval(interval);
-    }, [onProcessingComplete, pollingInterval]);
+    }, [onProcessingComplete, pollingInterval, API_BASE_URL]);
 
     // Cancel processing
     const cancelProcessing = useCallback(async () => {
         if (!processingId) return;
 
         try {
-            await axios.post(`/api/v1/video/cancel/${processingId}`);
+            await axios.post(`${API_BASE_URL}/api/v1/video/cancel/${processingId}`);
             setStatus('cancelled');
 
             // Stop polling
@@ -177,7 +169,7 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
         } catch (err) {
             console.error('Failed to cancel processing:', err);
         }
-    }, [processingId, pollingInterval]);
+    }, [processingId, pollingInterval, API_BASE_URL]);
 
     // Clean up polling on unmount
     useEffect(() => {
