@@ -20,11 +20,11 @@ body {
     justify-content: center;
 
     /* Background image */
-    background-image: 
-        linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
-        url('https://i.pinimg.com/originals/95/fc/9d/95fc9d6faecd2ecc13b1179ae07b3755.jpg'); /* <- update this path */
-    
-    background-size: cover; 
+    background-image:
+            linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
+            url('https://i.pinimg.com/originals/95/fc/9d/95fc9d6faecd2ecc13b1179ae07b3755.jpg'); /* <- update this path */
+
+    background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
     background-attachment: fixed;
@@ -137,10 +137,10 @@ body.dark-mode .profile-header textarea:focus {
 }
 .profile-section-btn {
     margin-bottom: 12px;
-  }
+}
 
 
-  
+
 
 .profile-picture {
     width: 100px;
@@ -164,11 +164,7 @@ body.dark-mode .profile-header textarea:focus {
     font-size: 1rem;
     color: #ddd;
 }
-.video-scroll-container {
-    overflow-x: auto;
-    padding: 10px 0;
-    width: 100%;
-}
+
 .video-grid {
     display: flex;
     flex-direction: row;
@@ -288,157 +284,166 @@ body.dark-mode .video-box {
 /* 🔄 Add a fade-in animation for charts */
 .video-placeholder {
     animation: fadeIn 0.5s ease-in-out;
-  }
-  
+}
+
 
 /* Profile Edit Form */
 .edit-profile-form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: rgba(255, 255, 255, 0.4);
-  padding: 25px;
-  border-radius: 20px;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.4);
+    padding: 25px;
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
 }
 
 .edit-profile-form h2 {
-  margin-bottom: 20px;
-  font-size: 2em;
-  color: #333;
+    margin-bottom: 20px;
+    font-size: 2em;
+    color: #333;
 }
 
 .edit-profile-form label {
-  font-weight: bold;
-  margin-top: 15px;
-  margin-bottom: 5px;
-  width: 100%;
-  max-width: 400px;
-  text-align: left;
+    font-weight: bold;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    width: 100%;
+    max-width: 400px;
+    text-align: left;
 }
 
 .edit-profile-form input,
 .edit-profile-form textarea {
-  width: 100%;
-  max-width: 400px;
-  padding: 10px;
-  font-size: 1em;
-  border-radius: 10px;
-  border: 2px solid #4CAF50;
-  margin-bottom: 10px;
-  transition: all 0.3s ease;
+    width: 100%;
+    max-width: 400px;
+    padding: 10px;
+    font-size: 1em;
+    border-radius: 10px;
+    border: 2px solid #4CAF50;
+    margin-bottom: 10px;
+    transition: all 0.3s ease;
 }
 
 .edit-profile-form input:focus,
 .edit-profile-form textarea:focus {
-  box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
-  border-color: #45a049;
+    box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
+    border-color: #45a049;
 }
 
 /* Save and Cancel Buttons */
-.watch-button, 
+.watch-button,
 .signout-button {
-  width: 250px;
-  background: #4CAF50;
-  color: white;
-  font-size: 1em;
-  padding: 12px;
-  border: none;
-  border-radius: 30px;
-  font-weight: bold;
-  cursor: pointer;
-  margin: 10px 0;
-  transition: all 0.3s ease;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    width: 250px;
+    background: #4CAF50;
+    color: white;
+    font-size: 1em;
+    padding: 12px;
+    border: none;
+    border-radius: 30px;
+    font-weight: bold;
+    cursor: pointer;
+    margin: 10px 0;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
 
 .watch-button:hover {
-  background: #45a049;
-  transform: scale(1.05);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    background: #45a049;
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
 
 /* Profile Sections */
 .profile-sections {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    margin-top: 30px;
 }
 
 /* Profile Section Button (Saved Videos, Video History, Progress) */
 .profile-section-btn {
-  width: 250px;
-  background: #ff9800;
-  color: white;
-  font-size: 1em;
-  padding: 12px;
-  border: none;
-  border-radius: 30px;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    width: 250px;
+    background: #ff9800;
+    color: white;
+    font-size: 1em;
+    padding: 12px;
+    border: none;
+    border-radius: 30px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
 .profile-section-btn:hover {
-  background: #fb8c00;
-  transform: scale(1.05);
+    background: #fb8c00;
+    transform: scale(1.05);
 }
 
 /* Back to Home Button */
 .back-home-btn {
-  width: 250px;
-  background: #87CEFA;
-  color: white;
-  font-size: 1em;
-  padding: 12px;
-  border: none;
-  border-radius: 30px;
-  font-weight: bold;
-  cursor: pointer;
-  margin-top: 10px;
-  transition: all 0.3s ease;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    width: 250px;
+    background: #87CEFA;
+    color: white;
+    font-size: 1em;
+    padding: 12px;
+    border: none;
+    border-radius: 30px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
 .back-home-btn:hover {
-  background: #00BFFF;
-  transform: scale(1.05);
+    background: #00BFFF;
+    transform: scale(1.05);
 }
 
 /* Sign Out Button */
 .signout-button {
-  width: 250px;
-  background: #e74c3c;
-  color: white;
-  font-size: 1em;
-  padding: 12px;
-  border: none;
-  border-radius: 30px;
-  font-weight: bold;
-  cursor: pointer;
-  margin-top: 10px;
-  transition: all 0.3s ease;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    width: 250px;
+    background: #e74c3c;
+    color: white;
+    font-size: 1em;
+    padding: 12px;
+    border: none;
+    border-radius: 30px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
 .signout-button:hover {
-  background: #c0392b;
-  transform: scale(1.05);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    background: #c0392b;
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
 /* Dark Toggle Button */
 .dark-toggle-wrapper {
-  top: 100px;
-  right: 20px;
+    top: 100px;
+    right: 20px;
 }
 
+.video-scroll-container, .video-placeholder {
+    transition: all 0.4s ease;
+    opacity: 1;
+}
 
-
+.video-scroll-container.hidden, .video-placeholder.hidden {
+    opacity: 0;
+    height: 0;
+    overflow: hidden;
+    transition: all 0.4s ease;
+}

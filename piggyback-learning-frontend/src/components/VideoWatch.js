@@ -50,8 +50,7 @@ const speakQuestion = (question) => {
 
 export default function InteractiveVideoQuiz() {
   // Constants and refs
-  //const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://fastapi-latest-7dcj.onrender.com';
-  const BACKEND_URL= 'http://localhost:8000'
+  const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://fastapi-latest-7dcj.onrender.com';
   const videoRef = useRef(null);
   const playerRef = useRef(null);
   const videoWrapperRef = useRef(null);
@@ -65,7 +64,6 @@ export default function InteractiveVideoQuiz() {
   const isProcessing = queryParams.get("processing") === "true";
   const isYouTube = videoUrl?.includes("youtube.com") || videoUrl?.includes("youtu.be");
   const videoId = getYouTubeVideoId(videoUrl);
-  const [explanation, setExplanation] = useState(null);
 
   // State management
   const [state, setState] = useState({
@@ -563,7 +561,6 @@ export default function InteractiveVideoQuiz() {
     const isFirstInteraction = !quiz.answeredQuestions[questionId] &&
         (!quiz.questionHistory || !quiz.questionHistory[questionId]);
 
-    // Only update stats if this is the first interaction
     if (isFirstInteraction) {
       const newStats = {
         ...session.stats,
@@ -574,7 +571,6 @@ export default function InteractiveVideoQuiz() {
       updateSessionState({ stats: newStats });
     }
 
-    // Track this answer
     const newAnsweredQuestions = {
       ...quiz.answeredQuestions,
       [questionId]: {
@@ -587,95 +583,54 @@ export default function InteractiveVideoQuiz() {
       }
     };
 
-    // Set initial feedback
-    updateQuizState({
-      answeredQuestions: newAnsweredQuestions,
-      feedback: isCorrect ? "✅ Correct!" : `❌ That's not correct. The answer is "${correctAnswer}".`,
-      retryOption: !isCorrect
-    });
+    if (isCorrect) {
+      updateQuizState({
+        answeredQuestions: newAnsweredQuestions,
+        feedback: "✅ Correct!",
+        retryOption: false
+      });
 
-    // Fetch explanation for wrong answers
-    if (!isCorrect) {
+      setTimeout(() => {
+        updateQuizState({ currentQuestion: null, detections: [], feedback: "" });
+        playVideo();
+      }, 2000);
+    } else {
+      // ❌ Wrong answer -> fetch GPT feedback
+      updateQuizState({
+        answeredQuestions: newAnsweredQuestions,
+        feedback: "❌ Checking why it's wrong...",  // Temporary
+        retryOption: false
+      });
+
       try {
-        const response = await fetch(`${BACKEND_URL}/api/v1/videos/explain`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+        const explainRes = await fetch(`${BACKEND_URL}/api/v1/video/explain`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            question: quiz.currentQuestion.text,
-            selected_label: label,
             answer: correctAnswer,
-            options: quiz.currentQuestion.options || []
+            selected_label: label,
+            question: quiz.currentQuestion.text,
+            options: quiz.currentQuestion.options
           })
         });
 
-        const data = await response.json();
-        setExplanation(data.message);
+        const explainData = await explainRes.json();
+        const gptMessage = explainData?.message || "⚠️ Could not explain the wrong answer.";
+
+        updateQuizState({
+          feedback: `❌ ${gptMessage}`,
+          retryOption: true
+        });
+
       } catch (error) {
-        console.error("Error fetching explanation:", error);
-        setExplanation("Let's try that again!");
+        console.error("GPT feedback error:", error);
+        updateQuizState({
+          feedback: "❌ Wrong answer. GPT explanation failed.",
+          retryOption: true
+        });
       }
-    } else {
-      setExplanation(null); // Clear any previous explanation
-      setTimeout(() => {
-        updateQuizState({ currentQuestion: null, detections: [], feedback: "" });
-        playVideo();
-      }, 2000);
     }
   };
-
-  /*
-  const handleAnswer = async (label) => {
-    if (!quiz.currentQuestion?.id || !label) return;
-
-    const questionId = quiz.currentQuestion.id;
-    const correctAnswer = quiz.currentQuestion.answer || quiz.currentQuestion.options?.[0] || "";
-    const isCorrect = label.toLowerCase() === correctAnswer.toLowerCase();
-
-    // Check if this is the first time answering this question
-    const isFirstInteraction = !quiz.answeredQuestions[questionId] &&
-        (!quiz.questionHistory || !quiz.questionHistory[questionId]);
-
-    // Only update stats if this is the first interaction
-    if (isFirstInteraction) {
-      const newStats = {
-        ...session.stats,
-        correct: isCorrect ? session.stats.correct + 1 : session.stats.correct,
-        wrong: !isCorrect ? session.stats.wrong + 1 : session.stats.wrong,
-        total: session.stats.total + 1
-      };
-      updateSessionState({ stats: newStats });
-
-    }
-
-    // Track this answer
-    const newAnsweredQuestions = {
-      ...quiz.answeredQuestions,
-      [questionId]: {
-        answered: true,
-        correct: isCorrect,
-        selectedAnswer: label,
-        timestamp: Date.now(),
-        questionTime: getCurrentTime(),
-        statsUpdated: true
-      }
-    };
-
-    updateQuizState({
-      answeredQuestions: newAnsweredQuestions,
-      feedback: isCorrect ? "✅ Correct!" : "❌ That's not correct. Try again!",
-      retryOption: !isCorrect
-    });
-
-    if (isCorrect) {
-      setTimeout(() => {
-        updateQuizState({ currentQuestion: null, detections: [], feedback: "" });
-        playVideo();
-      }, 2000);
-    }
-  };
-*/
 
   // Skip question
   const handleSkip = () => {
@@ -987,22 +942,7 @@ export default function InteractiveVideoQuiz() {
                               </div>
                           )
                       )}
-                      {quiz.feedback && (
-                          <p className={`feedback ${quiz.feedback.includes("✅") ? "correct" : "incorrect"}`}>
-                            {quiz.feedback}
-                            {explanation && !quiz.feedback.includes("✅") && (
-                                <span className="explanation"><br/>💡 {explanation}</span>
-                            )}
-                          </p>
-                      )}
-
-                      {/* Add this section for explanations */}
-                      {explanation && !quiz.feedback.includes("✅") && (
-                          <div className="explanation-box">
-                            <p className="explanation-text">💡 {explanation}</p>
-                          </div>
-                      )}
-
+                      {quiz.feedback && <p className="feedback colorful-feedback">{quiz.feedback}</p>}
                       <button onClick={handleSkip} className="skip-button fancy-skip">⏭️ Skip</button>
 
                       {quiz.retryOption && (

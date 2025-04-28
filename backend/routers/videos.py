@@ -666,7 +666,7 @@ You are a friendly and kind teach for young children. A student gave a wrong ans
 
 Options: {', '.join(payload['options'])}
 
-If the answer is incorrect, please explain *briefly* and kindly why the answer is incorrect, not just state they are wrong, and encourage them to try again or rewatch the video.
+If the answer is incorrect, please explain *briefly* and kindly why the answer is incorrect, and encourage them to try again or rewatch the video.
 If the answer is correct, please explain *briefly* and kindly why the answer is correct. Respond with a single friendly sentence.
 """
 
