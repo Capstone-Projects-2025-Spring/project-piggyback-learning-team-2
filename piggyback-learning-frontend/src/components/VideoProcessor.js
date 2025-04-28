@@ -64,16 +64,17 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
             });
 
             // Try CORS preflight request first to check connectivity
-            try {
-                await axios.options(`${API_BASE_URL}/health`, {
-                    headers: { 'Access-Control-Request-Method': 'GET' },
-                    timeout: 5000
-                });
-                console.log("CORS preflight successful");
-            } catch (preflightErr) {
-                console.warn("CORS preflight check failed:", preflightErr);
+
+            //try {
+            //    await axios.options(`${API_BASE_URL}/health`, {
+
+            //        timeout: 5000
+            //    });
+            //    console.log("CORS preflight successful");
+            //} catch (preflightErr) {
+            //    console.warn("CORS preflight check failed:", preflightErr);
                 // Continue anyway - the main request might still work
-            }
+            //}
 
             // Start the initial processing request
             const response = await axios.post(

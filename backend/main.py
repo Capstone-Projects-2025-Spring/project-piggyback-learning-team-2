@@ -34,11 +34,10 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["https://piggyback-learning.onrender.com"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"]
 )
 # @app.middleware("http")
 # async def add_cors_headers(request: Request, call_next):
