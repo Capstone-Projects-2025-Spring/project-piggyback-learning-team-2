@@ -13,7 +13,7 @@ const Signup = () => {
   });
   
   //  const [error, setError] = useState('');
-  const [, setError] = useState('');
+  const [error, setError] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -163,6 +163,13 @@ const Signup = () => {
               </div>
               <button type="submit">Sign Up</button>
             </form>
+
+            {error && (
+              <div className="error-message">
+                {error}
+              </div>
+            )}
+
   
             <p>Already have an account? <Link to="/signin">Sign In</Link></p>
   
