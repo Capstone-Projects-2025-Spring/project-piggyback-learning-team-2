@@ -27,6 +27,28 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
             const videoId = generateProcessingId();
             setProcessingId(videoId);
 
+            console.log(`Starting video processing with ID: ${videoId}`);
+            console.log(`Using API base URL: ${API_BASE_URL}`);
+
+            // Configure axios for this request - add specific CORS headers
+            const axiosConfig = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                // Increase timeout for long-running operations
+                timeout: 60000 // 60 seconds
+            };
+
+            // Log the request
+            console.log('Sending request to:', `${API_BASE_URL}/api/v1/video/process/${videoId}`);
+            console.log('With payload:', {
+                youtube_url: videoUrl,
+                full_analysis: true,
+                num_questions: 5,
+                keyframe_interval: 30
+            });
+
             // Start the initial processing request
             const response = await axios.post(
                 `${API_BASE_URL}/api/v1/video/process/${videoId}`,
@@ -36,12 +58,10 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
                     num_questions: 5,
                     keyframe_interval: 30
                 },
-                {
-                    headers: {
-                        'Content-Type': 'application/json'
-                    }
-                }
+                axiosConfig
             );
+
+            console.log('Process response:', response);
 
             // Handle different response statuses
             if (response.data.status === 'already_processing') {
@@ -67,7 +87,12 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
 
             // Special case for CORS errors
             if (err.message.includes('Network Error') && !err.response) {
-                errorMessage = 'Network error - please check CORS configuration';
+                errorMessage = 'CORS error - Cannot connect to the API server. Please check CORS configuration or if the server is running.';
+            }
+
+            // Special case for 500 errors
+            if (err.response?.status === 500) {
+                errorMessage = `Server error (500): ${errorMessage}. Please try again later.`;
             }
 
             setError(errorMessage);

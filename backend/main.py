@@ -33,12 +33,15 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://piggyback-learning.onrender.com",
-        "http://localhost:3000"  # For local development
+        "http://localhost:3000",
+        "https://project-piggyback-learning-team-2-hnwm.onrender.com",
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-)
+    expose_headers=["*"],
+    # Add preflight request cache duration to improve performance
+    max_age=86400)
 
 # Include routers
 app.include_router(crud_test.router)
@@ -77,12 +80,21 @@ async def preflight_handler(request: Request, rest_of_path: str):
     return JSONResponse(
         status_code=200,
         headers={
-            "Access-Control-Allow-Origin": "https://piggyback-learning.onrender.com",
-            "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
-            "Access-Control-Allow-Headers": "*"
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "POST, GET, DELETE, PUT, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+            "Access-Control-Max-Age": "86400"
         }
     )
 
+# Explicit error handling for API endpoint
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(f"Global exception: {str(exc)}")
+    return JSONResponse(
+        status_code=500,
+        content={"detail": str(exc), "type": type(exc).__name__}
+    )
 # SQLAlchemy test route
 @app.get("/sqlalchemy")
 def test_url(db: Session = Depends(get_db)):

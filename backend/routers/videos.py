@@ -608,82 +608,75 @@ async def start_video_processing(
         background_tasks: BackgroundTasks,
         request: Request
 ):
-    """Start video processing with chunking for render.com limits"""
-    # Check if already processing
-    state = get_processing_state_from_redis(video_id)
-    if state and state.get("status") == "processing":
-        logger.info(f"Video {video_id} is already processing")
-        return JSONResponse(
-            content={"status": "already_processing"},
-            status_code=200
-        )
-
-    # Initialize processing state
-    initial_state = {
-        "status": "processing",
-        "start_time": time.time(),
-        "progress": "Initializing",
-        "mode": "full" if (payload.full_analysis and payload.youtube_url) else "quick",
-        "last_updated": time.time(),
-        "processing_steps": []
-    }
-
-    # Store webhook URL if provided
-    if payload.webhook_url:
-        initial_state["webhook_url"] = payload.webhook_url
-
-    save_processing_state_to_redis(video_id, initial_state)
-    logger.info(f"Starting {'FULL' if payload.full_analysis else 'QUICK'} analysis for {video_id}")
-
+    logger.info(f"Starting processing for {video_id}")
+    logger.debug(f"Payload: {payload}")
     try:
+        # Input validation
+        if not payload.youtube_url and not payload.image_base64:
+            raise HTTPException(
+                status_code=400,
+                detail="Either youtube_url or image_base64 must be provided"
+            )
+
+        # Check if already processing
+        state = get_processing_state_from_redis(video_id)
+        if state and state.get("status") in ["processing", "complete"]:
+            return JSONResponse(
+                content={
+                    "status": state["status"],
+                    "progress": state.get("progress"),
+                    "video_id": video_id
+                },
+                status_code=200
+            )
+
+        # Initialize processing state
+        initial_state = {
+            "status": "processing",
+            "start_time": time.time(),
+            "progress": "Initializing",
+            "mode": "full" if (payload.full_analysis and payload.youtube_url) else "quick",
+            "last_updated": time.time()
+        }
+
+        save_processing_state_to_redis(video_id, initial_state)
+
+        # Process based on input type
         if payload.image_base64:
-            # For image processing, we can handle it in one go
-            background_tasks.add_task(
-                quick_image_processing,
-                video_id,
-                payload.image_base64
-            )
-
-        elif payload.youtube_url and not payload.full_analysis:
-            # For quick YouTube processing, we can handle it in one go
-            background_tasks.add_task(
-                quick_youtube_processing,
-                video_id,
-                payload.youtube_url,
-                payload.title or "Video"
-            )
-
-        elif payload.youtube_url and payload.full_analysis:
-            # First step for full analysis: fetch transcript
-            youtube_real_id = extract_video_id(payload.youtube_url)
-            background_tasks.add_task(
-                fetch_transcript,
-                youtube_real_id
-            )
-
-            # Store additional params for future steps
-            await update_processing_state(
-                video_id,
-                youtube_id=youtube_real_id,
-                youtube_url=payload.youtube_url,
-                title=payload.title or "Video",
-                num_questions=payload.num_questions,
-                keyframe_interval=payload.keyframe_interval
-            )
+            background_tasks.add_task(quick_image_processing, video_id, payload.image_base64)
+        elif payload.youtube_url:
+            youtube_id = extract_video_id(payload.youtube_url)
+            if payload.full_analysis:
+                background_tasks.add_task(fetch_transcript, youtube_id)
+            else:
+                background_tasks.add_task(
+                    quick_youtube_processing,
+                    video_id,
+                    payload.youtube_url,
+                    payload.title or "Video"
+                )
 
         return JSONResponse(
-            content={"status": "processing", "video_id": video_id},
+            content={
+                "status": "processing",
+                "video_id": video_id,
+                "progress": "Initializing"
+            },
             status_code=202
         )
 
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Processing failed: {str(e)}", exc_info=True)
         await update_processing_state(
             video_id,
             status="error",
-            error=str(e)
+            error=str(e))
+        raise HTTPException(
+            status_code=500,
+            detail=f"Processing initialization failed: {str(e)}"
         )
-        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/process/{video_id}/next_step")
 async def process_next_step(video_id: str, background_tasks: BackgroundTasks):
