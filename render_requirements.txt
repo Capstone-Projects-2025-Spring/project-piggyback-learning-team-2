@@ -14,17 +14,17 @@ psycopg2-binary==2.9.10
 ### Security/Auth
 passlib==1.7.4
 python-jose==3.3.0
-pyjwt==2.10.1
+PyJWT==2.10.1  # NOTE: Correct capitalization is "PyJWT"
 cryptography==44.0.2
 
 ### Image/Video Processing
 opencv-python-headless==4.9.0.80
-pillow==11.2.1
-numpy==1.2.4
+pillow==11.2.0
+numpy==1.26.4
 
 ### Utilities
 requests==2.32.3
 tenacity==9.1.2
-orjson==3.10.15  # Faster JSON
-redis==5.2.1  # Only if using Redis caching
-google-api-python-client==2.165.0  # For YouTube API
+orjson==3.10.15
+redis==5.2.1
+google-api-python-client==2.165.0
