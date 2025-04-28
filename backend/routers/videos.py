@@ -286,13 +286,22 @@ async def fetch_transcript(video_id: str) -> Dict:
             logger.warning(f"No transcript available for {video_id}, using fallback")
             # Use a more generic fallback transcript
             fallback = "This video doesn't have captions available. The content may include visual elements."
+            transcript = [{"text": fallback, "start": 0, "duration": 10}]
+
+            # Immediately generate questions from fallback
+            question = await generate_questions_for_section("Video", fallback)
+            if question:
+                question['timestamp'] = 5  # Set at 5 seconds
+
             await update_processing_state(
                 video_id,
-                status="transcript_ready",
-                transcript=[{"text": fallback, "start": 0, "duration": 10}],
-                progress="Using fallback transcript"
+                status="complete",  # Mark as complete immediately
+                transcript=transcript,
+                questions=[question] if question else [],
+                progress="Used fallback content",
+                completed_at=datetime.now().isoformat()
             )
-            return {"status": "success", "transcript": [{"text": fallback, "start": 0, "duration": 10}]}
+            return {"status": "complete", "questions": [question] if question else []}
 
         # Save to state
         await update_processing_state(
@@ -310,13 +319,19 @@ async def fetch_transcript(video_id: str) -> Dict:
     except Exception as e:
         logger.error(f"Transcript fetch error for {video_id}: {str(e)}")
         fallback = "This video doesn't have captions available. The content may include visual elements."
+        question = await generate_questions_for_section("Video", fallback)
+        if question:
+            question['timestamp'] = 5  # Set at 5 seconds
+
         await update_processing_state(
             video_id,
-            status="transcript_ready",
+            status="complete",  # Mark as complete immediately
             transcript=[{"text": fallback, "start": 0, "duration": 10}],
-            progress="Using fallback transcript"
+            questions=[question] if question else [],
+            progress="Used fallback content",
+            completed_at=datetime.now().isoformat()
         )
-        return {"status": "success", "transcript": [{"text": fallback, "start": 0, "duration": 10}]}
+        return {"status": "complete", "questions": [question] if question else []}
 
 async def generate_questions_for_section(title: str, section_text: str) -> Dict:
     """Generate questions for a transcript section"""
@@ -930,9 +945,21 @@ async def get_processing_results(video_id: str):
     if not state:
         return {"status": "not_started"}
 
+    # If processing is complete, return immediately
+    if state.get("status") == "complete":
+        return state
+
     # If there's an error, return it immediately
     if state.get("status") == "error":
         return state
+
+    # If we have questions but status isn't complete (fallback case)
+    if "questions" in state and len(state["questions"]) > 0:
+        return {
+            "status": "complete",
+            "questions": state["questions"],
+            "completed_at": state.get("completed_at", datetime.now().isoformat())
+        }
 
     # If processing is not complete and not errored, trigger next step
     if state.get("status") in ["processing", "transcript_ready"]:

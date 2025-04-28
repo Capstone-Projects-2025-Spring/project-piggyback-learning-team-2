@@ -107,12 +107,14 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
                 const result = response.data;
                 if (result.progress) setProgress(result.progress);
 
-                if (result.status === 'complete') {
+                // Handle both complete status and case where questions exist
+                if (result.status === 'complete' || (result.questions && result.questions.length > 0)) {
                     clearInterval(interval);
                     setStatus('complete');
-                    setQuestions(result.questions || []);
+                    const questions = result.questions || [];
+                    setQuestions(questions);
                     if (onProcessingComplete) {
-                        onProcessingComplete(result.questions || []);
+                        onProcessingComplete(questions);
                     }
                 } else if (result.status === 'error') {
                     clearInterval(interval);

@@ -58,37 +58,6 @@ app.include_router(video_router.router,
                    tags=["videos"])
 app.include_router(yolo_router)
 
-'''
-# Add middleware to log all requests
-@app.middleware("http")
-async def log_requests(request: Request, call_next):
-    logger.info(f"Incoming request: {request.method} {request.url}")
-    try:
-        response = await call_next(request)
-        logger.info(f"Response status: {response.status_code}")
-        return response
-    except Exception as e:
-        logger.error(f"Request failed: {str(e)}")
-        raise
-
-
-@app.middleware("http")
-async def catch_exceptions_middleware(request: Request, call_next):
-    try:
-        response = await call_next(request)
-        return response
-    except Exception as exc:
-        logger.error(f"Unhandled exception: {str(exc)}", exc_info=True)
-        return JSONResponse(
-            status_code=500,
-            content={"detail": "Internal server error"},
-            headers={
-                "Access-Control-Allow-Origin": "https://piggyback-learning.onrender.com",
-                "Access-Control-Allow-Methods": "*",
-                "Access-Control-Allow-Headers": "*"
-            }
-        )
-'''
 # General backend connectivity health check route
 @app.get("/health")
 def health_check():
@@ -173,3 +142,35 @@ async def startup_message():
 @app.on_event("shutdown")
 async def shutdown_message():
     print("🛑 FastAPI is shutting down...")
+
+    '''
+# Add middleware to log all requests
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    logger.info(f"Incoming request: {request.method} {request.url}")
+    try:
+        response = await call_next(request)
+        logger.info(f"Response status: {response.status_code}")
+        return response
+    except Exception as e:
+        logger.error(f"Request failed: {str(e)}")
+        raise
+
+
+@app.middleware("http")
+async def catch_exceptions_middleware(request: Request, call_next):
+    try:
+        response = await call_next(request)
+        return response
+    except Exception as exc:
+        logger.error(f"Unhandled exception: {str(exc)}", exc_info=True)
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "Internal server error"},
+            headers={
+                "Access-Control-Allow-Origin": "https://piggyback-learning.onrender.com",
+                "Access-Control-Allow-Methods": "*",
+                "Access-Control-Allow-Headers": "*"
+            }
+        )
+'''
