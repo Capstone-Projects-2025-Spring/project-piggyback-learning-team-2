@@ -32,14 +32,26 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
             console.log(`Using API base URL: ${API_BASE_URL}`);
 
             // Configure axios for this request with more robust CORS settings
+
+            /*
             const axiosConfig = {
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
                     'Access-Control-Allow-Origin': '*'
                 },
-                timeout: 120000, // 120 seconds - increased timeout for processing
+                timeout: 600000, // 600 seconds - increased timeout for processing
                 withCredentials: false // Important for CORS with '*' origin
+            };
+            */
+
+            const axiosConfig = {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                timeout: 120000,
+                withCredentials: false  // This is important when using allow_origins=["*"]
             };
 
             // Log the request

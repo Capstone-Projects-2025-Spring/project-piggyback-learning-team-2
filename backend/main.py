@@ -19,7 +19,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-
 # Initialize FastAPI app
 app = FastAPI()
 
@@ -28,10 +27,9 @@ db_models.Base.metadata.create_all(bind=engine)
 
 # Configure CORS with more explicit settings
 origins = [
-    "https://piggyback-learning.onrender.com",  # Your main frontend domain
-    "http://localhost:3000",                    # Local development
-    "http://127.0.0.1:3000",                    # Local development alternative
-    "*",                                        # Allow all origins (be careful with this in production)
+    "https://piggyback-learning.onrender.com",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000"
 ]
 
 app.add_middleware(
@@ -40,10 +38,8 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"],
-    max_age=86400
+    expose_headers=["*"]
 )
-
 # @app.middleware("http")
 # async def add_cors_headers(request: Request, call_next):
 #     response = await call_next(request)
@@ -83,6 +79,7 @@ def health_check():
     }
     return response  # Removed custom headers which are redundant with CORS middleware
 
+'''
 @app.options("/{rest_of_path:path}")
 async def preflight_handler(request: Request, rest_of_path: str):
     return JSONResponse(
@@ -94,7 +91,7 @@ async def preflight_handler(request: Request, rest_of_path: str):
             "Access-Control-Max-Age": "86400"
         }
     )
-
+'''
 # Explicit error handling for API endpoint
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
