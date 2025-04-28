@@ -25,24 +25,18 @@ app = FastAPI()
 # Register database models
 db_models.Base.metadata.create_all(bind=engine)
 
-# Configure CORS with more explicit settings
-origins = [
-    "https://piggyback-learning.onrender.com",
-    "http://localhost:3000",
-    "http://127.0.0.1:3000"
-]
-
+# Configure CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://piggyback-learning.onrender.com",
-        "http://localhost:3000",  # For local development
-        "http://127.0.0.1:3000"   # For local development
+        "http://localhost:3000",
+        "http://127.0.0.1:3000"
     ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"]  # Add this to expose all headers
+    expose_headers=["*"]
 )
 
 
@@ -74,6 +68,23 @@ async def log_requests(request: Request, call_next):
     except Exception as e:
         logger.error(f"Request failed: {str(e)}")
         raise
+
+@app.middleware("http")
+async def catch_exceptions_middleware(request: Request, call_next):
+    try:
+        response = await call_next(request)
+        return response
+    except Exception as exc:
+        logger.error(f"Unhandled exception: {str(exc)}", exc_info=True)
+        return JSONResponse(
+            status_code=500,
+            content={"detail": "Internal server error"},
+            headers={
+                "Access-Control-Allow-Origin": "https://piggyback-learning.onrender.com",
+                "Access-Control-Allow-Methods": "*",
+                "Access-Control-Allow-Headers": "*"
+            }
+        )
 
 # General backend connectivity health check route
 @app.get("/health")

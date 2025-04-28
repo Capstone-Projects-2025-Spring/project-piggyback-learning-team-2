@@ -48,15 +48,14 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
             const axiosConfig = {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                    'Access-Control-Allow-Origin': 'https://piggyback-learning.onrender.com'
+                    'Accept': 'application/json'
                 },
                 timeout: 120000,
                 withCredentials: false
-            };
+            }
 
             // Log the request
-            console.log('Sending request to:', `${API_BASE_URL}/api/v1/video/process/${videoId}`);
+            console.log('Sending request to:', `${API_BASE_URL}/api/v1/video/process/${videoId} from videoprocessor`);
             console.log('With payload:', {
                 youtube_url: videoUrl,
                 full_analysis: true,

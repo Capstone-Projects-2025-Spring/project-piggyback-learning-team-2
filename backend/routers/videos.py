@@ -579,7 +579,7 @@ async def initialize_cache():
         return
 
     try:
-        # Simplified Redis connection without SSL parameters
+        # Simplified Redis connection
         redis_client = redis.Redis.from_url(
             redis_url,
             decode_responses=True,
@@ -607,26 +607,29 @@ async def start_video_processing(
         background_tasks: BackgroundTasks,
         request: Request
 ):
-    logger.info(f"Starting processing for {video_id}")
-    logger.debug(f"Payload: {payload}")
     try:
-        # Input validation
-        if not payload.youtube_url and not payload.image_base64:
+        # Validate input
+        if not payload.youtube_url:
             raise HTTPException(
                 status_code=400,
-                detail="Either youtube_url or image_base64 must be provided"
+                detail="YouTube URL is required"
             )
 
-        # Check if already processing
-        state = get_processing_state_from_redis(video_id)
-        if state and state.get("status") in ["processing", "complete"]:
-            return JSONResponse(
-                content={
-                    "status": state["status"],
-                    "progress": state.get("progress"),
-                    "video_id": video_id
-                },
-                status_code=200
+        # Extract video ID with better error handling
+        try:
+            youtube_id = extract_video_id(payload.youtube_url)
+        except Exception as e:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid YouTube URL: {str(e)}"
+            )
+
+        # Check environment variables
+        if not os.getenv("YOUTUBE_API_KEY"):
+            logger.error("YouTube API key not configured")
+            raise HTTPException(
+                status_code=500,
+                detail="Server configuration error"
             )
 
         # Initialize processing state
@@ -644,7 +647,6 @@ async def start_video_processing(
         if payload.image_base64:
             background_tasks.add_task(quick_image_processing, video_id, payload.image_base64)
         elif payload.youtube_url:
-            youtube_id = extract_video_id(payload.youtube_url)
             if payload.full_analysis:
                 background_tasks.add_task(fetch_transcript, youtube_id)
             else:
@@ -668,10 +670,6 @@ async def start_video_processing(
         raise
     except Exception as e:
         logger.error(f"Processing failed: {str(e)}", exc_info=True)
-        await update_processing_state(
-            video_id,
-            status="error",
-            error=str(e))
         raise HTTPException(
             status_code=500,
             detail=f"Processing initialization failed: {str(e)}"
