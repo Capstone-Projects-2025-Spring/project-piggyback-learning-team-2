@@ -29,15 +29,12 @@ app.include_router(yolo_router)
 # Register database models
 db_models.Base.metadata.create_all(bind=engine)
 
-origins = ["http://localhost:3000",  # React default
-"http://127.0.0.1:3000", "http://0.0.0.0:8000", "http://localhost:8000",
-"https://project-piggyback-learning-te-git-d53105-kripseepatels-projects.vercel.app/", 
-"https://branma-front.onrender.com"]
-
-# Enable CORS for frontend access (development)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=[
+        "https://piggyback-learning.onrender.com",
+        "http://localhost:3000"  # For local development
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -74,6 +71,17 @@ def health_check():
     headers = {"Access-Control-Allow-Headers": "Content-Type"}
     logger.info("Health check endpoint called")
     return JSONResponse(content=response, headers=headers)
+
+@app.options("/{rest_of_path:path}")
+async def preflight_handler(request: Request, rest_of_path: str):
+    return JSONResponse(
+        status_code=200,
+        headers={
+            "Access-Control-Allow-Origin": "https://piggyback-learning.onrender.com",
+            "Access-Control-Allow-Methods": "POST, GET, OPTIONS",
+            "Access-Control-Allow-Headers": "*"
+        }
+    )
 
 # SQLAlchemy test route
 @app.get("/sqlalchemy")

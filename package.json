@@ -2,7 +2,7 @@
   "name": "piggyback-learning-frontend",
   "version": "0.1.0",
   "private": true,
-  "proxy": "https://fastapi-latest-7dcj.onrender.com",
+  "proxy": "https://piggyback-learning.onrender.com/",
   "dependencies": {
     "@supabase/supabase-js": "^2.49.1",
     "chart.js": "^4.4.9",
