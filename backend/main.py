@@ -25,18 +25,16 @@ app = FastAPI()
 # Register database models
 db_models.Base.metadata.create_all(bind=engine)
 
-# Configure CORS
+origins = [
+    "https://piggyback-learning.onrender.com",  # <- your frontend URL
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://piggyback-learning.onrender.com",
-        "http://localhost:3000",
-        "http://127.0.0.1:3000"
-    ],
+    allow_origins=origins,  # <- only allow your frontend
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["*"]
+    allow_methods=["*"],    # or ["POST", "GET", "OPTIONS"] more strict
+    allow_headers=["*"],    # or ["Authorization", "Content-Type"] etc.
 )
 
 
