@@ -164,11 +164,7 @@ body.dark-mode .profile-header textarea:focus {
     font-size: 1rem;
     color: #ddd;
 }
-.video-scroll-container {
-    overflow-x: auto;
-    padding: 10px 0;
-    width: 100%;
-}
+
 .video-grid {
     display: flex;
     flex-direction: row;
@@ -440,5 +436,16 @@ body.dark-mode .video-box {
   right: 20px;
 }
 
-
+.video-scroll-container, .video-placeholder {
+    transition: all 0.4s ease;
+    opacity: 1;
+  }
+  
+  .video-scroll-container.hidden, .video-placeholder.hidden {
+    opacity: 0;
+    height: 0;
+    overflow: hidden;
+    transition: all 0.4s ease;
+  }
+  
 
