@@ -12,7 +12,6 @@ from backend.routers import crud_test, authentication
 from backend.routers import videos as video_router
 from backend.youtube import retreiveYoutubeMetaData
 from backend.yolov8_router import router as yolo_router
-from backend.schemas import UserCredentials, UserResponse, YouTubeVideo
 
 logging.basicConfig(
     level=logging.INFO,
@@ -27,31 +26,39 @@ app = FastAPI()
 # Register database models
 db_models.Base.metadata.create_all(bind=engine)
 
+# Configure CORS with more explicit settings
+origins = [
+    "https://piggyback-learning.onrender.com",  # Your main frontend domain
+    "http://localhost:3000",                    # Local development
+    "http://127.0.0.1:3000",                    # Local development alternative
+    "*",                                        # Allow all origins (be careful with this in production)
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
     expose_headers=["*"],
-    # Add preflight request cache duration to improve performance
-    max_age=86400)
+    max_age=86400
+)
 
-@app.middleware("http")
-async def add_cors_headers(request: Request, call_next):
-    response = await call_next(request)
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Credentials"] = "true"
-    response.headers["Access-Control-Allow-Methods"] = "*"
-    response.headers["Access-Control-Allow-Headers"] = "*"
-    return response
+# @app.middleware("http")
+# async def add_cors_headers(request: Request, call_next):
+#     response = await call_next(request)
+#     response.headers["Access-Control-Allow-Origin"] = "*"
+#     response.headers["Access-Control-Allow-Credentials"] = "true"
+#     response.headers["Access-Control-Allow-Methods"] = "*"
+#     response.headers["Access-Control-Allow-Headers"] = "*"
+#     return response
 
 # Include routers
 app.include_router(crud_test.router)
 app.include_router(authentication.router)
-app.include_router( video_router.router,
-                    prefix="/api/v1/video",
-                    tags=["videos"])
+app.include_router(video_router.router,
+                   prefix="/api/v1/video",
+                   tags=["videos"])
 app.include_router(yolo_router)
 
 # Add middleware to log all requests
@@ -74,9 +81,7 @@ def health_check():
         "version": "1.0",
         "timestamp": time.time()
     }
-    headers = {"Access-Control-Allow-Headers": "Content-Type"}
-    logger.info("Health check endpoint called")
-    return JSONResponse(content=response, headers=headers)
+    return response  # Removed custom headers which are redundant with CORS middleware
 
 @app.options("/{rest_of_path:path}")
 async def preflight_handler(request: Request, rest_of_path: str):
@@ -98,6 +103,7 @@ async def global_exception_handler(request: Request, exc: Exception):
         status_code=500,
         content={"detail": str(exc), "type": type(exc).__name__}
     )
+
 # SQLAlchemy test route
 @app.get("/sqlalchemy")
 def test_url(db: Session = Depends(get_db)):
@@ -158,4 +164,3 @@ async def startup_message():
 @app.on_event("shutdown")
 async def shutdown_message():
     print("🛑 FastAPI is shutting down...")
-

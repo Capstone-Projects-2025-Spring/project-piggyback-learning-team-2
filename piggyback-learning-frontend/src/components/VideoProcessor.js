@@ -31,13 +31,15 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
             console.log(`Starting video processing with ID: ${videoId}`);
             console.log(`Using API base URL: ${API_BASE_URL}`);
 
-            // Configure axios for this request - add specific CORS headers
+            // Configure axios for this request with more robust CORS settings
             const axiosConfig = {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
                 },
-                timeout: 120000 // 120 seconds - increased timeout for processing
+                timeout: 120000, // 120 seconds - increased timeout for processing
+                withCredentials: false // Important for CORS with '*' origin
             };
 
             // Log the request
@@ -48,6 +50,18 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
                 num_questions: 5,
                 keyframe_interval: 30
             });
+
+            // Try CORS preflight request first to check connectivity
+            try {
+                await axios.options(`${API_BASE_URL}/health`, {
+                    headers: { 'Access-Control-Request-Method': 'GET' },
+                    timeout: 5000
+                });
+                console.log("CORS preflight successful");
+            } catch (preflightErr) {
+                console.warn("CORS preflight check failed:", preflightErr);
+                // Continue anyway - the main request might still work
+            }
 
             // Start the initial processing request
             const response = await axios.post(
@@ -87,12 +101,17 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
 
             // Special case for CORS errors
             if (err.message.includes('Network Error') && !err.response) {
-                errorMessage = 'Network error - Cannot connect to the API server. Please check your connection or if the server is running.';
+                errorMessage = `CORS Error: Cannot connect to the API server at ${API_BASE_URL}. This could be due to:
+                1. The API server is down or unreachable
+                2. CORS is not properly configured on the server
+                3. There's a network connectivity issue
+                
+                Try checking the server status or refreshing the page.`;
             }
 
             // Special case for 500 errors
             if (err.response?.status === 500) {
-                errorMessage = `Server error (500): ${errorMessage}. Please try again later.`;
+                errorMessage = `Server error (500): ${errorMessage}. The server encountered an internal error. Please try again later or with a different video.`;
             }
 
             setError(errorMessage);
@@ -113,7 +132,12 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
                 console.log(`Polling for status update: ${API_BASE_URL}/api/v1/video/polling/${videoId}`);
 
                 // This endpoint both checks status AND triggers the next processing step
-                const response = await axios.get(`${API_BASE_URL}/api/v1/video/polling/${videoId}`);
+                const response = await axios.get(`${API_BASE_URL}/api/v1/video/polling/${videoId}`, {
+                    withCredentials: false,
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
                 const result = response.data;
 
                 console.log('Polling response:', result);
@@ -146,7 +170,19 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
             } catch (err) {
                 console.error('Polling error:', err);
                 console.log('Error details:', err.response?.data || err.message);
-                // Don't stop polling on temporary errors
+
+                // Update error message in UI but continue polling
+                // This allows recovery if the server becomes available again
+                setProgress(`Waiting for server... (${new Date().toLocaleTimeString()})`);
+
+                // If we've been polling with errors for more than 5 minutes, give up
+                const fiveMinutes = 5 * 60 * 1000;
+                const processingStartTime = parseInt(videoId.split('-')[1], 10);
+                if (Date.now() - processingStartTime > fiveMinutes) {
+                    clearInterval(interval);
+                    setStatus('error');
+                    setError('Server connection timeout after 5 minutes of trying. Please try again later.');
+                }
             }
         }, 3000); // Poll every 3 seconds
 
@@ -158,7 +194,13 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
         if (!processingId) return;
 
         try {
-            await axios.post(`${API_BASE_URL}/api/v1/video/cancel/${processingId}`);
+            await axios.post(`${API_BASE_URL}/api/v1/video/cancel/${processingId}`, {}, {
+                withCredentials: false,
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                }
+            });
             setStatus('cancelled');
 
             // Stop polling
@@ -168,6 +210,13 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
             }
         } catch (err) {
             console.error('Failed to cancel processing:', err);
+            // Even if cancellation fails, stop polling
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+                setPollingInterval(null);
+            }
+            setStatus('cancelled');
+            setError('Processing cancelled, but the server might still be processing in the background.');
         }
     }, [processingId, pollingInterval, API_BASE_URL]);
 
