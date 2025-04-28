@@ -26,7 +26,8 @@ app = FastAPI()
 db_models.Base.metadata.create_all(bind=engine)
 
 origins = [
-    "https://piggyback-learning.onrender.com",  # <- your frontend URL
+    "https://piggyback-learning.onrender.com",
+    "https://project-piggyback-learning-team-2-hnwm.onrender.com"# <- your frontend URL
 ]
 
 app.add_middleware(
@@ -66,6 +67,22 @@ async def log_requests(request: Request, call_next):
     except Exception as e:
         logger.error(f"Request failed: {str(e)}")
         raise
+
+@app.middleware("http")
+async def log_cors(request: Request, call_next):
+    logger.info(f"CORS Headers - Origin: {request.headers.get('origin')}")
+    logger.info(f"CORS Headers - Method: {request.method}")
+    logger.info(f"CORS Headers - Headers: {request.headers.get('access-control-request-headers')}")
+
+    response = await call_next(request)
+
+    # Ensure CORS headers are added to all responses
+    response.headers["Access-Control-Allow-Origin"] = "https://project-piggyback-learning-team-2-hnwm.onrender.com"
+    response.headers["Access-Control-Allow-Methods"] = "*"
+    response.headers["Access-Control-Allow-Headers"] = "*"
+    response.headers["Access-Control-Allow-Credentials"] = "true"
+
+    return response
 
 @app.middleware("http")
 async def catch_exceptions_middleware(request: Request, call_next):

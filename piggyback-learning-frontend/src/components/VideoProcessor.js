@@ -11,7 +11,7 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
     const [pollingInterval, setPollingInterval] = useState(null);
 
     // Get the base URL from environment or use the default
-    const API_BASE_URL = process.env.REACT_APP_BACKEND_URL || 'https://project-piggyback-learning-team-2-hnwm.onrender.com';
+    const BACKEND_URL = process.env.REACT_APP_BACKEND_URL || 'https://project-piggyback-learning-team-2-hnwm.onrender.com';
 
     // Generate a unique ID for this processing session
     const generateProcessingId = useCallback(() => {
@@ -28,15 +28,15 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
             const videoId = generateProcessingId();
             setProcessingId(videoId);
 
-            const processUrl = `${API_BASE_URL}/api/v1/video/process/${videoId}`;
+            const processUrl = `${BACKEND_URLL}/api/v1/video/process/${videoId}`;
             console.log(`Calling API endpoint: ${processUrl}`);
 
             console.log(`Starting video processing with ID: ${videoId}`);
-            console.log(`Using API base URL: ${API_BASE_URL}`);
+            console.log(`Using API base URL: ${BACKEND_URL}`);
 
             //Health check
             try {
-                const healthCheck = await axios.get(`${API_BASE_URL}/health`);
+                const healthCheck = await axios.get(`${BACKEND_URL}/health`);
                 console.log("Health check response:", healthCheck.data);
             } catch (healthErr) {
                 console.error("Health check failed:", healthErr);
@@ -65,7 +65,7 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
             }
 
             // Log the request
-            console.log('Sending request to:', `${API_BASE_URL}/api/v1/video/process/${videoId} from videoprocessor`);
+            console.log('Sending request to:', `${BACKEND_URL}/api/v1/video/process/${videoId} from videoprocessor`);
             console.log('With payload:', {
                 youtube_url: videoUrl,
                 full_analysis: true,
@@ -118,7 +118,7 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
             console.error('API call failed:', err);
 
             console.error('Request details:', {
-                url: `${API_BASE_URL}/api/v1/video/process/${processingId}`, // Using state
+                url: `${BACKEND_URL}/api/v1/video/process/${videoId}`, // Using state
                 status: err.response?.status,
                 statusText: err.response?.statusText,
                 data: err.response?.data,
@@ -133,7 +133,7 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
 
             // Special case for CORS errors
             if (err.message.includes('Network Error') && !err.response) {
-                errorMessage = `CORS Error: Cannot connect to the API server at ${API_BASE_URL}. This could be due to:
+                errorMessage = `CORS Error: Cannot connect to the API server at ${BACKEND_URL}. This could be due to:
                 1. The API server is down or unreachable
                 2. CORS is not properly configured on the server
                 3. There's a network connectivity issue
@@ -149,7 +149,7 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
             setError(errorMessage);
             setStatus('error');
         }
-    }, [videoUrl, generateProcessingId, API_BASE_URL, processingId]);
+    }, [videoUrl, generateProcessingId, BACKEND_URL, processingId]);
 
     // Start polling for updates and triggering next steps
     const startPolling = useCallback((videoId) => {
@@ -168,7 +168,7 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
                 console.log(`Polling attempt ${pollingAttempts} for video ${videoId}`);
 
                 const response = await axios.get(
-                    `${API_BASE_URL}/api/v1/video/polling/${videoId}`,
+                    `${BACKEND_URL}/api/v1/video/polling/${videoId}`,
                     {
                         timeout: 600000,
                         headers: { 'Accept': 'application/json' }
@@ -230,14 +230,14 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
         }, 3000); // Poll every 3 seconds
 
         setPollingInterval(interval);
-    }, [onProcessingComplete, API_BASE_URL]);
+    }, [onProcessingComplete, BACKEND_URL]);
 
     // Cancel processing
     const cancelProcessing = useCallback(async () => {
         if (!processingId) return;
 
         try {
-            await axios.post(`${API_BASE_URL}/api/v1/video/cancel/${processingId}`, {}, {
+            await axios.post(`${BACKEND_URL}/api/v1/video/cancel/${processingId}`, {}, {
                 withCredentials: false,
                 headers: {
                     'Content-Type': 'application/json',
@@ -261,7 +261,7 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
             setStatus('cancelled');
             setError('Processing cancelled, but the server might still be processing in the background.');
         }
-    }, [processingId, pollingInterval, API_BASE_URL]);
+    }, [processingId, pollingInterval, BACKEND_URL]);
 
     // Clean up polling on unmount
     useEffect(() => {

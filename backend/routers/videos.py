@@ -612,6 +612,39 @@ async def initialize_cache():
         logger.error(f"❌ Redis connection failed: {e}")
         FastAPICache.init(InMemoryBackend(), prefix="video-cache-fallback")
 
+@router.options("/process/{video_id}")
+async def options_process(video_id: str):
+    return JSONResponse(
+        status_code=200,
+        headers={
+            "Access-Control-Allow-Origin": "https://project-piggyback-learning-team-2-hnwm.onrender.com",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+        }
+    )
+
+@router.options("/polling/{video_id}")
+async def options_polling(video_id: str):
+    return JSONResponse(
+        status_code=200,
+        headers={
+            "Access-Control-Allow-Origin": "https://project-piggyback-learning-team-2-hnwm.onrender.com",
+            "Access-Control-Allow-Methods": "GET, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+        }
+    )
+
+@router.options("/process/{video_id}/next_step")
+async def options_process(video_id: str):
+    return JSONResponse(
+        status_code=200,
+        headers={
+            "Access-Control-Allow-Origin": "https://project-piggyback-learning-team-2-hnwm.onrender.com",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+        }
+    )
+
 @router.post("/process/{video_id}")
 async def start_video_processing(
         video_id: str,
