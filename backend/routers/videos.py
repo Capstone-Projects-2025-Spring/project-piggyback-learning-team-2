@@ -107,37 +107,61 @@ class AnswerInput(BaseModel):
 
 # Redis Helper Functions
 def get_redis_client():
-    """Get Redis client with error handling"""
+    """Get Redis client with better error handling"""
     redis_url = os.getenv("REDIS_URL")
     if not redis_url:
+        logger.warning("Redis URL not configured")
         return None
 
     try:
-        return redis.Redis.from_url(
+        client = redis.Redis.from_url(
             redis_url,
             decode_responses=True,
-            socket_timeout=10,
-            socket_connect_timeout=10,
-            ssl_cert_reqs=None
+            socket_timeout=5,
+            socket_connect_timeout=5,
+            retry_on_timeout=True,
+            health_check_interval=30
         )
+        # Test connection immediately
+        if not client.ping():
+            raise ConnectionError("Redis ping failed")
+        return client
     except Exception as e:
-        logger.error(f"Redis connection error: {str(e)}")
+        logger.error(f"Redis connection failed: {e}")
         return None
 
 def get_processing_state_from_redis(video_id: str) -> Dict:
-    """Get processing state from Redis"""
+    """Get processing state with validation"""
     redis_client = get_redis_client()
-    if not redis_client:
-        return processing_results.get(video_id, {})
 
-    key = f"{Config.REDIS_KEY_PREFIX}{video_id}"
-    state_json = redis_client.get(key)
-    if not state_json:
-        return processing_results.get(video_id, {})
+    # Fallback to in-memory if Redis not available
+    if not redis_client:
+        state = processing_results.get(video_id, {})
+        if not state:
+            logger.warning(f"No in-memory state for {video_id}")
+        return state
 
     try:
-        return json.loads(state_json)
-    except:
+        key = f"{Config.REDIS_KEY_PREFIX}{video_id}"
+        state_json = redis_client.get(key)
+
+        if not state_json:
+            logger.warning(f"No Redis state for {video_id}")
+            return processing_results.get(video_id, {})
+
+        state = json.loads(state_json)
+
+        # Validate state structure
+        if not isinstance(state, dict):
+            raise ValueError(f"Invalid state format for {video_id}")
+
+        return state
+
+    except json.JSONDecodeError:
+        logger.error(f"Failed to decode state for {video_id}")
+        return {}
+    except Exception as e:
+        logger.error(f"Error getting state for {video_id}: {e}")
         return processing_results.get(video_id, {})
 
 def save_processing_state_to_redis(video_id: str, state: Dict):
@@ -987,32 +1011,41 @@ If the answer is correct, please explain *briefly* and kindly why the answer is 
 @router.get("/polling/{video_id}")
 async def poll_and_continue_processing(video_id: str, background_tasks: BackgroundTasks):
     """Poll current status and trigger next step if needed"""
-    state = get_processing_state_from_redis(video_id)
+    try:
+        state = get_processing_state_from_redis(video_id)
 
-    if not state:
+        if not state:
+            logger.error(f"No state found for video {video_id}")
+            return JSONResponse(
+                content={"status": "not_found", "error": "No processing state found"},
+                status_code=404
+            )
+
+        # If not complete and not error, trigger next step
+        if state.get("status") == "processing" or "current_section" in state or "current_keyframe_batch" in state:
+            # Create task to process next step
+            background_tasks.add_task(
+                lambda: asyncio.create_task(process_next_step(video_id, background_tasks))
+            )
+
+        # Update time estimates
+        if state.get("status") == "processing":
+            elapsed = time.time() - state.get("start_time", time.time())
+            step = state.get("progress", "Initializing")
+            state["elapsed"] = elapsed
+
+            # Calculate a reasonable time estimate
+            step_time = Config.PROCESSING_TIME_ESTIMATES.get(step, 30)
+            state["eta"] = max(5, step_time - (elapsed % step_time))
+
+        return JSONResponse(content=state)
+
+    except Exception as e:
+        logger.error(f"Polling error for video {video_id}: {str(e)}", exc_info=True)
         return JSONResponse(
-            content={"status": "not_found"},
-            status_code=404
+            content={"status": "error", "error": str(e)},
+            status_code=500
         )
-
-    # If not complete and not error, trigger next step
-    if state.get("status") == "processing" or "current_section" in state or "current_keyframe_batch" in state:
-        # Create task to process next step
-        background_tasks.add_task(
-            lambda: asyncio.create_task(process_next_step(video_id, background_tasks))
-        )
-
-    # Update time estimates
-    if state.get("status") == "processing":
-        elapsed = time.time() - state.get("start_time", time.time())
-        step = state.get("progress", "Initializing")
-        state["elapsed"] = elapsed
-
-        # Calculate a reasonable time estimate
-        step_time = Config.PROCESSING_TIME_ESTIMATES.get(step, 30)
-        state["eta"] = max(5, step_time - (elapsed % step_time))
-
-    return JSONResponse(content=state)
 
 # Clean-up utility
 def cleanup_old_entries():

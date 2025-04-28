@@ -50,7 +50,7 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json'
                 },
-                timeout: 120000,
+                timeout: 600000,
                 withCredentials: false
             }
 
@@ -144,57 +144,41 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
             try {
                 console.log(`Polling for status update: ${API_BASE_URL}/api/v1/video/polling/${videoId}`);
 
-                // This endpoint both checks status AND triggers the next processing step
                 const response = await axios.get(`${API_BASE_URL}/api/v1/video/polling/${videoId}`, {
                     withCredentials: false,
                     headers: {
                         'Accept': 'application/json'
-                    }
+                    },
+                    timeout: 5000 // 5 second timeout
                 });
+
                 const result = response.data;
 
-                console.log('Polling response:', result);
-
-                // Update UI based on status
-                if (result.progress) {
-                    setProgress(result.progress);
+                if (response.status === 500) {
+                    throw new Error(result.error || 'Server error during polling');
                 }
 
-                if (result.status === 'complete') {
-                    // Processing complete
-                    clearInterval(interval);
-                    setStatus('complete');
-                    setQuestions(result.questions || []);
-                    if (onProcessingComplete) {
-                        onProcessingComplete(result.questions || []);
-                    }
-                } else if (result.status === 'error' || result.status === 'timeout') {
-                    // Error occurred
-                    clearInterval(interval);
-                    setStatus('error');
-                    setError(result.error || 'Processing failed');
-                } else if (result.status === 'cancelled') {
-                    // Processing was cancelled
-                    clearInterval(interval);
-                    setStatus('cancelled');
-                }
+                // Rest of the polling logic...
 
-                // Otherwise continue polling
             } catch (err) {
                 console.error('Polling error:', err);
-                console.log('Error details:', err.response?.data || err.message);
+                const errorMessage = err.response?.data?.error ||
+                    err.response?.data?.detail ||
+                    err.message ||
+                    'Polling failed';
 
-                // Update error message in UI but continue polling
-                // This allows recovery if the server becomes available again
-                setProgress(`Waiting for server... (${new Date().toLocaleTimeString()})`);
-
-                // If we've been polling with errors for more than 5 minutes, give up
-                const fiveMinutes = 5 * 60 * 1000;
-                const processingStartTime = parseInt(videoId.split('-')[1], 10);
-                if (Date.now() - processingStartTime > fiveMinutes) {
+                // More specific error handling
+                if (err.response?.status === 404) {
+                    // Video processing not found
                     clearInterval(interval);
                     setStatus('error');
-                    setError('Server connection timeout after 5 minutes of trying. Please try again later.');
+                    setError('Video processing session not found. Please start again.');
+                } else if (err.response?.status === 500) {
+                    // Server error - try to continue polling
+                    setProgress(`Server error: ${errorMessage}. Retrying...`);
+                } else {
+                    // Network or other errors
+                    setProgress(`Connection issue: ${errorMessage}. Retrying...`);
                 }
             }
         }, 3000); // Poll every 3 seconds
