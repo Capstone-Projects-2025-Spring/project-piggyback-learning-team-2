@@ -579,13 +579,12 @@ async def initialize_cache():
         return
 
     try:
-        # For Redis 4.x+ connections (newer versions)
+        # Simplified Redis connection without SSL parameters
         redis_client = redis.Redis.from_url(
             redis_url,
             decode_responses=True,
             socket_timeout=10,
-            socket_connect_timeout=10,
-            ssl_cert_reqs=None  # This is the correct parameter for SSL
+            socket_connect_timeout=10
         )
 
         # Test connection

@@ -34,11 +34,18 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["https://piggyback-learning.onrender.com"],
+    allow_origins=[
+        "https://piggyback-learning.onrender.com",
+        "http://localhost:3000",  # For local development
+        "http://127.0.0.1:3000"   # For local development
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"]  # Add this to expose all headers
 )
+
+
 # @app.middleware("http")
 # async def add_cors_headers(request: Request, call_next):
 #     response = await call_next(request)
@@ -91,6 +98,18 @@ async def preflight_handler(request: Request, rest_of_path: str):
         }
     )
 '''
+
+@app.options("/api/v1/video/process/{video_id}")
+async def options_process(video_id: str):
+    return JSONResponse(
+        status_code=200,
+        headers={
+            "Access-Control-Allow-Origin": "https://piggyback-learning.onrender.com",
+            "Access-Control-Allow-Methods": "POST, OPTIONS",
+            "Access-Control-Allow-Headers": "*",
+        }
+    )
+
 # Explicit error handling for API endpoint
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):

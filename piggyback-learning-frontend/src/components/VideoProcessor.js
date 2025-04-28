@@ -48,10 +48,11 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
             const axiosConfig = {
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json'
+                    'Accept': 'application/json',
+                    'Access-Control-Allow-Origin': 'https://piggyback-learning.onrender.com'
                 },
                 timeout: 120000,
-                withCredentials: false  // This is important when using allow_origins=["*"]
+                withCredentials: false
             };
 
             // Log the request
