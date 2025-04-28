@@ -139,52 +139,79 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
             clearInterval(pollingInterval);
         }
 
+        let pollingAttempts = 0;
+        const maxPollingAttempts = 60; // 3 minutes at 3s interval
+
         // Set up new polling interval
         const interval = setInterval(async () => {
             try {
-                console.log(`Polling for status update: ${API_BASE_URL}/api/v1/video/polling/${videoId}`);
+                pollingAttempts++;
+                console.log(`Polling attempt ${pollingAttempts} for video ${videoId}`);
 
-                const response = await axios.get(`${API_BASE_URL}/api/v1/video/polling/${videoId}`, {
-                    withCredentials: false,
-                    headers: {
-                        'Accept': 'application/json'
-                    },
-                    timeout: 5000 // 5 second timeout
-                });
+                const response = await axios.get(
+                    `${API_BASE_URL}/api/v1/video/polling/${videoId}`,
+                    {
+                        timeout: 5000,
+                        headers: { 'Accept': 'application/json' }
+                    }
+                );
 
                 const result = response.data;
 
-                if (response.status === 500) {
-                    throw new Error(result.error || 'Server error during polling');
+                // Update progress
+                if (result.progress) {
+                    setProgress(result.progress);
                 }
 
-                // Rest of the polling logic...
+                // Handle completion
+                if (result.status === 'complete') {
+                    clearInterval(interval);
+                    setStatus('complete');
+                    setQuestions(result.questions || []);
+                    if (onProcessingComplete) {
+                        onProcessingComplete(result.questions || []);
+                    }
+                    return;
+                }
+
+                // Handle errors
+                if (result.status === 'error') {
+                    clearInterval(interval);
+                    setStatus('error');
+                    setError(result.error || 'Processing failed');
+                    return;
+                }
+
+                // Handle timeout
+                if (pollingAttempts >= maxPollingAttempts) {
+                    clearInterval(interval);
+                    setStatus('error');
+                    setError('Processing timed out after 3 minutes');
+                    return;
+                }
 
             } catch (err) {
                 console.error('Polling error:', err);
-                const errorMessage = err.response?.data?.error ||
-                    err.response?.data?.detail ||
-                    err.message ||
-                    'Polling failed';
 
-                // More specific error handling
+                // Handle specific error cases
                 if (err.response?.status === 404) {
-                    // Video processing not found
                     clearInterval(interval);
                     setStatus('error');
-                    setError('Video processing session not found. Please start again.');
-                } else if (err.response?.status === 500) {
-                    // Server error - try to continue polling
-                    setProgress(`Server error: ${errorMessage}. Retrying...`);
-                } else {
-                    // Network or other errors
-                    setProgress(`Connection issue: ${errorMessage}. Retrying...`);
+                    setError('Video processing session not found');
+                    return;
+                }
+
+                if (pollingAttempts >= maxPollingAttempts) {
+                    clearInterval(interval);
+                    setStatus('error');
+                    setError('Connection failed after multiple attempts');
+                    return;
                 }
             }
         }, 3000); // Poll every 3 seconds
 
         setPollingInterval(interval);
-    }, [onProcessingComplete, pollingInterval, API_BASE_URL]);
+    }, [onProcessingComplete, API_BASE_URL]);
 
     // Cancel processing
     const cancelProcessing = useCallback(async () => {

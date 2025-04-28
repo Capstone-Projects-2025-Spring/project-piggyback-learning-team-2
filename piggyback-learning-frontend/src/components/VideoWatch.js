@@ -768,7 +768,21 @@ export default function InteractiveVideoQuiz() {
             <a href="/profile">Profile</a>
           </nav>
         </header>
-
+        {(processingStatus === 'processing' || processingStatus === 'starting') && (
+            <div className="processing-overlay">
+              <div className="spinner"></div>
+              <h3>Processing Video: {videoTitle}</h3>
+              {processingProgress && <p>Step: {processingProgress}</p>}
+              <p>Status: {processingStatus}</p>
+              <button
+                  onClick={cancelProcessing}
+                  className="cancel-button"
+                  disabled={processingStatus === 'cancelling'}
+              >
+                {processingStatus === 'cancelling' ? 'Cancelling...' : 'Cancel Processing'}
+              </button>
+            </div>
+        )}
         <main className="video-watch-content">
           <h2>🎬 Learning Time!</h2>
 

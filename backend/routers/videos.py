@@ -280,32 +280,32 @@ async def send_webhook_notification(webhook_url: str, data: Dict):
 async def fetch_transcript(video_id: str) -> Dict:
     """Step 1: Fetch and process transcript"""
     try:
-        with asyncio.timeout(Config.MAX_PROCESSING_TIME):
-            await update_processing_state(video_id, progress="Fetching transcript")
-
-            # Get transcript
-            transcript = await get_transcript_with_retry(video_id)
-            if not transcript:
-                raise HTTPException(status_code=404, detail="No transcript available")
-
-            # Save to state
-            await update_processing_state(
-                video_id,
-                status="transcript_ready",
-                transcript=transcript,
-                progress="Transcript ready"
+        # Use proper async timeout
+        try:
+            transcript = await asyncio.wait_for(
+                get_transcript_with_retry(video_id),
+                timeout=Config.MAX_PROCESSING_TIME
             )
+        except asyncio.TimeoutError:
+            raise HTTPException(status_code=408, detail="Transcript fetch timed out")
 
-            return {"status": "success", "transcript": transcript}
+        await update_processing_state(video_id, progress="Fetching transcript")
 
-    except asyncio.TimeoutError:
-        logger.error(f"Transcript fetch timed out for {video_id}")
+        if not transcript:
+            raise HTTPException(status_code=404, detail="No transcript available")
+
+        # Save to state
         await update_processing_state(
             video_id,
-            status="error",
-            error="Transcript fetch timed out"
+            status="transcript_ready",
+            transcript=transcript,
+            progress="Transcript ready"
         )
-        return {"status": "error", "error": "Timeout"}
+
+        return {"status": "success", "transcript": transcript}
+
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"Transcript fetch error: {str(e)}")
         await update_processing_state(
@@ -703,16 +703,17 @@ async def start_video_processing(
 async def process_next_step(video_id: str, background_tasks: BackgroundTasks):
     """Process the next step for a video"""
     state = get_processing_state_from_redis(video_id)
-    if not state:
-        return JSONResponse(
-            content={"status": "not_found"},
-            status_code=404
-        )
 
-    if state.get("status") == "complete" or state.get("status") == "error":
+    # Check for timeout (30 minutes max processing time)
+    if state and time.time() - state.get("start_time", 0) > 1800:
+        await update_processing_state(
+            video_id,
+            status="error",
+            error="Processing timed out after 30 minutes"
+        )
         return JSONResponse(
-            content=state,
-            status_code=200
+            content={"status": "error", "error": "Processing timed out"},
+            status_code=408
         )
 
     try:
@@ -1021,22 +1022,22 @@ async def poll_and_continue_processing(video_id: str, background_tasks: Backgrou
                 status_code=404
             )
 
-        # If not complete and not error, trigger next step
-        if state.get("status") == "processing" or "current_section" in state or "current_keyframe_batch" in state:
-            # Create task to process next step
-            background_tasks.add_task(
-                lambda: asyncio.create_task(process_next_step(video_id, background_tasks))
-            )
+        # If processing is complete or errored, return current state
+        if state.get("status") in ["complete", "error", "cancelled"]:
+            return JSONResponse(content=state)
 
-        # Update time estimates
+        # If processing is ongoing, trigger next step
         if state.get("status") == "processing":
+            # Create a proper background task (not a lambda)
+            background_tasks.add_task(process_next_step, video_id, background_tasks)
+
+            # Update time estimates
             elapsed = time.time() - state.get("start_time", time.time())
             step = state.get("progress", "Initializing")
             state["elapsed"] = elapsed
-
-            # Calculate a reasonable time estimate
             step_time = Config.PROCESSING_TIME_ESTIMATES.get(step, 30)
             state["eta"] = max(5, step_time - (elapsed % step_time))
+            state["last_updated"] = time.time()
 
         return JSONResponse(content=state)
 
