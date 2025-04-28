@@ -80,9 +80,19 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
 
         let pollingAttempts = 0;
         const maxPollingAttempts = 60; // 3 minutes at 3s interval
+        const maxProcessingTime = 180000; // 3 minutes total
 
+        const startTime = Date.now();
         const interval = setInterval(async () => {
             try {
+                const elapsed = Date.now() - startTime;
+                if (elapsed > maxProcessingTime) {
+                    clearInterval(interval);
+                    setStatus('error');
+                    setError('Processing timed out after 3 minutes');
+                    return;
+                }
+
                 pollingAttempts++;
                 console.log(`Polling attempt ${pollingAttempts} for ID: ${pollingId}`);
 

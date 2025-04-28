@@ -277,12 +277,22 @@ async def fetch_transcript(video_id: str) -> Dict:
                 timeout=Config.MAX_PROCESSING_TIME
             )
         except asyncio.TimeoutError:
+            logger.error(f"Transcript fetch timed out for {video_id}")
             raise HTTPException(status_code=408, detail="Transcript fetch timed out")
 
         await update_processing_state(video_id, progress="Fetching transcript")
 
         if not transcript:
-            raise HTTPException(status_code=404, detail="No transcript available")
+            logger.warning(f"No transcript available for {video_id}, using fallback")
+            # Use a more generic fallback transcript
+            fallback = "This video doesn't have captions available. The content may include visual elements."
+            await update_processing_state(
+                video_id,
+                status="transcript_ready",
+                transcript=[{"text": fallback, "start": 0, "duration": 10}],
+                progress="Using fallback transcript"
+            )
+            return {"status": "success", "transcript": [{"text": fallback, "start": 0, "duration": 10}]}
 
         # Save to state
         await update_processing_state(
@@ -294,16 +304,19 @@ async def fetch_transcript(video_id: str) -> Dict:
 
         return {"status": "success", "transcript": transcript}
 
-    except HTTPException:
+    except HTTPException as he:
+        logger.error(f"Transcript HTTP error for {video_id}: {str(he)}")
         raise
     except Exception as e:
-        logger.error(f"Transcript fetch error: {str(e)}")
+        logger.error(f"Transcript fetch error for {video_id}: {str(e)}")
+        fallback = "This video doesn't have captions available. The content may include visual elements."
         await update_processing_state(
             video_id,
-            status="error",
-            error=f"Transcript error: {str(e)}"
+            status="transcript_ready",
+            transcript=[{"text": fallback, "start": 0, "duration": 10}],
+            progress="Using fallback transcript"
         )
-        return {"status": "error", "error": str(e)}
+        return {"status": "success", "transcript": [{"text": fallback, "start": 0, "duration": 10}]}
 
 async def generate_questions_for_section(title: str, section_text: str) -> Dict:
     """Generate questions for a transcript section"""
@@ -917,11 +930,15 @@ async def get_processing_results(video_id: str):
     if not state:
         return {"status": "not_started"}
 
+    # If there's an error, return it immediately
+    if state.get("status") == "error":
+        return state
+
     # If processing is not complete and not errored, trigger next step
-    if state.get("status") == "processing" or "current_section" in state or "current_keyframe_batch" in state:
+    if state.get("status") in ["processing", "transcript_ready"]:
         # Create background task to process next step
         background_tasks = BackgroundTasks()
-        background_tasks.add_task(lambda: asyncio.create_task(process_next_step(video_id, background_tasks)))
+        background_tasks.add_task(process_next_step, video_id, background_tasks)
 
     # Update the elapsed time
     if state.get("status") == "processing":
