@@ -19,7 +19,7 @@ cryptography==44.0.2
 
 ### Image/Video Processing
 opencv-python-headless==4.9.0.80
-pillow==11.2.0
+pillow==11.2.1
 numpy==1.26.4
 
 ### Utilities
