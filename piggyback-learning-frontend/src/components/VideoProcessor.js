@@ -28,7 +28,7 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
             const videoId = generateProcessingId();
             setProcessingId(videoId);
 
-            const processUrl = `${BACKEND_URLL}/api/v1/video/process/${videoId}`;
+            const processUrl = `${BACKEND_URL}/api/v1/video/process/${videoId}`;
             console.log(`Calling API endpoint: ${processUrl}`);
 
             console.log(`Starting video processing with ID: ${videoId}`);
@@ -149,7 +149,7 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
             setError(errorMessage);
             setStatus('error');
         }
-    }, [videoUrl, generateProcessingId, BACKEND_URL, processingId]);
+    }, [videoUrl, generateProcessingId, BACKEND_URL]);
 
     // Start polling for updates and triggering next steps
     const startPolling = useCallback((videoId) => {
@@ -237,7 +237,7 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
         if (!processingId) return;
 
         try {
-            await axios.post(`${BACKEND_URL}/api/v1/video/cancel/${processingId}`, {}, {
+            await axios.post(`${BACKEND_URL}/api/v1/video/cancel/${videoId}`, {}, {
                 withCredentials: false,
                 headers: {
                     'Content-Type': 'application/json',
