@@ -28,7 +28,7 @@ db_models.Base.metadata.create_all(bind=engine)
 origins = [
     "https://piggyback-learning.onrender.com",
     "https://project-piggyback-learning-team-2-hnwm.onrender.com",
-    "http://localhost:3000"  # For local development
+    "http://localhost:3000"
 ]
 
 app.add_middleware(
@@ -37,7 +37,9 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"]
 )
+
 
 # @app.middleware("http")
 # async def add_cors_headers(request: Request, call_next):
@@ -56,6 +58,7 @@ app.include_router(video_router.router,
                    tags=["videos"])
 app.include_router(yolo_router)
 
+'''
 # Add middleware to log all requests
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
@@ -68,34 +71,6 @@ async def log_requests(request: Request, call_next):
         logger.error(f"Request failed: {str(e)}")
         raise
 
-@app.middleware("http")
-async def add_cors_headers(request: Request, call_next):
-    response = await call_next(request)
-
-    # Skip if already set by specific OPTIONS handlers
-    if "Access-Control-Allow-Origin" not in response.headers:
-        origin = request.headers.get("origin")
-        if origin in origins:
-            response.headers["Access-Control-Allow-Origin"] = origin
-            response.headers["Access-Control-Allow-Credentials"] = "true"
-
-    return response
-
-@app.middleware("http")
-async def log_cors(request: Request, call_next):
-    logger.info(f"CORS Headers - Origin: {request.headers.get('origin')}")
-    logger.info(f"CORS Headers - Method: {request.method}")
-    logger.info(f"CORS Headers - Headers: {request.headers.get('access-control-request-headers')}")
-
-    response = await call_next(request)
-
-    # Ensure CORS headers are added to all responses
-    response.headers["Access-Control-Allow-Origin"] = "https://project-piggyback-learning-team-2-hnwm.onrender.com"
-    response.headers["Access-Control-Allow-Methods"] = "*"
-    response.headers["Access-Control-Allow-Headers"] = "*"
-    response.headers["Access-Control-Allow-Credentials"] = "true"
-
-    return response
 
 @app.middleware("http")
 async def catch_exceptions_middleware(request: Request, call_next):
@@ -113,16 +88,21 @@ async def catch_exceptions_middleware(request: Request, call_next):
                 "Access-Control-Allow-Headers": "*"
             }
         )
-
+'''
 # General backend connectivity health check route
 @app.get("/health")
 def health_check():
-    response = {
-        "status": "healthy",
-        "version": "1.0",
-        "timestamp": time.time()
-    }
-    return response  # Removed custom headers which are redundant with CORS middleware
+    return JSONResponse(
+        content={
+            "status": "healthy",
+            "version": "1.0",
+            "timestamp": time.time()
+        },
+        headers={
+            "Access-Control-Allow-Origin": "https://piggyback-learning.onrender.com",
+            "Access-Control-Allow-Credentials": "true"
+        }
+    )
 
 # Explicit error handling for API endpoint
 @app.exception_handler(Exception)
