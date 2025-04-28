@@ -32,10 +32,11 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,  # <- only allow your frontend
+    allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],    # or ["POST", "GET", "OPTIONS"] more strict
-    allow_headers=["*"],    # or ["Authorization", "Content-Type"] etc.
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["*"]  
 )
 
 
@@ -67,6 +68,19 @@ async def log_requests(request: Request, call_next):
     except Exception as e:
         logger.error(f"Request failed: {str(e)}")
         raise
+
+@app.middleware("http")
+async def add_cors_headers(request: Request, call_next):
+    response = await call_next(request)
+
+    # Skip if already set by specific OPTIONS handlers
+    if "Access-Control-Allow-Origin" not in response.headers:
+        origin = request.headers.get("origin")
+        if origin in origins:
+            response.headers["Access-Control-Allow-Origin"] = origin
+            response.headers["Access-Control-Allow-Credentials"] = "true"
+
+    return response
 
 @app.middleware("http")
 async def log_cors(request: Request, call_next):
