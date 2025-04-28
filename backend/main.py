@@ -27,7 +27,8 @@ db_models.Base.metadata.create_all(bind=engine)
 
 origins = [
     "https://piggyback-learning.onrender.com",
-    "https://project-piggyback-learning-team-2-hnwm.onrender.com"# <- your frontend URL
+    "https://project-piggyback-learning-team-2-hnwm.onrender.com",
+    "http://localhost:3000"  # For local development
 ]
 
 app.add_middleware(
@@ -36,9 +37,7 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"]  
 )
-
 
 # @app.middleware("http")
 # async def add_cors_headers(request: Request, call_next):
@@ -124,32 +123,6 @@ def health_check():
         "timestamp": time.time()
     }
     return response  # Removed custom headers which are redundant with CORS middleware
-
-'''
-@app.options("/{rest_of_path:path}")
-async def preflight_handler(request: Request, rest_of_path: str):
-    return JSONResponse(
-        status_code=200,
-        headers={
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "POST, GET, DELETE, PUT, OPTIONS",
-            "Access-Control-Allow-Headers": "*",
-            "Access-Control-Max-Age": "86400"
-        }
-    )
-
-
-@app.options("/api/v1/video/process/{video_id}")
-async def options_process(video_id: str):
-    return JSONResponse(
-        status_code=200,
-        headers={
-            "Access-Control-Allow-Origin": "https://piggyback-learning.onrender.com",
-            "Access-Control-Allow-Methods": "POST, OPTIONS",
-            "Access-Control-Allow-Headers": "*",
-        }
-    )
-'''
 
 # Explicit error handling for API endpoint
 @app.exception_handler(Exception)

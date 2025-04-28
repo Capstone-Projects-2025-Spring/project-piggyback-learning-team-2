@@ -617,22 +617,10 @@ async def options_process(video_id: str):
     return JSONResponse(
         status_code=200,
         headers={
-            "Access-Control-Allow-Origin": "https://project-piggyback-learning-team-2-hnwm.onrender.com",
+            "Access-Control-Allow-Origin": "https://piggyback-learning.onrender.com",
             "Access-Control-Allow-Methods": "POST, OPTIONS",
             "Access-Control-Allow-Headers": "*",
-        }
-    )
-
-@router.options("/process/{video_id}")
-async def options_process(video_id: str):
-    return JSONResponse(
-        status_code=200,
-        headers={
-            "Access-Control-Allow-Origin": "https://project-piggyback-learning-team-2-hnwm.onrender.com",
-            "Access-Control-Allow-Methods": "POST, OPTIONS",
-            "Access-Control-Allow-Headers": "content-type",
-            "Access-Control-Allow-Credentials": "true",
-            "Access-Control-Max-Age": "600"
+            "Access-Control-Allow-Credentials": "true"
         }
     )
 

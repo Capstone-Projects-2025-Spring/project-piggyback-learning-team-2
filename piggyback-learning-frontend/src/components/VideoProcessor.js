@@ -17,20 +17,26 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
 
     const startProcessing = useCallback(async () => {
         try {
-            // Validate input
             if (!videoUrl) {
                 throw new Error('No video URL provided');
             }
 
             setStatus('starting');
             setError(null);
+            setProgress('Initializing connection...');
 
-            // Generate and set processing ID
             const newProcessingId = generateProcessingId();
             setProcessingId(newProcessingId);
-            console.log('Generated processing ID:', newProcessingId);
 
-            // Make the processing request
+            // First check if backend is reachable
+            try {
+                await axios.get(`${BACKEND_URL}/health`, { timeout: 5000 });
+            } catch (healthErr) {
+                throw new Error(`Backend service unavailable: ${healthErr.message}`);
+            }
+
+            setProgress('Starting video processing...');
+
             const response = await axios.post(
                 `${BACKEND_URL}/api/v1/video/process/${newProcessingId}`,
                 {
@@ -40,40 +46,25 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
                     keyframe_interval: 30
                 },
                 {
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    timeout: 600000,
-                    withCredentials: false
+                    headers: { 'Content-Type': 'application/json' },
+                    timeout: 60000
                 }
             );
 
-            console.log('Processing response:', response.data);
-
             if (response.data.status === 'processing') {
                 setStatus('processing');
+                setProgress(response.data.progress || 'Processing started');
                 startPolling(newProcessingId);
             } else {
                 throw new Error(response.data.error || 'Unexpected response from server');
             }
         } catch (err) {
-            console.error('Processing error:', {
-                error: err.message,
-                response: err.response?.data,
-                processingId: processingId,
-                videoUrl: videoUrl
-            });
-
-            let errorMessage = err.response?.data?.error || err.message || 'Processing failed';
-            if (err.code === 'ECONNABORTED') {
-                errorMessage = 'Request timed out - server may be busy';
-            }
-
-            setError(errorMessage);
+            console.error('Processing error:', err);
+            setError(err.message);
             setStatus('error');
+            setProgress('Failed');
         }
-    }, [videoUrl, generateProcessingId, BACKEND_URL, processingId]);
+    }, [videoUrl, generateProcessingId, BACKEND_URL]);
 
     const startPolling = useCallback((pollingId) => {
         if (!pollingId) {
