@@ -1,6 +1,7 @@
 # yolo_router.py
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
+from fastapi import UploadFile, File  # Make sure these are imported
 from backend.yolov8_detector import detect_objects_from_base64
 import base64
 from io import BytesIO
