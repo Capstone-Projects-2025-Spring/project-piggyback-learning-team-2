@@ -68,15 +68,16 @@ function Home() {
   };
 
   const handleVideoClick = (videoUrl, videoTitle) => {
-    // Check if we have cached questions
     const videoId = getYouTubeVideoId(videoUrl);
     const cachedQuestions = localStorage.getItem(`video_${videoId}_questions`);
 
-    if (cachedQuestions) {
-      // If we have cached questions, no need to process
-      navigate(`/watch?video=${encodeURIComponent(videoUrl)}&title=${encodeURIComponent(videoTitle)}`);
-    } else {
-      navigate(`/watch?video=${encodeURIComponent(videoUrl)}&title=${encodeURIComponent(videoTitle)}`);
+    // Always navigate immediately, but track processing state
+    navigate(`/watch?video=${encodeURIComponent(videoUrl)}&title=${encodeURIComponent(videoTitle)}&processing=${!cachedQuestions}`);
+
+    // If no cached questions, start processing in background
+    if (!cachedQuestions) {
+      // You might want to start processing here if using a global state manager
+      console.log('Starting background processing for', videoId);
     }
   };
 

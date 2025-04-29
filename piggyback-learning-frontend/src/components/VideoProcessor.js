@@ -79,8 +79,8 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
         }
 
         let pollingAttempts = 0;
-        const maxPollingAttempts = 60; // 3 minutes at 3s interval
-        const maxProcessingTime = 180000; // 3 minutes total
+        const maxPollingAttempts = 120; // Increased from 60 (now 6 minutes)
+        const maxProcessingTime = 360000; // Increased from 3 to 6 minutes
 
         const startTime = Date.now();
         const interval = setInterval(async () => {
@@ -89,7 +89,7 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
                 if (elapsed > maxProcessingTime) {
                     clearInterval(interval);
                     setStatus('error');
-                    setError('Processing timed out after 3 minutes');
+                    setError('Processing timed out after 6 minutes');
                     return;
                 }
 
@@ -99,15 +99,19 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
                 const response = await axios.get(
                     `${BACKEND_URL}/api/v1/video/results/${pollingId}`,
                     {
-                        timeout: 600000,
+                        timeout: 10000, // 10 second timeout per request
                         headers: { 'Accept': 'application/json' }
                     }
                 );
 
                 const result = response.data;
-                if (result.progress) setProgress(result.progress);
 
-                // Handle both complete status and case where questions exist
+                // Always update progress if available
+                if (result.progress) {
+                    setProgress(result.progress);
+                }
+
+                // Handle completion cases
                 if (result.status === 'complete' || (result.questions && result.questions.length > 0)) {
                     clearInterval(interval);
                     setStatus('complete');
@@ -116,10 +120,16 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
                     if (onProcessingComplete) {
                         onProcessingComplete(questions);
                     }
-                } else if (result.status === 'error') {
+                }
+                // Handle error cases
+                else if (result.status === 'error') {
                     clearInterval(interval);
                     setStatus('error');
                     setError(result.error || 'Processing failed');
+                }
+                // If still processing after many attempts, show a message
+                else if (pollingAttempts > 30 && pollingAttempts % 10 === 0) {
+                    setProgress(`Still processing... (attempt ${pollingAttempts})`);
                 }
             } catch (err) {
                 console.error('Polling error:', {
@@ -128,6 +138,7 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
                     status: err.response?.status
                 });
 
+                // Only fail on 404, otherwise keep trying
                 if (err.response?.status === 404) {
                     clearInterval(interval);
                     setStatus('error');
@@ -135,10 +146,10 @@ function VideoProcessor({ videoUrl, onProcessingComplete }) {
                 } else if (pollingAttempts >= maxPollingAttempts) {
                     clearInterval(interval);
                     setStatus('error');
-                    setError('Processing timed out after 3 minutes');
+                    setError('Processing timed out after 6 minutes');
                 }
             }
-        }, 3000);
+        }, 3000); // Keep 3 second interval
 
         setPollingInterval(interval);
 
